@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #买断信息定义
 import logging
-from datetime import date,datetime
+from datetime import *
 from osv import fields, osv
 from tools.translate import _
 import decimal_precision as dp

@@ -4,6 +4,19 @@
 <templates id="template" xml:space="preserve">
     <t t-name="RoomPointOfSale">
         <div id="room_pos_wrapper">
+            <div id="topheader" class="navbar navbar-fixed-top">
+                <div class="container-fluid">
+                    <div id="branding">
+                        <img src="/ktv_sale/static/src/img/logo.png" />
+                        <span class="placeholder-UsernameWidget"></span>
+                    </div>
+                    <div id="rightheader" class='pull-right'>
+                        <a class="btn btn-close btn-small" href="#"><i class="icon-arrow-right"></i> 退出</a>
+                    </div>
+                </div>
+            </div>
+
+            <!--
             <div id="header" class="navbar navbar-fixed-top">
                 <div class="navbar-inner">
                     <div class="container-fluid">
@@ -16,6 +29,7 @@
                     </div>
                 </div>
             </div>
+            -->
             <div class="container-fluid alert-wrapper"></div>
             <div class="container-fluid">
                 <div class="row-fluid">

@@ -85,11 +85,11 @@ openerp.ktv_sale.widget = function(erp_instance) {
 	widget.AlertWidget = erp_instance.web.Widget.extend({
 		template_fct: qweb_template("alert-template"),
 		init: function(parent, options) {
+			this._super(parent, options);
 			this.alert_class = options.alert_class;
 			this.info = options.info;
 			this.title = options.title;
 			this.timer = $.timer(_.bind(this._auto_close, this), 10000, false);
-			this._super(parent, options);
 		},
 		renderElement: function() {
 			this.$el.html(this.template_fct({
@@ -100,13 +100,13 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		},
 		start: function() {
 			this.$(".alert").addClass(this.alert_class);
-			this.$(".close").click(_.bind(this.destroy, this));
+			this.$(".close").click(_.bind(this._auto_close, this));
 			this.timer.play();
 		},
 		//自动关闭
 		_auto_close: function() {
 			console.log("auto close alert widget");
-			this.timer.destroy();
+			this.timer.stop();
 			this.timer = null;
 			this.destroy();
 		}
@@ -1046,7 +1046,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 					'alert_class': "alert-error",
 					'info': "当前时间没有可用的买断设置!"
 				});
-				this.destroy();
+				this.close();
 			}
 			else this._onchange_buyout_config_id();
 		}

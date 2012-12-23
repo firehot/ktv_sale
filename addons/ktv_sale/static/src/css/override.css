@@ -1,6 +1,45 @@
 /* room status bar display style */
 html {font-size : 14px;}
-#room_pos_wrapper {padding-top : 80px;}
+#room_pos_wrapper {padding-top : 30px;}
 .nav {margin-bottom : 0;}
 #room_info_tab .tab-content {background : #FFF;}
 #room_info_tab .nav-tabs > li {margin-bottom: -3px;}
+
+/*header style */
+#room_pos_wrapper #topheader {
+    height: 35px;
+    margin:0;
+    padding:0;
+    color: gray;
+    background: #393939;
+    background: -moz-linear-gradient(#7b7979, #393939);
+    background: -webkit-gradient(linear, left top, left bottom, from(#7b7979), to(#393939));
+}
+#room_pos_wrapper #branding{
+    position: absolute;
+    display: table-cell;
+    left:0;
+    top:0;
+    width:150px;
+    height:100%;
+    margin:0;
+    padding:0;
+    border-right: 1px solid #373737;
+    text-align:left;
+    line-height:100%;
+    vertical-align: middle;
+}
+#room_pos_wrapper #branding img {
+    height: 32px;
+    width: 116px;
+    margin-left:5px;
+    vertical-align:middle;
+}
+#room_pos_wrapper #branding .username{
+    float:right;
+    color:#DDD;
+    font-size:16px;
+    margin-right:32px;
+    margin-top:10px;
+    font-style:italic;
+}
