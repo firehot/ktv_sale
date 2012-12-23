@@ -295,7 +295,6 @@ openerp.ktv_sale.model = function(erp_instance) {
 			})).then(function() {
 				self.ready.resolve();
 			});
-
 		},
 		//获取公司信息
 		_get_company: function() {
@@ -657,14 +656,29 @@ openerp.ktv_sale.model = function(erp_instance) {
 	});
 	//包厢操作对象-基类
 	model.BaseRoomOperate = Backbone.Model.extend({
-		//服务器端的OSV_NAME
+		//服a务器端的OSV_NAME
 		"osv_name": "",
+        initialize: function(attrs) {
+			Backbone.Model.prototype.initialize.apply(this, arguments);
+			this.bind('change:open_time change:close_time', this._set_context_datetime, this);
+            console.debug("in parent class initialize");
+		},
+
 		//将数据上传至服务器
 		push: function(json_obj) {
 			var json_obj = this.export_as_json();
 			json_obj.osv_name = this.osv_name;
 			return new erp_instance.web.Model('ktv.room_operate').get_func('process_operate')(json_obj);
 		},
+        _set_context_datetime: function() {
+			if (this.get("open_time")) this.set({
+				context_open_time: erp_instance.web.str_to_datetime(this.get('open_time')).toString('yyyy-MM-dd HH:mm')
+			});
+			if (this.get("close_time")) this.set({
+				context_close_time: erp_instance.web.str_to_datetime(this.get('close_time')).toString('yyyy-MM-dd HH:mm')
+			});
+		},
+
 		//导出当前model为json
 		export_as_json: function() {
 			var json = this.toJSON();
@@ -688,20 +702,7 @@ openerp.ktv_sale.model = function(erp_instance) {
 		"osv_name": "ktv.room_opens",
 		defaults: {
 			"persons_count": 4
-		},
-		initialize: function(attrs) {
-			Backbone.Model.prototype.initialize.apply(this, arguments);
-			this.bind('change:open_time', this._convert_open_time, this);
-		},
-		//将服务器端时间转换为本地浏览器时区时间
-		_convert_open_time: function() {
-			var utc_open_time_str = this.get('open_time');
-			var context_open_time_str = erp_instance.web.str_to_datetime(utc_open_time_str).toString('yyyy-MM-dd HH:mm:ss');
-			this.set({
-				'context_open_time_str': context_open_time_str
-			});
 		}
-
 	});
 
 	//预售-买断对象
@@ -720,13 +721,10 @@ openerp.ktv_sale.model = function(erp_instance) {
 			"change_fee": 0.0
 		},
 		initialize: function(attrs) {
-			Backbone.Model.prototype.initialize.apply(this, arguments);
-			this.bind("change:member_card_fee", this._re_calculate_cash_fee, this);
-			this.bind("change:credit_card_fee", this._re_calculate_cash_fee, this);
-			this.bind("change:sales_voucher_fee", this._re_calculate_cash_fee, this);
-			this.bind("change:on_credit_fee", this._re_calculate_cash_fee, this);
-			this.bind("change:free_fee", this._re_calculate_cash_fee, this);
-			this.bind("change:act_pay_fee", this._calculate_change_fee, this);
+			model.BaseRoomOperate.prototype.initialize.apply(this, arguments);
+            console.debug("in sub class initialize");
+            var events = "change:act_pay_fee change:free_fee change:on_credit_fee change:sales_voucher_fee change:member_card_fee change:credit_card_fee";
+			this.bind(events, this._re_calculate_cash_fee, this);
 		},
 		//重新计算应付现金
 		_re_calculate_cash_fee: function() {
@@ -785,31 +783,7 @@ openerp.ktv_sale.model = function(erp_instance) {
 		"osv_name": "ktv.room_checkout_buytime",
 		defults: {
 			'persons_count': 2
-		},
-		initialize: function(attrs) {
-			Backbone.Model.prototype.initialize.apply(this, arguments);
-			this.bind('change:open_time', this._convert_time, this);
-			this.bind('change:close_time', this._convert_time, this);
-		},
-		//将服务器端时间转换为本地浏览器时区时间
-		_convert_time: function() {
-			var utc_open_time_str = this.get('open_time');
-			if (utc_open_time_str) {
-				var context_open_time_str = erp_instance.web.str_to_datetime(utc_open_time_str).toString('yyyy-MM-dd HH:mm:ss');
-				this.set({
-					'context_open_time_str': context_open_time_str
-				});
-			}
-			var utc_close_time_str = this.get('close_time');
-			if (utc_close_time_str) {
-				var context_close_time_str = erp_instance.web.str_to_datetime(utc_close_time_str).toString('yyyy-MM-dd HH:mm:ss');
-				this.set({
-					'context_close_time_str': context_close_time_str
-				});
-			}
-
 		}
-
 	});
 };
 

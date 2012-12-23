@@ -709,18 +709,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		on_re_calculate_fee: function() {
             this._re_calculate_sales_voucher_fee();
             this._autoset_pay_type_member_card_fee();
-            this._set_context_datetime();
         },
-		//设置客户端时间显示
-		_set_context_datetime: function() {
-			if (this.model.get("open_time")) this.model.set({
-				context_open_time: erp_instance.web.str_to_datetime(this.model.get('open_time')).toString('yyyy-MM-dd HH:mm')
-			});
-			if (this.model.get("close_time")) this.model.set({
-				context_close_time: erp_instance.web.str_to_datetime(this.model.get('close_time')).toString('yyyy-MM-dd HH:mm')
-			});
-		},
-
 		//重新计算抵用券费用
 		_re_calculate_sales_voucher_fee: function() {
 			var sales_voucher_fee = 0;
@@ -1013,7 +1002,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 	//包厢买断界面
 	widget.RoomCheckoutBuyoutWidget = widget.BaseRoomCheckoutWidget.extend({
 		template_fct: qweb_template("room-buyout-template"),
-		model: new model.RoomCheckoutBuyout,
+		model: new model.RoomCheckoutBuyout(),
 		renderElement: function() {
 			var self = this;
 			this.$el.html(self.template_fct({
@@ -1057,8 +1046,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 					'alert_class': "alert-error",
 					'info': "当前时间没有可用的买断设置!"
 				});
-				this.close();
-
+				this.destroy();
 			}
 			else this._onchange_buyout_config_id();
 		}
@@ -1066,17 +1054,16 @@ openerp.ktv_sale.widget = function(erp_instance) {
 	//预售-买钟界面
 	widget.RoomCheckoutBuytimeWidget = widget.BaseRoomCheckoutWidget.extend({
 		template_fct: qweb_template("room-buytime-template"),
-		model: new model.RoomCheckoutBuytime,
-        on_re_calculate_fee : function(){
-            this._super(arguments);
-            this._refresh();
+		model: new model.RoomCheckoutBuytime(),
+        init : function(parent,options){
+            this._super(parent,options);
+            this.on('re_calculate_fee',this,this._refresh);
         },
-
         //重绘制界面
         _refresh : function(){
             //更新赠送时长,到钟时间
-            this.$("#present_minutes").val(this.model.get("present_minutes"))
-            this.$("#close_time").val(this.model.get("context_close_time_str"))
+            this.$("#present_minutes").val(this.model.get("present_minutes"));
+            this.$("#close_time").val(this.model.get("context_close_time_str"));
         },
 
 		renderElement: function() {
@@ -1257,16 +1244,17 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			return erp_instance.ktv_sale.ktv_room_point.ready.then(function() {
 				self.renderElement();
 				erp_instance.ktv_sale.ktv_room_point.app = new erp_instance.ktv_sale.App(self.$el);
-				self.$(".btn-close").click(_.bind(self.destroy, self));
+				self.$(".btn-close").click(_.bind(self.close, self));
 			});
 		},
 		render: function() {
 			return qweb_template("RoomPointOfSale")();
 		},
-		destroy: function() {
-			this._super();
+        close : function() {
+			erp_instance.ktv_sale.ktv_room_point.timer.stop();
 			erp_instance.ktv_sale.ktv_room_point = undefined;
-		}
+            this.destroy();
+        }
 	});
 };
 

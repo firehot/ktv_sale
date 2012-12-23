@@ -130,7 +130,7 @@ class buyout_config(osv.osv):
                     "is_member" : getattr(c,'is_member'),
                     "buyout_fee" : buyout_fee,
                     #计算实际买断分钟数量
-                    "buyout_time" : ktv_helper.timedelta_minutes(time_to,time_from),
+                    "buyout_time" : ktv_helper.timedelta_minutes(time_from,time_to),
                     })
         return ret
 

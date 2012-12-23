@@ -49,6 +49,7 @@ class hourly_fee_promotion(osv.osv):
             "sat_active": True,
             "sun_active": True,
             }
+
     def get_active_configs(self,cr,uid):
         """
         获取当前有效的买钟优惠设置信息
@@ -61,8 +62,6 @@ class hourly_fee_promotion(osv.osv):
         context_now = ktv_helper.user_context_now(self,cr,uid)
         #判断是周几
         weekday_str = ktv_helper.weekday_str(context_now.weekday())
-        time_now_str = datetime.now().strftime("%H:%M:00")
-
         datetime_now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         for c in configs:
             json_c = {
@@ -80,14 +79,17 @@ class hourly_fee_promotion(osv.osv):
 
                     }
             #判断是否在日期区间内
-            if c.active_datetime_limit and (not datetime_now_str >= c.datetime_from or not datetime_now_str <= c.datetime_to):
+            if c.active_datetime_limit and not (datetime_now_str >= c.datetime_from and datetime_now_str <= c.datetime_to):
                 json_c = None
             #判断是否在时间区间内
-            if c.active_time_limit and ktv_helper.htc_time_between(c.time_from,c.time_to,time_now_str):
+            if c.active_time_limit and ktv_helper.utc_time_between(c.time_from,c.time_to,datetime.now()):
                 json_c = None
             #判断是否启用了星期设置
             if c.mon_active or c.tue_active or c.wed_active or c.thu_active or c.fri_active or c.sat_active or c.sun_active:
                 if not getattr(c,"%s_active" % weekday_str):
                     json_c = None
-            ret.append(json_c)
-            return ret
+
+            if json_c:
+                ret.append(json_c)
+
+        return ret
