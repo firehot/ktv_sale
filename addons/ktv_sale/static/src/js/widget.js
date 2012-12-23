@@ -1257,15 +1257,15 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			return erp_instance.ktv_sale.ktv_room_point.ready.then(function() {
 				self.renderElement();
 				erp_instance.ktv_sale.ktv_room_point.app = new erp_instance.ktv_sale.App(self.$el);
-				self.$el.find(".btn-close").click(_.bind(self.destroy, self));
+				self.$(".btn-close").click(_.bind(self.destroy, self));
 			});
 		},
 		render: function() {
 			return qweb_template("RoomPointOfSale")();
 		},
 		destroy: function() {
+			this._super();
 			erp_instance.ktv_sale.ktv_room_point = undefined;
-			this.destroy();
 		}
 	});
 };
