@@ -62,7 +62,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		open: function(options) {
 			var self = this;
 			this.appendTo($('body'));
-			this.$el.find(".modal").modal(self.dialog_options).on('hidden', _.bind(self.destroy, self)).modal('show').css({
+			this.$(".modal").modal(self.dialog_options).on('hidden', _.bind(self.destroy, self)).modal('show').css({
 				width: self.dialog_options.width,
 				'margin-left': function() {
 					return - ($(this).width() / 2);
@@ -73,7 +73,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		//打开后的处理,用于焦点设置等等
 		post_open: function() {},
 		close: function() {
-			this.$el.find(".modal").modal('hide');
+			this.$(".modal").modal('hide');
 		},
 		destroy: function() {
 			// Destroy widget
@@ -99,8 +99,8 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			return this;
 		},
 		start: function() {
-			this.$el.find(".alert").addClass(this.alert_class);
-			this.$el.find(".close").click(_.bind(this.destroy, this));
+			this.$(".alert").addClass(this.alert_class);
+			this.$(".close").click(_.bind(this.destroy, this));
 			this.timer.play();
 		},
 		//自动关闭
@@ -124,10 +124,10 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			this.model.bind('change', _.bind(this.renderElement, this));
 			this.$el.click(_.bind(this.on_click, this));
 			//预定事件
-			this.$el.find(".action_room_scheduled").click(_.bind(this.action_room_scheduled, this));
-			this.$el.find(".action_room_opens").click(_.bind(this.action_room_opens, this));
-			this.$el.find(".action_room_buyout").click(_.bind(this.action_room_buyout, this));
-			this.$el.find(".action_room_buytime").click(_.bind(this.action_room_buytime, this));
+			this.$(".action_room_scheduled").click(_.bind(this.action_room_scheduled, this));
+			this.$(".action_room_opens").click(_.bind(this.action_room_opens, this));
+			this.$(".action_room_buyout").click(_.bind(this.action_room_buyout, this));
+			this.$(".action_room_buytime").click(_.bind(this.action_room_buytime, this));
 		},
 		//包厢预定
 		action_room_scheduled: function() {
@@ -308,57 +308,57 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			var fee_type_id = cur_room.get("fee_type_id")[0];
 			new erp_instance.web.Model("ktv.fee_type").get_func("read")(fee_type_id, ['id', 'fee_type_code', 'name']).pipe(function(fee_type) {
 
-				self.$el.find(".room_fee,.minimum_fee,.minimum_fee_p,.buyout_fieldset,.buffet_fieldset,.buyout_config_lines,.buffet_config_lines,.buytime_fieldset,.hourly_fee_promotion_lines,.hourly_fee_lines,.member_hourly_fee_lines,.hourly_fee_p_lines").hide();
+				self.$(".room_fee,.minimum_fee,.minimum_fee_p,.buyout_fieldset,.buffet_fieldset,.buyout_config_lines,.buffet_config_lines,.buytime_fieldset,.hourly_fee_promotion_lines,.hourly_fee_lines,.member_hourly_fee_lines,.hourly_fee_p_lines").hide();
 				//只收包厢费
 				if (fee_type.fee_type_code == "only_room_fee") {
-					self.$el.find(".room_fee").show();
+					self.$(".room_fee").show();
 				}
 				//只收钟点费
 				if (fee_type.fee_type_code == "only_hourly_fee") {
-					self.$el.find(".hourly_fee,.hourly_fee_lines,.buytime_fieldset,.hourly_fee_promotion_lines").show();
+					self.$(".hourly_fee,.hourly_fee_lines,.buytime_fieldset,.hourly_fee_promotion_lines").show();
 				}
 
 				//钟点费+包厢费
 				if (fee_type.fee_type_code == "room_fee_plus_hourly_fee") {
-					self.$el.find(".room_fee,.hourly_fee,.hourly_fee_lines,.buytime_fieldset,.hourly_fee_promotion_lines").show();
+					self.$(".room_fee,.hourly_fee,.hourly_fee_lines,.buytime_fieldset,.hourly_fee_promotion_lines").show();
 				}
 				//最低消费
 				if (fee_type.fee_type_code == "minimum_fee") {
-					self.$el.find(".minimum_fee,.buytime_fieldset,.hourly_fee_promotion_lines").show();
+					self.$(".minimum_fee,.buytime_fieldset,.hourly_fee_promotion_lines").show();
 				}
 
 				//包厢费+最低消费
 				if (fee_type.fee_type_code == "room_fee_plus_minimum_fee") {
-					self.$el.find(".room_fee,.minimum_fee,.buytime_fieldset").show();
+					self.$(".room_fee,.minimum_fee,.buytime_fieldset").show();
 				}
 
 				//钟点费+最低消费
 				if (fee_type.fee_type_code == "hourly_fee_plus_minimum_fee") {
-					self.$el.find(".hourly_fee_lines,.minimum_fee,.buytime_fieldset,.hourly_fee_promotion_lines").show();
+					self.$(".hourly_fee_lines,.minimum_fee,.buytime_fieldset,.hourly_fee_promotion_lines").show();
 				}
 
 				//包厢费+钟点费+最低消费
 				if (fee_type.fee_type_code == "room_fee_plus_hourly_fee_plus_minimum_fee") {
-					self.$el.find(".room_fee,.hourly_fee,.hourly_fee_lines,.minimum_fee,.buytime_fieldset,.hourly_fee_promotion_lines").show();
+					self.$(".room_fee,.hourly_fee,.hourly_fee_lines,.minimum_fee,.buytime_fieldset,.hourly_fee_promotion_lines").show();
 				}
 				//按位钟点费
 				if (fee_type.fee_type_code == "hourly_fee_p") {
-					self.$el.find(".hourly_fee_p_lines,.buytime_fieldset,.hourly_fee_promotion_lines").show();
+					self.$(".hourly_fee_p_lines,.buytime_fieldset,.hourly_fee_promotion_lines").show();
 				}
 
 				//按位最低消费
 				if (fee_type.fee_type_code == "minimum_fee_p") {
-					self.$el.find(".minimum_fee_p").show();
+					self.$(".minimum_fee_p").show();
 				}
 				//买断
 				if (fee_type.fee_type_code == "buyout_fee") {
-					self.$el.find(".buyout_config_lines,.buyout_fieldset").show();
-					self.$el.find(".buytime_fieldset").hide();
+					self.$(".buyout_config_lines,.buyout_fieldset").show();
+					self.$(".buytime_fieldset").hide();
 				}
 				//自助餐
 				if (fee_type.fee_type_code == "buffet") {
-					self.$el.find(".buffet_config_lines,.buffet_fieldset").show();
-					self.$el.find(".buytime_fieldset").hide();
+					self.$(".buffet_config_lines,.buffet_fieldset").show();
+					self.$(".buytime_fieldset").hide();
 				}
 			});
 		},
@@ -393,7 +393,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			$('#room_filter').hide();
 			$('#room_list').hide();
 
-			this.$el.find('.btn-close-room-scheduled').click(_.bind(this.close, this));
+			this.$('.btn-close-room-scheduled').click(_.bind(this.close, this));
 
 			this.$form = $(this.$el).find("#room_scheduled_form");
 			this.$form.find('#scheduled_time').datetimepicker();
@@ -403,7 +403,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			//设置初始值
 			if (this.room) this.$form.find('#room_id').val(this.room.id);
 			//保存事件
-			this.$el.find(".btn-save").click(_.bind(this.save, this));
+			this.$(".btn-save").click(_.bind(this.save, this));
 			return this;
 		},
 		close: function() {
@@ -483,15 +483,15 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			$('#room_status').hide();
 			$('#room_filter').hide();
 			$('#room_list').hide();
-			this.$el.find('.btn-close-room-opens').click(_.bind(this.close, this));
+			this.$('.btn-close-room-opens').click(_.bind(this.close, this));
 			//会员卡扫描
-			this.$el.find('.btn-member-card-read').click(_.bind(this.open_member_card_read_win, this));
-			this.$el.find('.btn-member-card-clear').click(_.bind(this.clear_member_card, this));
+			this.$('.btn-member-card-read').click(_.bind(this.open_member_card_read_win, this));
+			this.$('.btn-member-card-clear').click(_.bind(this.clear_member_card, this));
 			//绑定相关事件
-			this.$form = this.$el.find("#room_opens_form");
+			this.$form = this.$("#room_opens_form");
 			this.$form.find("#room_id").change(_.bind(this.on_change_room, this));
 			this.$form.find("#room_id").val(this.room.get("id"));
-			this.$el.find(".btn-save-room-opens").click(_.bind(this.save, this));
+			this.$(".btn-save-room-opens").click(_.bind(this.save, this));
 		},
 		close: function() {
 			$('#room_status').show();
@@ -518,12 +518,12 @@ openerp.ktv_sale.widget = function(erp_instance) {
 				var member_class = this.member.get("member_class_id");
 				var member_name = this.member.get("name");
 				var info = member_card_no + "[" + member_class[1] + "]" + "[" + member_name + "]";
-				this.$el.find("#member-card-no").html(info);
-				this.$el.find('.member-card-wrapper').removeClass('hide');
+				this.$("#member-card-no").html(info);
+				this.$('.member-card-wrapper').removeClass('hide');
 			}
 			else {
-				this.$el.find("#member-card-no").empty();
-				this.$el.find('.member-card-wrapper').addClass('hide');
+				this.$("#member-card-no").empty();
+				this.$('.member-card-wrapper').addClass('hide');
 			}
 		},
 
@@ -609,7 +609,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			return this;
 		},
 		start: function() {
-			this.$el.find(".btn-sales-voucher-clear").click(_.bind(this._remove, this));
+			this.$(".btn-sales-voucher-clear").click(_.bind(this._remove, this));
 		},
 		//删除当前数据
 		_remove: function() {
@@ -639,7 +639,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 				var w = new widget.SalesVoucherWidget(this, {
 					model: s
 				});
-				w.appendTo(this.$el.find('.table'));
+				w.appendTo(this.$('.table'));
 			},
 			this);
 			return this;
@@ -734,29 +734,29 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		//重新显示费用列表
 		_refresh_fee_table: function() {
 			//需要将时间转换为本地时间
-			this.$el.find('.open_time').html(this.model.get('context_open_time'));
-			this.$el.find('.close_time').html(this.model.get('context_close_time'));
-			this.$el.find('.consume_minutes').html(this.model.get('consume_minutes'));
-			this.$el.find('.room_fee').html(this.model.get('room_fee'));
-			this.$el.find('.service_fee_rate').html(this.model.get('service_fee_rate'));
-			this.$el.find('.service_fee').html(this.model.get('service_fee'));
-			this.$el.find('.hourly_fee').html(this.model.get('hourly_fee'));
-			this.$el.find('.minimum_fee').html(this.model.get('minimum_fee'));
-			this.$el.find('.minimum_fee_diff').html(this.model.get('minimum_fee_diff'));
-			this.$el.find('.changed_room_hourly_fee').html(this.model.get('changed_room_hourly_fee'));
-			this.$el.find('.changed_room_minutes').html(this.model.get('changed_room_minutes'));
-			this.$el.find('.merged_room_hourly_fee').html(this.model.get('merged_room_hourly_fee'));
-			this.$el.find('.sum_should_fee').html(this.model.get('sum_should_fee'));
-			this.$el.find('.discount_fee').html(this.model.get('discount_fee'));
-			this.$el.find('.discount_rate').html(this.model.get('discount_rate'));
-			this.$el.find('.after_discount_fee').html(this.model.get('after_discount_fee'));
-			this.$el.find('.cash_fee').val(this.model.get('cash_fee'));
-			this.$el.find('.member_card_fee').val(this.model.get('member_card_fee'));
-			this.$el.find('.credit_card_fee').val(this.model.get('credit_card_fee'));
-			this.$el.find('.sales_voucher_fee').val(this.model.get('sales_voucher_fee'));
-			this.$el.find('.free_fee').val(this.model.get('free_fee'));
-			this.$el.find('.act_pay_fee').val(this.model.get('act_pay_fee'));
-			this.$el.find('.change_fee').html(this.model.get('change_fee'));
+			this.$('.open_time').html(this.model.get('context_open_time'));
+			this.$('.close_time').html(this.model.get('context_close_time'));
+			this.$('.consume_minutes').html(this.model.get('consume_minutes'));
+			this.$('.room_fee').html(this.model.get('room_fee'));
+			this.$('.service_fee_rate').html(this.model.get('service_fee_rate'));
+			this.$('.service_fee').html(this.model.get('service_fee'));
+			this.$('.hourly_fee').html(this.model.get('hourly_fee'));
+			this.$('.minimum_fee').html(this.model.get('minimum_fee'));
+			this.$('.minimum_fee_diff').html(this.model.get('minimum_fee_diff'));
+			this.$('.changed_room_hourly_fee').html(this.model.get('changed_room_hourly_fee'));
+			this.$('.changed_room_minutes').html(this.model.get('changed_room_minutes'));
+			this.$('.merged_room_hourly_fee').html(this.model.get('merged_room_hourly_fee'));
+			this.$('.sum_should_fee').html(this.model.get('sum_should_fee'));
+			this.$('.discount_fee').html(this.model.get('discount_fee'));
+			this.$('.discount_rate').html(this.model.get('discount_rate'));
+			this.$('.after_discount_fee').html(this.model.get('after_discount_fee'));
+			this.$('.cash_fee').val(this.model.get('cash_fee'));
+			this.$('.member_card_fee').val(this.model.get('member_card_fee'));
+			this.$('.credit_card_fee').val(this.model.get('credit_card_fee'));
+			this.$('.sales_voucher_fee').val(this.model.get('sales_voucher_fee'));
+			this.$('.free_fee').val(this.model.get('free_fee'));
+			this.$('.act_pay_fee').val(this.model.get('act_pay_fee'));
+			this.$('.change_fee').html(this.model.get('change_fee'));
 		},
 		//自动设置会员卡支付费用
 		_autoset_pay_type_member_card_fee: function() {
@@ -788,22 +788,22 @@ openerp.ktv_sale.widget = function(erp_instance) {
 				var member_class = this.member.get("member_class_id");
 				var member_name = this.member.get("name");
 				var info = member_card_no + "[" + member_class[1] + "]" + "[" + member_name + "]";
-				this.$el.find("#member-card-no").html(info);
-				this.$el.find('.member-card-wrapper').removeClass('hide');
+				this.$("#member-card-no").html(info);
+				this.$('.member-card-wrapper').removeClass('hide');
 				//会员卡/储值卡支付方式可用
 				if (this.member.get('balance') > 0) {
-					this.$el.find('.member_card_fee').attr('disabled', false).focus().select();
+					this.$('.member_card_fee').attr('disabled', false).focus().select();
 				}
-				this.$el.find('.member_card_balance').html(this.member.get('balance'));
+				this.$('.member_card_balance').html(this.member.get('balance'));
 			}
 			else {
 				//隐藏member-card-wrapper
-				this.$el.find("#member-card-no").html(null);
-				this.$el.find('.member_card_fee').attr('disabled', true);
-				this.$el.find('.member_card_balance').html(0.0);
-				this.$el.find('.member-card-wrapper').addClass('hide');
-				this.$el.find('.member-card-balance-warning').addClass('hide');
-				this.$el.find('.btn-print,.btn-checkout').removeClass('disabled');
+				this.$("#member-card-no").html(null);
+				this.$('.member_card_fee').attr('disabled', true);
+				this.$('.member_card_balance').html(0.0);
+				this.$('.member-card-wrapper').addClass('hide');
+				this.$('.member-card-balance-warning').addClass('hide');
+				this.$('.btn-print,.btn-checkout').removeClass('disabled');
 			}
 		},
 		//重新显示打折卡信息
@@ -814,13 +814,13 @@ openerp.ktv_sale.widget = function(erp_instance) {
 				var card_type_id = this.discount_card.get("discount_card_type_id");
 				var name = card_type_id[1];
 				var info = name + "[" + card_no + "]";
-				this.$el.find("#discount-card-no").html(info);
-				this.$el.find('.discount-card-wrapper').removeClass('hide');
+				this.$("#discount-card-no").html(info);
+				this.$('.discount-card-wrapper').removeClass('hide');
 			}
 			else {
 				//隐藏member-card-wrapper
-				this.$el.find("#discount-card-no").html(null);
-				this.$el.find('.discount-card-wrapper').addClass('hide');
+				this.$("#discount-card-no").html(null);
+				this.$('.discount-card-wrapper').addClass('hide');
 			}
 		},
 		//自动设置信用卡支付费用
@@ -839,14 +839,14 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		render_credit_card_no: function() {
 			if (this.credit_card.get("card_no")) {
 				var card_no = this.credit_card.get("card_no");
-				this.$el.find("#credit-card-no").html(card_no);
-				this.$el.find('.credit-card-wrapper').removeClass('hide');
-				this.$el.find('.credit_card_fee').attr('disabled', false).focus().select();
+				this.$("#credit-card-no").html(card_no);
+				this.$('.credit-card-wrapper').removeClass('hide');
+				this.$('.credit_card_fee').attr('disabled', false).focus().select();
 			}
 			else {
-				this.$el.find("#credit-card-no").html(null);
-				this.$el.find('.credit_card_fee').attr('disabled', true);
-				this.$el.find('.credit-card-wrapper').addClass('hide');
+				this.$("#credit-card-no").html(null);
+				this.$('.credit_card_fee').attr('disabled', true);
+				this.$('.credit-card-wrapper').addClass('hide');
 			}
 			this._autoset_pay_type_credit_card_fee();
 		},
@@ -858,30 +858,30 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			$('#room_list').hide();
 
 			//抵扣券列表
-			this.sales_voucher_list_view.$el = this.$el.find('.sales-voucher-list');
+			this.sales_voucher_list_view.$el = this.$('.sales-voucher-list');
 			this.sales_voucher_list_view.renderElement();
 			this.sales_voucher_list_view.start();
 
 			//会员刷卡绑定
-			this.$el.find('.btn-member-card-read').click(_.bind(this.read_member_card, this));
-			this.$el.find('.btn-discount-card-read').click(_.bind(this.read_discount_card, this));
-			this.$el.find('.btn-member-card-clear').click(_.bind(this.member_card_clear, this));
-			this.$el.find('.btn-discount-card-clear').click(_.bind(this.discount_card_clear, this));
-			this.$el.find('.btn-credit-card-clear').click(_.bind(this.credit_card_clear, this));
+			this.$('.btn-member-card-read').click(_.bind(this.read_member_card, this));
+			this.$('.btn-discount-card-read').click(_.bind(this.read_discount_card, this));
+			this.$('.btn-member-card-clear').click(_.bind(this.member_card_clear, this));
+			this.$('.btn-discount-card-clear').click(_.bind(this.discount_card_clear, this));
+			this.$('.btn-credit-card-clear').click(_.bind(this.credit_card_clear, this));
 			//
-			this.$el.find('.btn-checkout').click(_.bind(this._checkout, this));
-			this.$el.find('.btn-cancel').click(_.bind(this.close, this));
+			this.$('.btn-checkout').click(_.bind(this._checkout, this));
+			this.$('.btn-cancel').click(_.bind(this.close, this));
 			//信用卡支付方式点击
-			this.$el.find('.btn-credit-card-input').click(_.bind(this.open_credit_card_input, this));
+			this.$('.btn-credit-card-input').click(_.bind(this.open_credit_card_input, this));
 			//抵用券方式点击
-			this.$el.find('.btn-sales-voucher-input').click(_.bind(this.open_sales_voucher_input, this));
+			this.$('.btn-sales-voucher-input').click(_.bind(this.open_sales_voucher_input, this));
 			//不同付款方式费用变化
-			this.$el.find('.member_card_fee').change(_.bind(this._onchange_member_card_fee, this));
-			this.$el.find('.credit_card_fee').change(_.bind(this._onchange_credit_card_fee, this));
-			this.$el.find('.act_pay_fee').change(_.bind(this._onchange_act_pay_fee, this));
+			this.$('.member_card_fee').change(_.bind(this._onchange_member_card_fee, this));
+			this.$('.credit_card_fee').change(_.bind(this._onchange_credit_card_fee, this));
+			this.$('.act_pay_fee').change(_.bind(this._onchange_act_pay_fee, this));
 			//TODO 暂时注释
-			//this.$el.find('.free_fee').change(_.bind(this._onchange_member_card_fee,this));
-			//this.$el.find('.on_credit_fee').change(_.bind(this._onchange_member_card_fee,this));
+			//this.$('.free_fee').change(_.bind(this._onchange_member_card_fee,this));
+			//this.$('.on_credit_fee').change(_.bind(this._onchange_member_card_fee,this));
 		},
 		close: function() {
 			$('#room_status').show();
@@ -924,37 +924,37 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		},
 		//会员卡款金额变化的处理
 		_onchange_member_card_fee: function() {
-			var member_card_fee = parseFloat(this.$el.find('.member_card_fee').val());
+			var member_card_fee = parseFloat(this.$('.member_card_fee').val());
 			var origin_member_card_fee = this.model.get('member_card_fee');
 			if (member_card_fee > this.member.get('balance')) {
-				this.$el.find('.member-card-balance-warning').removeClass('hide');
+				this.$('.member-card-balance-warning').removeClass('hide');
 				this.model.set({
 					'member_card_fee': origin_member_card_fee
 				});
-				this.$el.find('.member_card_fee').focus().select();
-				this.$el.find('.btn-print').addClass('disabled');
-				this.$el.find('.btn-checkout').addClass('disabled');
+				this.$('.member_card_fee').focus().select();
+				this.$('.btn-print').addClass('disabled');
+				this.$('.btn-checkout').addClass('disabled');
 			}
 			else {
-				this.$el.find('.member-card-balance-warning').addClass('hide');
+				this.$('.member-card-balance-warning').addClass('hide');
 				this.model.set({
 					'member_card_fee': member_card_fee
 				});
-				this.$el.find('.btn-print').removeClass('disabled');
-				this.$el.find('.btn-checkout').removeClass('disabled');
+				this.$('.btn-print').removeClass('disabled');
+				this.$('.btn-checkout').removeClass('disabled');
 
 			}
 		},
 		//信用卡付款金额变化的处理
 		_onchange_credit_card_fee: function() {
-			var credit_card_fee = parseFloat(this.$el.find('.credit_card_fee').val());
+			var credit_card_fee = parseFloat(this.$('.credit_card_fee').val());
 			this.model.set({
 				'credit_card_fee': credit_card_fee
 			});
 		},
 		//实付金额变化
 		_onchange_act_pay_fee: function() {
-			var act_pay_fee = parseFloat(this.$el.find('.act_pay_fee').val());
+			var act_pay_fee = parseFloat(this.$('.act_pay_fee').val());
 			this.model.set({
 				'act_pay_fee': act_pay_fee
 			});
@@ -988,7 +988,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		},
 		//清除信用卡记录
 		credit_card_clear: function() {
-			this.$el.find('#credit_card_no').attr("disabled", true);
+			this.$('#credit_card_no').attr("disabled", true);
 			this.credit_card.clear();
 			this.model.set({
 				'credit_card_fee': 0
@@ -997,7 +997,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 
 		//清除会员卡信息
 		member_card_clear: function() {
-			this.$el.find('#member_card_no').attr("disabled", true);
+			this.$('#member_card_no').attr("disabled", true);
 			this.member.clear();
 			this.model.set({
 				'member_card_fee': 0
@@ -1005,7 +1005,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		},
 		//清除打折卡信息
 		discount_card_clear: function() {
-			this.$el.find('#discount_card_no').attr("disabled", true);
+			this.$('#discount_card_no').attr("disabled", true);
 			this.discount_card.clear();
 		}
 	});
@@ -1036,7 +1036,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		},
 		//获取当前上下文环境
 		_get_context: function() {
-			var buyout_config_id = this.$el.find('#buyout_config_id').val();
+			var buyout_config_id = this.$('#buyout_config_id').val();
 			var context = {
 				room_id: this.room.get("id"),
 				buyout_config_id: parseInt(buyout_config_id)
@@ -1050,7 +1050,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		start: function() {
 			this._super();
 			//买断变化事件
-			this.$el.find('#buyout_config_id').change(_.bind(this._onchange_buyout_config_id, this));
+			this.$('#buyout_config_id').change(_.bind(this._onchange_buyout_config_id, this));
 			//如果当前无可用买断,则确定按钮不可用
 			if (this.room_fee_info.get_active_buyout_config_lines().length == 0) {
 				erp_instance.ktv_sale.ktv_room_point.app.alert({
@@ -1075,8 +1075,8 @@ openerp.ktv_sale.widget = function(erp_instance) {
         //重绘制界面
         _refresh : function(){
             //更新赠送时长,到钟时间
-            this.$el.find("#present_minutes").val(this.model.get("present_minutes"))
-            this.$el.find("#close_time").val(this.model.get("context_close_time_str"))
+            this.$("#present_minutes").val(this.model.get("present_minutes"))
+            this.$("#close_time").val(this.model.get("context_close_time_str"))
         },
 
 		renderElement: function() {
@@ -1100,10 +1100,10 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		},
 		//获取当前上下文环境
 		_get_context: function() {
-			var persons_count = parseInt(this.$el.find('#persons_count').val());
-            var fee_type_id = parseInt(this.$el.find("#fee_type_id").val());
-            var price_class_id = parseInt(this.$el.find("#price_class_id").val());
-            var buy_minutes = parseInt(this.$el.find("#buy_minutes").val());
+			var persons_count = parseInt(this.$('#persons_count').val());
+            var fee_type_id = parseInt(this.$("#fee_type_id").val());
+            var price_class_id = parseInt(this.$("#price_class_id").val());
+            var buy_minutes = parseInt(this.$("#buy_minutes").val());
 			var context = {
 				"room_id": this.room.get("id"),
                 "fee_type_id": fee_type_id,
@@ -1120,8 +1120,8 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		start: function() {
 			this._super();
             //设置计费方式为当前包厢默认计费方式
-            this.$el.find("#fee_type_id").val(this.room.get("fee_type_id")[0])
-            this.$el.find("#fee_type_id,#price_class_id,#buy_minutes,#persons_count").change(_.bind(this._re_calculate_fee,this));
+            this.$("#fee_type_id").val(this.room.get("fee_type_id")[0])
+            this.$("#fee_type_id,#price_class_id,#buy_minutes,#persons_count").change(_.bind(this._re_calculate_fee,this));
             this._onchange_fields();
 		}
 	});
@@ -1131,7 +1131,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		template_fct: qweb_template("scan-card-template"),
 		osv_name: 'ktv.member',
 		domain: function() {
-			var input_card_no = this.$el.find('#input_card_no').val();
+			var input_card_no = this.$('#input_card_no').val();
 			return [["member_card_no", '=', input_card_no]]
 		},
 		init: function(parent, options) {
@@ -1143,7 +1143,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			this._super(parent, options);
 		},
 		post_open: function() {
-			this.$el.find('#input_card_no').focus();
+			this.$('#input_card_no').focus();
 		},
 
 		renderElement: function() {
@@ -1151,7 +1151,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			return this;
 		},
 		start: function() {
-			this.$el.find('#btn_search').click(_.bind(this._search, this));
+			this.$('#btn_search').click(_.bind(this._search, this));
 		},
 		//确认关闭
 		_ok_close: function() {
@@ -1170,15 +1170,15 @@ openerp.ktv_sale.widget = function(erp_instance) {
 					//未查到卡信息
 					if (result.length == 0) {
 						self.searched_model.clear();
-						self.$el.find(".alert").removeClass('hide');
+						self.$(".alert").removeClass('hide');
 					}
 					else {
-						self.$el.find(".alert").addClass('hide');
+						self.$(".alert").addClass('hide');
 						self.searched_model.set(result[0]);
 					}
 				})
 			}
-			this.$el.find("#input_card_no").focus().select();
+			this.$("#input_card_no").focus().select();
 		}
 	});
 
@@ -1188,7 +1188,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 	widget.DiscountCardReadWidget = widget.ScanCardWidget.extend({
 		osv_name: 'ktv.discount_card',
 		domain: function() {
-			var input_card_no = this.$el.find('#input_card_no').val();
+			var input_card_no = this.$('#input_card_no').val();
 			return [['card_no', '=', input_card_no]]
 		}
 	});
@@ -1197,15 +1197,15 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		//重写search方法
 		_search: function() {
 			var self = this;
-			var input_card_no = this.$el.find('#input_card_no').val();
+			var input_card_no = this.$('#input_card_no').val();
 			if (input_card_no != "") {
-				self.$el.find(".alert").addClass('hide');
+				self.$(".alert").addClass('hide');
 				self.searched_model.set({
 					'card_no': input_card_no
 				});
 			}
 			else self.searched_model.clear();
-			this.$el.find("#input_card_no").focus().select();
+			this.$("#input_card_no").focus().select();
 		}
 	});
 	//抵用券录入
@@ -1213,23 +1213,23 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		//重写search 方法
 		_search: function() {
 			var self = this;
-			var input_card_no = this.$el.find('#input_card_no').val();
+			var input_card_no = this.$('#input_card_no').val();
 			if (input_card_no != "") {
 				new erp_instance.web.Model('ktv.sales_voucher').get_func('get_active_sales_voucher')(input_card_no).pipe(function(result) {
 					//未查到卡信息
 					if (!result.id) {
 						self.searched_model.clear();
-						self.$el.find(".alert").removeClass('hide');
+						self.$(".alert").removeClass('hide');
 					}
 					else {
-						self.$el.find(".alert").addClass('hide');
+						self.$(".alert").addClass('hide');
 						self.searched_model.set(result);
 					}
 
 				});
 			}
 			else self.searched_model.clear();
-			this.$el.find("#input_card_no").focus().select();
+			this.$("#input_card_no").focus().select();
 
 		},
 		//确认关闭
