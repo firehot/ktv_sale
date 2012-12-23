@@ -1,0 +1,130 @@
+-
+  当修改包厢的room type时,当前包厢的计费方式、包厢费、钟点费、最低消费、买断金额都修改为对应room type的值
+-
+  !assert {model: ktv.room, id: ktv_room_1, string: "ktv room未随ktv_room_type而变化!"}:
+    - fee_type_id.id == ref("fee_type1")
+    - room_fee == 50
+    - hourly_fee == 30
+    - minimum_fee == 40
+-
+  修改包厢打折设置中的包厢类别,对应的打折金额会发生变化
+-
+  !assert {model: ktv.hourly_fee_discount,id: hourly_fee_discount_1,string: "相关信息设置不正确"} :
+    - mon_hourly_fee == 30
+-
+  测试获取当前room的room_operate
+-
+  !python {model: ktv.room }: |
+    rp = self.find_or_create_room_operate(cr,uid,ref("ktv_room_1"))
+    assert rp,'创建room_operate失败'
+-
+  应可正常创建room_opens对象
+-
+  !python {model: ktv.room_operate}: |
+    room_opens_vals = {
+    "osv_name" : "ktv.room_opens",
+    "room_id" : ref("ktv_room_1"),
+    'guest_name' : '程东辉',
+    'persons_count' : 5,
+    'fee_type_id' : ref('fee_type1'),
+    'price_class_id' : ref('price_class_1')
+    }
+    rs = self.process_operate(cr,uid,room_opens_vals)
+    assert rs['room']['state'] == 'in_use'
+-
+  应能够正确获取给定的买断信息
+-
+  !python {model : ktv.buyout_config}: |
+    buyout_config_id = ref('buyout_config_1')
+    ret = self.get_active_buyout_fee(cr,uid,buyout_config_id)
+    assert ret
+-
+  买断信息发生变化时,应能够重新计算买断费用
+-
+  !python {model: ktv.room_checkout_buyout}: |
+    context = {
+    "buyout_config_id" : ref('buyout_config_1'),
+    "member_id" : ref('member_1'),
+    "room_id" : ref('ktv_room_1')
+    }
+    ret = self.re_calculate_fee(cr,uid,context)
+
+-
+  应能正确获取抵用券信息
+-
+  !python {model: ktv.sales_voucher}: |
+    ret = self.get_active_sales_voucher(cr,uid,'000001234')
+    assert ret
+-
+  应能够正确获取当前可用的买断设置信息
+-
+  !python {model: ktv.buyout_config}: |
+    ret = self.get_active_configs(cr,uid,ref("ktv_room_type1"))
+    assert ret
+-
+  应能够正确获取时段低消设置信息
+-
+  !python {model: ktv.minimum_fee_config}: |
+    ret = self.get_active_configs(cr,uid,ref('ktv_room_type1'))
+    assert ret
+
+-
+  能够正确获取包厢时段钟点费设置
+-
+  !python {model: ktv.hourly_fee_discount}: |
+    ret = self.get_active_configs(cr,uid,ref('ktv_room_type1'))
+    assert ret
+-
+  能够正确获取自助擦设置
+-
+  !python {model: ktv.buffet_config}: |
+    ret = self.get_active_configs(cr,uid,ref('ktv_room_type1'))
+    assert ret
+-
+  应能够正确获取买钟优惠设置信息
+-
+  !python {model: ktv.hourly_fee_promotion}: |
+    ret = self.get_active_configs(cr,uid)
+    assert ret
+-
+  应能够正确处理包厢预定信息
+-
+  !python {model: ktv.room_operate}: |
+    vals = {
+        "osv_name" : 'ktv.room_scheduled',
+        "room_id" : ref('ktv_room_1'),
+        "scheduled_time" : '2012-12-13 12:30:00',
+        "guest_name" : "程东辉",
+        "persons_count" : 4,
+        "guest_phone" : 13676997865
+    }
+    ret = self.process_operate(cr,uid,vals)
+    assert ret['room']['state'] == 'scheduled'
+-
+  应能正常获取包厢费用信息
+-
+  !python {model : ktv.room}: |
+    room_id = ref('ktv_room_1')
+    ret = self.get_current_fee(cr,uid,room_id)
+    assert ret
+-
+  应能够正确处理买钟信息
+-
+  !python {model: ktv.room_operate}: |
+    vals = {
+    "osv_name" : 'ktv.room_checkout_buytime',
+    "room_id" : ref('ktv_room_1'),
+    "buy_minutes" : 60,
+    "fee_type_id" : ref("fee_type_2"),
+    "price_class_id" : ref('price_class_1'),
+    "guest_name" : "程东辉",
+    "persons_count" : 8,
+    }
+    ret = self.pool.get('ktv.room_checkout_buytime').re_calculate_fee(cr,uid,vals)
+    assert ret
+    ret.update(vals)
+    ret['room_id'] = ref('ktv_room_1')
+    ret = self.process_operate(cr,uid,ret)
+    assert ret['room']['state'] == 'buytime'
+
+

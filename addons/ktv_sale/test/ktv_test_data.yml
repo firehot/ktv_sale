@@ -1,0 +1,322 @@
+-
+  应能够真确保存计费方式信息
+-
+  !record {model: ktv.fee_type,id: fee_type1}:
+     name: 只收包厢费
+     fee_type_code: "only_room_fee"
+-
+  !record {model: ktv.fee_type,id: fee_type_2}:
+     name: 只收钟点费
+     fee_type_code: "only_hourly_fee"
+-
+  应能够成功保存包厢区域信息
+-
+  !record {model: ktv.room_area,id: ktv_room_area}:
+    name: 大厅区
+-
+  应能够正确保存包厢类别信息
+-
+  !record {model: ktv.room_type,id: ktv_room_type1}:
+    name: vip
+    fee_type_id: fee_type1
+    room_fee: 50
+    hourly_fee: 30
+    minimum_fee: 40
+-
+  !record {model: ktv.room_type,id: ktv_room_type2}:
+    name: 豪华包房
+    fee_type_id: fee_type_2
+    room_fee: 200
+    hourly_fee: 400
+    minimum_fee: 300
+-
+  !record {model: ktv.room,id: ktv_room_1}:
+    name: A888
+    room_area_id: ktv_room_area
+    room_type_id: ktv_room_type1
+-
+  !record {model: ktv.room,id: ktv_room_2}:
+    name: A001
+    room_area_id: ktv_room_area
+    room_type_id: ktv_room_type2
+
+-
+  !record {model: ktv.room,id: ktv_room_3}:
+    name: A002
+    room_area_id: ktv_room_area
+    room_type_id: ktv_room_type1
+
+-
+  !record {model: ktv.room,id: ktv_room_4}:
+    name: A003
+    room_area_id: ktv_room_area
+    room_type_id: ktv_room_type2
+
+
+-
+  !record {model: ktv.room,id: ktv_room_5}:
+    name: A004
+    room_area_id: ktv_room_area
+    room_type_id: ktv_room_type1
+
+-
+  !record {model: ktv.room,id: ktv_room_6}:
+    name: A005
+    room_area_id: ktv_room_area
+    room_type_id: ktv_room_type2
+
+
+-
+  !record {model: ktv.room,id: ktv_room_7}:
+    name: A006
+    room_area_id: ktv_room_area
+    room_type_id: ktv_room_type1
+
+
+
+-
+  应能够成功保存买断信息设置
+-
+  !record {model: ktv.buyout_config,id: buyout_config_1}:
+    name: 迷你包下午场买断
+    room_type_id: ktv_room_type1
+    is_member: False
+    time_from: 17.00
+    time_to: 15.59
+-
+  !record {model: ktv.buyout_config,id: buyout_config_2}:
+    name: vip下午场买断
+    room_type_id: ktv_room_type1
+    is_member: False
+    time_from: 18.00
+    time_to: 15.59
+-
+  应能够成功保存买断特殊日设置
+-
+  !record {model: ktv.buyout_config_special_day,id: buyout_config_special_day_1}:
+    room_type_id: ktv_room_type1
+-
+  !record {model: ktv.buyout_config_special_day,id: buyout_config_special_day_2}:
+    room_type_id: ktv_room_type1
+-
+  应能够成功保存时段低消设置
+-
+  !record {model: ktv.minimum_fee_config,id: minimum_fee_config_1}:
+    room_type_id: ktv_room_type1
+    time_from: 18.00
+    time_to: 15.59
+    mon_minimum_fee: 20
+    mon_room_fee: 50
+    mon_minimum_fee_p: 10
+    tue_minimum_fee: 20
+    tue_room_fee: 50
+    tue_minimum_fee_p: 10
+    wed_minimum_fee: 20
+    wed_room_fee: 50
+    wed_minimum_fee_p: 10
+    thu_minimum_fee: 20
+    thu_room_fee: 50
+    thu_minimum_fee_p: 10
+    fri_minimum_fee: 20
+    fri_room_fee: 50
+    fri_minimum_fee_p: 10
+    sat_minimum_fee: 20
+    sat_room_fee: 50
+    sat_minimum_fee_p: 10
+    sun_minimum_fee: 20
+    sun_room_fee: 50
+    sun_minimum_fee_p: 10
+    special_day_minimum_fee: 20
+    special_day_room_fee: 50
+    special_day_minimum_fee_p: 10
+-
+  应能正确保存时段低消特殊日设置
+-
+  !record {model : ktv.minimum_fee_config_special_day,id: minimum_fee_config_special_day_1}:
+    room_type_id: ktv_room_type1
+    special_day: 2012-10-1
+
+-
+  应能够成功保存价格类型信息
+-
+  !record {model: ktv.price_class,id: price_class_1}:
+    name: 默认价
+-
+  !record {model: ktv.price_class,id: price_class_2}:
+    name: 开业价
+-
+  应能够成功保存包厢钟点费打折信息
+-
+  !record {model: ktv.hourly_fee_discount,id: hourly_fee_discount_1}:
+    price_class_id: price_class_1
+    room_type_id: ktv_room_type1
+    time_from: 18.00
+    time_to: 15.59
+-
+  应能够成功保存按位钟点费打折信息
+-
+  !record {model: ktv.hourly_fee_p_discount,id: hourly_fee_p_discount_1}:
+    price_class_id: price_class_1
+    room_type_id: ktv_room_type1
+    time_from: 09.30
+    time_to: 12.30
+-
+  !record {model: ktv.member_class,id: member_class_jin}:
+    name: 金卡
+    card_fee: 50
+    drinks_fee_discount: 80
+    room_fee_discount: 90
+    up_card_fee: 15
+    drinks_price_type: room_price
+    room_limit_count: 0
+    market_limit_count: 0
+    can_points: True
+    can_manual_input: True
+    can_store_money: True
+    active: True
+-
+  !record {model: ktv.member_class,id: member_class_yin}:
+    name: 银卡
+    card_fee: 50
+    drinks_fee_discount: 80
+    room_fee_discount: 90
+    up_card_fee: 15
+    drinks_price_type: room_price
+    room_limit_count: 0
+    market_limit_count: 0
+    can_points: True
+    can_manual_input: True
+    can_store_money: True
+    active: True
+
+
+-
+  应能够成功保存会员时段设置
+-
+  !record {model: ktv.member_hourly_fee_discount,id: member_hourly_fee_discount_1}:
+    price_class_id: price_class_1
+    room_type_id: ktv_room_type1
+    member_class_id: member_class_jin
+    time_from: 09.30
+    time_to: 12.30
+-
+  应能够成功保存会员特殊日期设置信息
+-
+  !record {model: ktv.member_hourly_fee_discount_special_day,id: mh_special_day_1}:
+    member_class_id: member_class_jin
+    room_type_id: ktv_room_type1
+    special_day: 2012-10-1
+
+-
+  应能够正确保存买钟优惠设置信息
+-
+  !record {model: ktv.hourly_fee_promotion,id: hourly_fee_promotion_1}:
+    name: 买钟优惠设置1
+    is_member: False
+    buy_minutes: 120
+    present_minutes: 120
+    active_datetime_limit: True
+    datetime_from: 2012-01-01 16:30:00
+    datetime_to: 2013-01-20 18:00:00
+    mon_active: True
+    tue_active: True
+    wed_active: True
+    thu_active: True
+    fri_active: True
+    sat_active: True
+    sun_active: True
+    active: True
+
+-
+  应能够正确保存自助餐设置信息
+-
+  !record {model: ktv.buffet_config,id: buffet_config}:
+    name: 小包日场3H人头买断
+    room_type_id: ktv_room_type1
+    is_member: False
+    active: True
+    time_from: 18.00
+    time_to: 15.30
+    break_on: 13.00
+    break_on_enable: True
+
+-
+  应能正确保存自助餐特殊日设置
+-
+  !record {model: ktv.buffet_config_special_day,id: buffet_config_special_day_1}:
+    room_type_id: ktv_room_type1
+    special_day: 2011-10-01
+-
+  应能够正确保存打折卡类别设置信息
+-
+  !record {model: ktv.discount_card_type,id: discount_card_type_1}:
+    name: 房费8折卡
+    drinks_fee_discount: 100.00
+    room_fee_discount: 80.00
+    card_fee: 20
+-
+  应能够正确保存欢唱券设置信息
+-
+  !record {model: ktv.song_ticket,id: song_ticket_1}:
+    name: 30分钟欢唱券
+    room_type_id : ktv_room_type1
+    equal_minutes: 30
+    active_time_limit: True
+    time_from: 09.30
+    time_to: 12.30
+-
+  应能够正确保存抵用券类型设置信息
+-
+  !record {model: ktv.sales_voucher_type,id: sales_voucher_type_1}:
+    name: 低50元抵用券
+    face_value: 50.00
+-
+  应能够正确保存抵用券信息
+-
+  !record {model: ktv.sales_voucher,id: sales_voucher_1}:
+    id_number: '000001234'
+    face_value: 50.0
+    as_money: 50
+    date_from: '2012-11-01'
+    date_to: '2014-11-01'
+    description: 抵用券00001234
+-
+  应能够正确保存会员升降级设置
+-
+  !record {model: ktv.member_class_change_config,id: member_class_change_config}:
+    member_class_id: member_class_jin
+    date_from: 2012-10-01
+    date_to: 2012-12-31
+    up_points: 3000
+    up_member_class_id: member_class_jin
+    down_points : 500
+    down_member_class_id: member_class_yin
+-
+  应能够正确保存会员信息
+-
+  !record {model : ktv.member,id: member_1}:
+    name: "程东辉"
+    member_card_no: "412929197510020418"
+    member_class_id: member_class_jin
+    make_fee: 20
+    valid_date: 2013-12-31
+    overdraft_fee: 2000
+    card_password: yesno
+    phone: 13676997527
+    birthday: 1970-10-02
+    sex: M
+    id_type: 1
+    id_no: "412929197510020418"
+    v_no: "预A-299Z0"
+    qq: 542340109
+    email: c@a.com
+    address: "河南省郑州市"
+    balance: 10000
+-
+  应能够正确保存打折卡信息
+-
+  !record {model : ktv.discount_card,id: discount_card_1}:
+    card_no: "111111"
+    discount_card_type_id: discount_card_type_1
+    card_fee: 10
+

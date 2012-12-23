@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <!--包厢信息定义-->
+        <record id="view_ktv_room_form" model="ir.ui.view">
+            <field name="name">ktv.ktv_room</field>
+            <field name="model">ktv.room</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="room_area" version="7.0">
+                    <sheet>
+                        <h1>
+                            <label string="name" />
+                            <field name="name" select="1" />
+                        </h1>
+                        <group col="4">
+                            <field name="room_area_id" />
+                            <field name="room_type_id" on_change="onchange_room_type_id(room_type_id)" />
+                            <field name="fee_type_id" />
+                        </group>
+
+                        <group col="4" string="费用信息">
+                            <field name="room_fee" />
+                            <field name="hourly_fee" />
+                            <field name="minimum_fee" />
+                            <field name="hourly_fee_p" />
+                            <field name="minimum_fee_p" />
+                            <field name="minimum_persons" />
+                            <field name="py_code" />
+                            <field name="sequence" />
+                        </group>
+                        <group col="4">
+                            <field name="state" />
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="description" />
+                        </group>
+                        <group col="4" string="包厢图片">
+                            <field name="img_1" widget="image" />
+                            <field name="img_2" widget="image" />
+                       </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_ktv_room_tree" model="ir.ui.view">
+            <field name="name">ktv.room</field>
+            <field name="model">ktv.room</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="room area">
+                    <field name="name"/>
+                    <field name="room_area_id"/>
+
+                    <field name="room_type_id" />
+                    <field name="fee_type_id" />
+
+                    <field name="room_fee" />
+                    <field name="hourly_fee" />
+                    <field name="minimum_fee" />
+                    <field name="hourly_fee_p" />
+                    <field name="minimum_fee_p" />
+                    <field name="minimum_persons" />
+                    <field name="sequence" />
+                    <field name="state" />
+                    <field name="description" />
+                    <field name="active"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_ktv_room_search" model="ir.ui.view">
+            <field name="name">ktv.room.select</field>
+            <field name="model">ktv.room</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Search ktv rooms">
+                    <filter icon="terp-document-new" string="空闲" domain="[('state','=','free')]" help="空闲中的包厢"/>
+                    <filter icon="terp-document-new" string="使用中" domain="[('state','=','in_use')]" help="使用中的包厢"/>
+                    <filter icon="terp-document-new" string="预定" domain="[('state','=','preorder')]" help="使用中的包厢"/>
+                    <filter icon="terp-document-new" string="锁定" domain="[('state','=','locked')]" help="锁定中的包厢"/>
+                    <filter icon="terp-document-new" string="已结账" domain="[('state','=','checkout')]" help="已结账的包厢"/>
+                    <filter icon="terp-document-new" string="买断" domain="[('state','=','buyout')]" help="买断中的包厢"/>
+                    <filter icon="terp-document-new" string="故障" domain="[('state','=','malfunction')]" help="故障中的包厢"/>
+                    <filter icon="terp-document-new" string="带客" domain="[('state','=','visit')]" help="带客看房"/>
+                    <filter icon="terp-document-new" string="调试中" domain="[('state','=','debug')]" help="调试中"/>
+                    <filter icon="terp-document-new" string="清洁" domain="[('state','=','clean')]" help="清洁中"/>
+                    <separator orientation="vertical"/>
+                    <filter icon="terp-document-new" string="有效" domain="[('active','=',True)]" help="状态为有效的包厢"/>
+                    <newline />
+                    <field name="name"
+                        filter_domain="['|', ('name','ilike',self),('client_order_ref','ilike',self)]"/>
+                    <field name="room_type_id" widget="selection"/>
+                    <field name="room_area_id"  widget="selection"/>
+                    <newline/>
+                </search>
+            </field>
+        </record>
+
+
+        <record id="action_ktv_room" model="ir.actions.act_window">
+            <field name="name">包厢信息</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">ktv.room</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_ktv_room_search" />
+            <field name='help'>设置包厢信息</field>
+        </record>
+
+        <menuitem action="action_ktv_room" id="menu_action_ktv_room" parent="base.menu_ktv_room_config" name="包厢设置" sequence="3"/>
+    </data>
+</openerp>

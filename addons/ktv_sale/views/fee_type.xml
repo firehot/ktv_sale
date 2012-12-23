@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="view_ktv_fee_type_form" model="ir.ui.view">
+            <field name="name">ktv.ktv_fee_type</field>
+            <field name="model">ktv.fee_type</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="room_type" version="7.0">
+                    <field name="name"/>
+                    <field name="drinks_price_type"/>
+                    <field name="service_fee_rate"/>
+                    <field name="active" colspan="4"/>
+                    <field name="description" colspan="4" />
+                    <newline/>
+                    <field colspan="4" name="member_class_discount_ids" nolabel="1" widget="one2many_list">
+                        <form string="member class discount lines">
+                            <field name="member_class_id" />
+                            <field name="drinks_fee_discount" />
+                            <field name="room_fee_discount" />
+                        </form>
+                        <tree string = "member class discount lines">
+                            <field name="member_class_id" />
+                            <field name="drinks_fee_discount" />
+                            <field name="room_fee_discount" />
+                        </tree>
+                    </field>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_ktv_fee_type_tree" model="ir.ui.view">
+            <field name="name">ktv.ktv_fee_type</field>
+            <field name="model">ktv.fee_type</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="计费方式">
+                    <field name="name"/>
+                    <field name="description" />
+                    <field name="active"/>
+                </tree>
+            </field>
+        </record>
+
+
+        <record id="action_ktv_fee_type" model="ir.actions.act_window">
+            <field name="name">计费方式</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">ktv.fee_type</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name='help'>为包厢设置不同的计费方式</field>
+        </record>
+
+        <menuitem action="action_ktv_fee_type" id="menu_action_ktv_fee_type" parent="base.menu_ktv_base_info" name="计费方式" sequence="0"/>
+    </data>
+</openerp>
+
+
