@@ -129,9 +129,9 @@ def calculate_present_minutes(buy_minutes,promotion_buy_minutes = 0,promotion_pr
     :params promotion_present_minutes integer 买钟优惠设置中设定的赠送时长
     :return integer 赠送时长
     """
-    #如果未设置优惠信息,则不赠送,直接返回买钟时间
-    if not promotion_buy_minutes:
-        return buy_minutes
+    #如果未设置优惠信息,则不赠送,直接返回0
+    if  not promotion_buy_minutes or buy_minutes < promotion_buy_minutes:
+        return 0
 
     present_minutes = buy_minutes / promotion_buy_minutes * promotion_present_minutes
 

@@ -596,10 +596,12 @@
     <!--买钟-->
     <t t-name="room-buytime-template">
         <div class='well well-small'>
+            <!--
             <div class="modal-header">
                 <button type="button" class="close btn-cancel">&#x00D7;</button>
                 <h5>预售-买钟</h5>
             </div>
+            -->
             <div class='well well-small'>
                 <form class="form-horizontal" id="room_buytime_form">
                     <fieldset>

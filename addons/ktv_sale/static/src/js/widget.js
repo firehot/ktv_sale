@@ -702,7 +702,8 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			var self = this;
 			return this.call_server_func().pipe(function(ret) {
 				self.model.set(ret);
-			}).then(self.trigger('re_calculate_fee'));
+                self.trigger('re_calculate_fee');
+			});
 		},
 		//re_calculate_fee callback
 		//子类可添加callback函数
@@ -1062,6 +1063,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
         //重绘制界面
         _refresh : function(){
             //更新赠送时长,到钟时间
+            console.debug("重新计算赠送时间:" + this.model.get('present_minutes'));
             this.$("#present_minutes").val(this.model.get("present_minutes"));
             this.$("#close_time").val(this.model.get("context_close_time_str"));
         },
@@ -1107,8 +1109,8 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		start: function() {
 			this._super();
             //设置计费方式为当前包厢默认计费方式
+            this.$("#fee_type_id,#price_class_id,#buy_minutes,#persons_count").change(_.bind(this._onchange_fields,this));
             this.$("#fee_type_id").val(this.room.get("fee_type_id")[0])
-            this.$("#fee_type_id,#price_class_id,#buy_minutes,#persons_count").change(_.bind(this._re_calculate_fee,this));
             this._onchange_fields();
 		}
 	});

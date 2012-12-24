@@ -663,7 +663,6 @@ openerp.ktv_sale.model = function(erp_instance) {
 			this.bind('change:open_time change:close_time', this._set_context_datetime, this);
             console.debug("in parent class initialize");
 		},
-
 		//将数据上传至服务器
 		push: function(json_obj) {
 			var json_obj = this.export_as_json();
