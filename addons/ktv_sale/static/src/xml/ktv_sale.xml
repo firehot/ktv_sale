@@ -366,7 +366,7 @@
             </tr>
             <tr>
                 <th>应收合计:</th>
-                <td colspan='9'><span class='sum_should_fee'></span></td>
+                <td colspan='9'><span class='sum_fee'></span></td>
             </tr>
             <tr>
                 <th>折扣金额:</th>
@@ -376,7 +376,7 @@
             </tr>
             <tr>
                 <th>折后金额:</th>
-                <td colspan='9'><span class='after_discount_fee'></span></td>
+                <td colspan='9'><span class='sum_should_fee'></span></td>
             </tr>
             <tr class='hide member-card-wrapper'>
                 <td colspan='10'>

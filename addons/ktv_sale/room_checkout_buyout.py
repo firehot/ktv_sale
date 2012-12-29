@@ -85,8 +85,13 @@ class room_checkout_buyout(osv.osv):
         #TODO
         #if 'discounter_id' in context and context['discounter_id']:
 
-        ret['after_discount_fee'] = sum_hourly_fee - ret['discount_fee']
-        ret['cash_fee'] = ret['after_discount_fee']
+
+
+        #默认情况下,重新计算后,费用做如下处理:
+
+
+        ret['sum_should_fee'] = sum_hourly_fee - ret['discount_fee']
+        ret['cash_fee'] = ret['sum_should_fee']
         ret['act_pay_fee'] = ret['cash_fee']
         ret['change_fee'] = 0.0
         ret.update({

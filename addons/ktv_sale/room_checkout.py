@@ -10,6 +10,32 @@ _logger = logging.getLogger(__name__)
 class room_checkout(osv.osv):
     _name="ktv.room_checkout"
 
+    def _compute_sum_fee(self,cr,uid,ids,name,args,context = None):
+        """
+        计算以下合计费用：
+        sum_fee 合计应收金额
+        sum_discount_fee 合计折扣金额
+        sum_should_fee 应付金额
+        change_fee 找零金额
+        :return dict id => values
+        """
+        ret = {}
+        for record in self.browse(cr,uid,ids,context):
+            sum_fee = record.room_fee + record.sum_hourly_fee + record.sum_hourly_fee_p + record.service_fee + record.sum_buffet_fee + record.changed_room_hourly_fee + record.merged_room_hourly_fee + record.guest_damage_fee
+            sum_discount_fee = record.member_room_fee_discount_fee + record.discount_card_room_fee_discount_fee + record.discounter_room_fee_discount_fee
+            sum_should_fee = sum_fee - sum_discount_fee
+            #找零金额 = 实际付款金额 - 现金支付金额
+            change_fee = record.act_pay_fee - record.cash_fee
+
+            ret[record.id] = {
+                    'sum_fee' :  sum_fee,
+                    'sum_discount_fee' : sum_discount_fee,
+                    'sum_should_fee' : sum_should_fee,
+                    'change_fee' : change_fee,
+                    }
+        return ret
+
+
     _columns = {
             "room_operate_id" : fields.many2one("ktv.room_operate","room_operate_id",required = True,help="结账单所对应的room_operate对象"),
             "bill_datetime" : fields.datetime("bill_datetime",required = True,readonly = True,help="结账时间"),
@@ -25,7 +51,7 @@ class room_checkout(osv.osv):
             "room_fee" : fields.float("room_fee", digits_compute= dp.get_precision('Ktv Room Default Precision'),help="包厢费"),
             "service_fee_rate" : fields.float("service_fee_rate",digits = (15,4),help="服务费费率"),
             "service_fee" : fields.float("service_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="服务费"),
-            "sum_hourly_fee" : fields.float("sum_hourly_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="合计钟点费"),
+            "sum_hourly_fee" : fields.float("sum_hourly_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="合计钟点费,如果是买断时,则是买断费用,如果是买钟点时,则是买钟费用"),
             "sum_hourly_fee_p" : fields.float("sum_hourly_fee_p",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="茶位费合计-按位钟点费"),
             "sum_buffet_fee" : fields.float("sum_buffet_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="自助餐费用合计"),
             "changed_room_hourly_fee" : fields.float("changed_room_hourly_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="换房费用"),
@@ -86,7 +112,11 @@ class room_checkout(osv.osv):
             "song_ticket_fee_diff" : fields.float("song_ticket_fee_diff",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="欢唱券抵扣费用差额"),
 
             "act_pay_fee" : fields.float("act_pay_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="付款金额"),
-
+            #以下为计算字段
+            "sum_fee" : fields.function(_compute_sum_fee,multi="sum_fee",string="合计应收房费,打折之前的费用",digits_compute = dp.get_precision('Ktv Room Default Precision')),
+            "sum_discount_fee" : fields.function(_compute_sum_fee,multi = "sum_fee",string="合计折扣费用",digits_compute = dp.get_precision('Ktv Room Default Precision')),
+            "sum_should_fee" : fields.function(_compute_sum_fee,multi = "sum_fee",string="合计应付费用(折后费用)",digits_compute = dp.get_precision('Ktv Room Default Precision')),
+            "change_fee" : fields.function(_compute_sum_fee,multi="sum_fee",string="找零金额",digits_compute = dp.get_precision('Ktv Room Default Precision')),
             }
 
     _defaults = {
@@ -112,7 +142,20 @@ class room_checkout(osv.osv):
             "uncheckout_drinks_fee" : 0,
             "minimum_drinks_fee" : 0,
             "guest_damage_fee" : 0,
+            "member_room_fee_discount_rate" : 0,
+            "member_room_fee_discount_fee" : 0,
+            "discount_card_room_fee_discount_rate" : 0,
+            "discount_card_room_fee_discount_fee" : 0,
+            "discounter_room_fee_discount_rate" : 0,
+            "discounter_room_fee_discount_fee" : 0,
+            "cash_fee" : 0,
+            "member_card_fee" : 0,
+            "sales_voucher_fee" : 0,
+            "credit_card_fee" : 0,
+            "on_credit_fee" : 0,
+            "free_fee" : 0,
             }
+
 
     def process_operate(self,cr,uid,room_checkout_vals):
         '''

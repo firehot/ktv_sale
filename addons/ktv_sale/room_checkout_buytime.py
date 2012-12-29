@@ -177,9 +177,9 @@ class room_checkout_buytime(osv.osv):
         #计算其他费用
         #服务费
         ret['service_fee'] = (ret['room_fee'] + ret['sum_hourly_fee'] + ret['sum_hourly_fee_p'])*ret['service_fee_rate']
-        ret['sum_should_fee'] = ret['room_fee'] + ret['sum_hourly_fee'] + ret['sum_hourly_fee_p'] + ret['service_fee']
-        ret['after_discount_fee'] = ret['sum_should_fee'] - ret['discount_fee']
-        ret['cash_fee'] = ret['after_discount_fee']
+        ret['sum_fee'] = ret['room_fee'] + ret['sum_hourly_fee'] + ret['sum_hourly_fee_p'] + ret['service_fee']
+        ret['sum_should_fee'] = ret['sum_fee'] - ret['discount_fee']
+        ret['cash_fee'] = ret['sum_should_fee']
         ret['act_pay_fee'] = ret['cash_fee']
         ret['change_fee'] = 0.0
         ret.update({

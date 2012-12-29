@@ -736,10 +736,10 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			this.$('.changed_room_hourly_fee').html(this.model.get('changed_room_hourly_fee'));
 			this.$('.changed_room_minutes').html(this.model.get('changed_room_minutes'));
 			this.$('.merged_room_hourly_fee').html(this.model.get('merged_room_hourly_fee'));
-			this.$('.sum_should_fee').html(this.model.get('sum_should_fee'));
+			this.$('.sum_fee').html(this.model.get('sum_fee'));
 			this.$('.discount_fee').html(this.model.get('discount_fee'));
 			this.$('.discount_rate').html(this.model.get('discount_rate'));
-			this.$('.after_discount_fee').html(this.model.get('after_discount_fee'));
+			this.$('.sum_should_fee').html(this.model.get('sum_should_fee'));
 			this.$('.cash_fee').val(this.model.get('cash_fee'));
 			this.$('.member_card_fee').val(this.model.get('member_card_fee'));
 			this.$('.credit_card_fee').val(this.model.get('credit_card_fee'));
