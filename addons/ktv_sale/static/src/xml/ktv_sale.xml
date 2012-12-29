@@ -345,7 +345,7 @@
                 <th>包厢费:</th>
                 <td><span class="room_fee"></span></td>
                 <th>钟点费:</th>
-                <td><span class='hourly_fee'></span></td>
+                <td><span class='sum_hourly_fee'></span></td>
                 <th>换房费用:</th>
                 <td><span class='changed_room_hourly_fee'></span></td>
                 <th>换房时长:</th>

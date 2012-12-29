@@ -20,7 +20,6 @@ class room_checkout_buyout(osv.osv):
 
     _columns = {
             "buyout_config_id" : fields.many2one("ktv.buyout_config","buyout_config_id",required = True,select = True,help="买断名称"),
-            "buyout_fee" : fields.float("buyout_fee",help="买断费用",digits_compute = dp.get_precision('Ktv Room Default Precision')),
             }
     _defaults = {
             #默认情况下,计费方式是买断
@@ -40,7 +39,7 @@ class room_checkout_buyout(osv.osv):
         active_buyout_config = self.pool.get('ktv.buyout_config').get_active_buyout_fee(cr,uid,context['buyout_config_id'])
         the_room = self.pool.get('ktv.room').browse(cr,uid,context["room_id"])
 
-        hourly_fee = active_buyout_config['buyout_fee']
+        sum_hourly_fee = active_buyout_config['buyout_fee']
         ret = {
                 'room_id' : context['room_id'],
                 'open_time': active_buyout_config['time_from'],
@@ -48,8 +47,7 @@ class room_checkout_buyout(osv.osv):
                 'consume_minutes' : active_buyout_config['buyout_time'],
                 #买断时,不收取其他费用,仅仅收取钟点费
                 'buyout_config_id' : context['buyout_config_id'],
-                'buyout_fee' : hourly_fee,
-                'hourly_fee' : hourly_fee,
+                'sum_hourly_fee' : sum_hourly_fee,
                 'room_fee' : 0,
                 'service_fee_rate' : 0,
                 'service_fee' : 0,
@@ -58,7 +56,7 @@ class room_checkout_buyout(osv.osv):
                 'changed_room_hourly_fee' : 0,
                 'changed_room_minutes' : 0,
                 'merged_room_hourly_fee' : 0,
-                'sum_should_fee' : hourly_fee,
+                'sum_should_fee' : sum_hourly_fee,
                 'discount_fee' : 0,
                 'discount_rate' : 0,
                 }
@@ -70,7 +68,7 @@ class room_checkout_buyout(osv.osv):
             discount_card = self.pool.get('ktv.discount_card').browse(cr,uid,context['discount_card_id'])
             ret['discount_card_id'] = context['discount_card_id']
             ret['discount_card_room_fee_discount_rate'] = discount_card_room_fee_discount_rate = discount_card.discount_card_type_id.room_fee_discount
-            ret['discount_card_room_fee_discount_fee'] = discount_card_room_fee_discount_fee = hourly_fee*(100 - discount_card_room_fee_discount_rate)/100
+            ret['discount_card_room_fee_discount_fee'] = discount_card_room_fee_discount_fee = sum_hourly_fee*(100 - discount_card_room_fee_discount_rate)/100
             ret['discount_rate'] = discount_card_room_fee_discount_rate
             ret['discount_fee'] = discount_card_room_fee_discount_fee
 
@@ -78,7 +76,7 @@ class room_checkout_buyout(osv.osv):
             the_member = self.pool.get('ktv.member').browse(cr,uid,context['member_id'])
             ret['member_id'] = context['member_id']
             ret['member_room_fee_discount_rate'] = member_room_fee_discount_rate = the_member.member_class_id.room_fee_discount
-            ret['member_room_fee_discount_fee'] = member_room_fee_discount_fee = hourly_fee*(100 - member_room_fee_discount_rate)/100
+            ret['member_room_fee_discount_fee'] = member_room_fee_discount_fee = sum_hourly_fee*(100 - member_room_fee_discount_rate)/100
             ret['discount_rate'] = member_room_fee_discount_rate
             ret['discount_fee'] = member_room_fee_discount_fee
 
@@ -87,7 +85,7 @@ class room_checkout_buyout(osv.osv):
         #TODO
         #if 'discounter_id' in context and context['discounter_id']:
 
-        ret['after_discount_fee'] = hourly_fee - ret['discount_fee']
+        ret['after_discount_fee'] = sum_hourly_fee - ret['discount_fee']
         ret['cash_fee'] = ret['after_discount_fee']
         ret['act_pay_fee'] = ret['cash_fee']
         ret['change_fee'] = 0.0

@@ -730,7 +730,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			this.$('.room_fee').html(this.model.get('room_fee'));
 			this.$('.service_fee_rate').html(this.model.get('service_fee_rate'));
 			this.$('.service_fee').html(this.model.get('service_fee'));
-			this.$('.hourly_fee').html(this.model.get('hourly_fee'));
+			this.$('.sum_hourly_fee').html(this.model.get('sum_hourly_fee'));
 			this.$('.minimum_fee').html(this.model.get('minimum_fee'));
 			this.$('.minimum_fee_diff').html(this.model.get('minimum_fee_diff'));
 			this.$('.changed_room_hourly_fee').html(this.model.get('changed_room_hourly_fee'));

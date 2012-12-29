@@ -7,80 +7,83 @@
             <field name="type">form</field>
             <field name="arch" type="xml">
                 <form string="buyout config" version="7.0">
-                    <group colspan="4">
-                        <field name="name"/>
-                        <field name="room_type_id"/>
-                        <field name="time_from" widget='float_time' />
-                        <field name="time_to" widget='float_time' />
-                        <field name="test_datetime" />
-                        <field name="break_on_enable" />
-                        <field name="break_on" widget='float_time' attrs="{'readonly' : [('break_on_enable','=',False)]}"/>
-                        <field name="buyout_time" />
-                        <field name="is_member" />
-                        <field name="active" />
-                    </group>
-                    <separator colspan="4" string="设置买断费用信息" />
-                    <html>
-                        <table width="100%%">
-                            <tr>
-                                <td>
-                                    <field name="mon_buyout_enable" nolabel="1" colspan="1" />
-                                </td>
-                                <td>
-                                    <field name="mon_buyout_fee" string="星期一" colspan="1" />
-                                </td>
-                                <td>
-                                    <field name="tue_buyout_enable" nolabel="1" />
-                                </td>
-                                <td>
-                                    <field name="tue_buyout_fee" string="星期二" />
-                                </td>
-                                <td>
-                                    <field name="wed_buyout_enable" nolabel="1" />
-                                </td>
-                                <td>
-                                    <field name="wed_buyout_fee" string="星期三" />
-                                </td>
-                                <td>
-                                    <field name="thu_buyout_enable" nolabel="1" />
-                                </td>
-                                <td>
-                                    <field name="thu_buyout_fee" string="星期四" />
-                                </td>
-                            </tr>
+                    <sheet>
+                        <group col="4">
+                            <field name="name"/>
+                            <field name="room_type_id"/>
+                            <field name="time_from" widget='float_time' />
+                            <field name="time_to" widget='float_time' />
+                            <field name="break_on_enable" />
+                            <field name="break_on" widget='float_time' attrs="{'readonly' : [('break_on_enable','=',False)]}"/>
+                            <field name="buyout_time" />
+                            <field name="is_member" />
+                            <field name="active" />
+                        </group>
+                        <html>
+                            <table class='table'>
+                                <caption>设置买断费用</caption>
+                                <tr>
+                                    <td>
+                                        <field name="mon_buyout_enable"/><span>星期一</span>
+                                    </td>
+                                    <td>
+                                        <field name="mon_buyout_fee"/>
+                                    </td>
+                                    <td>
+                                        <field name="tue_buyout_enable"/><span>星期二</span>
+                                    </td>
+                                    <td>
+                                        <field name="tue_buyout_fee"/>
+                                    </td>
+                                    <td>
+                                        <field name="wed_buyout_enable"/><span>星期三</span>
+                                    </td>
+                                    <td>
+                                        <field name="wed_buyout_fee"/>
+                                    </td>
+                                    <td>
+                                        <field name="thu_buyout_enable"/><span>星期四</span>
+                                    </td>
+                                    <td>
+                                        <field name="thu_buyout_fee"/>
+                                    </td>
+                                </tr>
 
-                            <tr>
-                                <td>
+                                <tr>
+                                    <td>
 
-                                    <field name="fri_buyout_enable" nolabel="1" />
-                                </td>
-                                <td>
+                                        <field name="fri_buyout_enable" /><span>星期五</span>
+                                    </td>
+                                    <td>
 
-                                    <field name="fri_buyout_fee" string="星期五" />
-                                </td>
-                                <td>
+                                        <field name="fri_buyout_fee" />
+                                    </td>
+                                    <td>
 
-                                    <field name="sat_buyout_enable" nolabel="1" />
-                                </td>
-                                <td>
+                                        <field name="sat_buyout_enable" /><span>星期六</span>
+                                    </td>
+                                    <td>
 
-                                    <field name="sat_buyout_fee" string="星期六" />
-                                </td>
+                                        <field name="sat_buyout_fee" />
+                                    </td>
 
-                                <td>
-                                    <field name="sun_buyout_enable" nolabel="1" />
-                                </td>
-                                <td>
-                                    <field name="sun_buyout_fee" string="星期日" />
-                                </td>
-                                <td>
-                                </td>
-                                <td>
-                                    <field name="special_day_buyout_fee" string="特殊日" />
-                                </td>
-                            </tr>
-                        </table>
-                    </html>
+                                    <td>
+                                        <field name="sun_buyout_enable"/><span>星期日</span>
+                                    </td>
+                                    <td>
+                                        <field name="sun_buyout_fee"/>
+                                    </td>
+                                    <td>
+                                        <span>特殊日</span>
+                                    </td>
+                                    <td>
+                                        <field name="special_day_buyout_fee"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </html>
+
+                    </sheet>
                 </form>
             </field>
         </record>
@@ -107,7 +110,7 @@
                 </tree>
             </field>
         </record>
-         <record id="view_buyout_filter" model="ir.ui.view">
+        <record id="view_buyout_filter" model="ir.ui.view">
             <field name="name">ktv.buyout.list.filter</field>
             <field name="model">ktv.buyout_config</field>
             <field name="arch" type="xml">

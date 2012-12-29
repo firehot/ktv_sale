@@ -69,4 +69,3 @@ class room_operate(osv.osv):
         :params dict cron_vals 定时任务相关属性
         """
         return self.pool.get('ir.cron').create(cr,uid,cron_vals)
-

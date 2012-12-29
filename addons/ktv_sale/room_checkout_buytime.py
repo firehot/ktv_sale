@@ -121,7 +121,7 @@ class room_checkout_buytime(osv.osv):
                 "consume_minutes" : consume_minutes,
                 "present_minutes" : present_minutes,
                 "room_fee" : room_fee,
-                "hourly_fee" : sum_origin_hourly_fee,
+                "sum_hourly_fee" : sum_origin_hourly_fee,
                 "sum_hourly_fee_p" : sum_origin_hourly_fee_p,
                 "changed_room_hourly_fee" : 0,
                 "changed_room_minutes" : 0,
@@ -155,7 +155,7 @@ class room_checkout_buytime(osv.osv):
             ret.update({
                 "service_fee_rate" : 0,
                 "service_fee" : 0,
-                "hourly_fee" : 0,
+                "sum_hourly_fee" : 0,
                 "sum_hourly_fee_p" : 0,
                 })
 
@@ -170,14 +170,14 @@ class room_checkout_buytime(osv.osv):
             ret.update({"sum_hourly_fee_p" : 0 })
        #按位钟点费
         elif fee_type.fee_type_code == fee_type.FEE_TYPE_HOURLY_FEE_P:
-            ret.update({"room_fee" : 0,"hourly_fee" : 0})
+            ret.update({"room_fee" : 0,"sum_hourly_fee" : 0})
         else:
             #NOTE 其他计费方式不适用
             pass
         #计算其他费用
         #服务费
-        ret['service_fee'] = (ret['room_fee'] + ret['hourly_fee'] + ret['sum_hourly_fee_p'])*ret['service_fee_rate']
-        ret['sum_should_fee'] = ret['room_fee'] + ret['hourly_fee'] + ret['sum_hourly_fee_p'] + ret['service_fee']
+        ret['service_fee'] = (ret['room_fee'] + ret['sum_hourly_fee'] + ret['sum_hourly_fee_p'])*ret['service_fee_rate']
+        ret['sum_should_fee'] = ret['room_fee'] + ret['sum_hourly_fee'] + ret['sum_hourly_fee_p'] + ret['service_fee']
         ret['after_discount_fee'] = ret['sum_should_fee'] - ret['discount_fee']
         ret['cash_fee'] = ret['after_discount_fee']
         ret['act_pay_fee'] = ret['cash_fee']
