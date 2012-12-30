@@ -16,7 +16,7 @@
 -
   !python {model: ktv.room }: |
     rp = self.find_or_create_room_operate(cr,uid,ref("ktv_room_1"))
-    assert rp,'创建room_operate失败'
+    assert rp
 -
   应可正常创建room_opens对象
 -
@@ -127,4 +127,55 @@
     ret = self.process_operate(cr,uid,ret)
     assert ret['room']['state'] == 'buytime'
 
+-
+  应能正确获取包厢最后一次预售结账信息(包括买断、买钟、续钟)
+-
+  !python {model : ktv.room}: |
+    #先进行一次买钟处理
+    buytime_vals = {
+    "osv_name" : 'ktv.room_checkout_buytime',
+    "room_id" : ref('ktv_room_1'),
+    "buy_minutes" : 60,
+    "fee_type_id" : ref("fee_type_2"),
+    "price_class_id" : ref('price_class_1'),
+    "guest_name" : "程东辉",
+    "persons_count" : 8,
+    }
+    ret = self.pool.get('ktv.room_checkout_buytime').re_calculate_fee(cr,uid,buytime_vals)
+    ret.update(buytime_vals)
+    ret['room_id'] = ref('ktv_room_1')
+    ret = self.pool.get('ktv.room_checkout_buytime').process_operate(cr,uid,ret)
+    #获取最后一次结账信息
+    the_room = self.browse(cr,uid,ref('ktv_room_1'))
+    room_operate_id = the_room.current_room_operate_id.id
+    last_checkout=self.pool.get('ktv.room_operate').get_presale_last_checkout(cr,uid,room_operate_id)
+    assert(last_checkout)
+-
+  应能够正确保存买断换房信息
+-
+  !python {model: ktv.room_operate}: |
+    #先进行一次买断操作
+    buyout_vals = {
+    "osv_name" : 'ktv.room_checkout_buyout',
+    "room_id" : ref('ktv_room_1'),
+    "buyout_config_id" : ref('buyout_config_1'),
+    "guest_name" : "程东辉",
+    "persons_count" : 8,
+    }
+    ret = self.pool.get('ktv.room_checkout_buyout').re_calculate_fee(cr,uid,buyout_vals)
+    ret.update(buyout_vals)
+    ret['room_id'] = ref('ktv_room_1')
+    ret = self.process_operate(cr,uid,ret)
+    #进行换房操作
+    room_change_buyout = {
+    "osv_name" : 'ktv.room_checkout_buyout',
+    "changed_room_id" : ref('ktv_room_2'),
+    "changed_buyout_config_id" : ref('buyout_config_2'),
+    }
+    #重新计算运费
+    ret2 = self.pool.get('ktv.room_change_checkout_buyout').re_calculate_fee(cr,uid,room_change_buyout)
+    ret2.update(room_change_buyout)
+    #保存换房信息操作
+    ret = self.process_operate(cr,uid,ret2)
+    assert(ret)
 

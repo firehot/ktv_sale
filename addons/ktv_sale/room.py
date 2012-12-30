@@ -63,7 +63,7 @@ class room(osv.osv):
             'description' : fields.text('description',size = 255),
             'current_room_operate_id' : fields.many2one('ktv.room_operate','current_room_operate_id',readonly = True,help = "当前包厢操作对象"),
             'open_time' : fields.datetime('open_time',help = "开房时间",readonly = True),
-            'presale_break_on_time' : fields.datetime('presale_break_on_time',help ="预售到钟时间(包括买钟和买断)",readonly = True),
+            'close_time' : fields.datetime('close_time',help ="预售到钟时间(包括买钟和买断)",readonly = True),
             'member_id' : fields.many2one('ktv.member','member_id',help="会员编码"),
             'active' : fields.boolean('active'),
             }
@@ -182,4 +182,24 @@ class room(osv.osv):
         """
         vals = self.get_current_fee(cr,uid,room_id,context)
         return (room_id,vals['room_fee'],vals['minimum_fee'],vals['minimum_fee_p'],vals['minimum_persons'],vals['is_member_hourly_fee'],vals['hourly_fee'],vals['hourly_discount'],vals['hourly_fee_p'],vals['hourly_p_discount'])
+
+
+    def get_presale_last_checkout(self,cr,uid,id,context = None):
+        """
+        获取当前包厢最近的checkout信息,包括以下信息:
+        room_checkout_buytime
+        room_checkout_buyout
+        room_change_checkout_buytime
+        room_change_checkout_buyout
+        当前包厢状态应为:buytime或buyout
+        :return browse_record
+        """
+        the_room = self.browse(cr,uid,id,context)
+        if not the_room.current_room_operate_id and not the_room.state in [room.STATE_BUYTIME,room.STATE_BUYOUT]:
+            return None
+        else:
+            return self.pool.get('ktv.room_operate').get_presale_last_checkout(cr,uid,the_room.current_room_operate_id.id)
+
+
+
 

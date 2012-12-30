@@ -21,6 +21,8 @@ class room_checkout_buytime(osv.osv):
 
     _inherit = "ktv.room_checkout"
 
+    _order = "bill_datetime DESC"
+
     _defaults = {
             #默认开房时间是当前时间
             "open_time" :  datetime.now(),

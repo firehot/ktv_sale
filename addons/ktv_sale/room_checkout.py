@@ -10,6 +10,8 @@ _logger = logging.getLogger(__name__)
 class room_checkout(osv.osv):
     _name="ktv.room_checkout"
 
+    _order = "bill_datetime DESC"
+
     def _compute_sum_fee(self,cr,uid,ids,name,args,context = None):
         """
         计算以下合计费用：
@@ -54,7 +56,11 @@ class room_checkout(osv.osv):
             "sum_hourly_fee" : fields.float("sum_hourly_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="合计钟点费,如果是买断时,则是买断费用,如果是买钟点时,则是买钟费用"),
             "sum_hourly_fee_p" : fields.float("sum_hourly_fee_p",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="茶位费合计-按位钟点费"),
             "sum_buffet_fee" : fields.float("sum_buffet_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="自助餐费用合计"),
-            "changed_room_hourly_fee" : fields.float("changed_room_hourly_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="换房费用"),
+            "changed_room_fee" : fields.float("changed_room_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="换房应补包厢费用"),
+            "changed_room_sum_hourly_fee" : fields.float("changed_room_sum_hourly_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="换房应补钟点费"),
+            "changed_room_sum_hourly_fee_p" : fields.float("changed_room_sum_hourly_fee_p",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="换房应补按位钟点费"),
+            "changed_room_sum_buffet_fee" : fields.float("changed_room_sum_buffet_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="换房应补自助餐费"),
+            "changed_room_service_fee" : fields.float("changed_room_service_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="换房应补服务费"),
             "changed_room_minutes" : fields.integer("changed_room_minutes",help="换房消费时长度"),
             "merged_room_hourly_fee" : fields.float("merged_room_hourly_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="并房费用"),
             #最低消费暂不使用
@@ -132,7 +138,11 @@ class room_checkout(osv.osv):
             "sum_hourly_fee" : 0,
             "sum_hourly_fee_p" : 0,
             "sum_buffet_fee" : 0,
-            "changed_room_hourly_fee" : 0,
+            "changed_room_fee" : 0,
+            "changed_room_sum_hourly_fee" : 0,
+            "changed_room_sum_hourly_fee_p" : 0,
+            "changed_room_sum_buffet_fee" : 0,
+            "changed_room_service_fee" : 0,
             "changed_room_minutes" : 0,
             "merged_room_hourly_fee" : 0,
             "minimum_fee" : 0,

@@ -25,16 +25,32 @@ class room_operate(osv.osv):
 
     _columns = {
             "operate_date" : fields.datetime('operate_datetime',required = True),
-            "room_id" : fields.many2one('ktv.room','room_id',required = True),
+            "room_id" : fields.many2one('ktv.room','room_id',required = True,help="与此操作关联的包厢id"),
+            "ref_room_operate_id" : fields.many2one('ktv.room_operate','ref_room_operate_id',help = "原包厢操作对象,换房时会存在"),
             "bill_no" : fields.char("bill_no",size = 64,required = True,help = "账单号"),
             "room_scheduled_ids" : fields.one2many("ktv.room_scheduled","room_operate_id",help="预定信息列表"),
             "room_opens_ids" : fields.one2many("ktv.room_opens","room_operate_id",help="开房信息列表"),
+            "room_checkout_ids" : fields.one2many("ktv.room_checkout","room_operate_id",help="包厢结账信息列表"),
+            "room_checkout_buyout_ids" : fields.one2many("ktv.room_checkout_buyout","room_operate_id",help="包厢买断结账信息列表"),
+            "room_checkout_buytime_ids" : fields.one2many("ktv.room_checkout_buytime","room_operate_id",help="包厢买钟结账信息列表"),
+            "room_change_checkout_buytime_ids" : fields.one2many("ktv.room_change_checkout_buytime","room_operate_id",help="买钟-换房结账信息列表"),
+            "room_change_checkout_buyout_ids" : fields.one2many("ktv.room_change_checkout_buyout","room_operate_id",help="买断-换房结账信息列表"),
             }
 
     _defaults = {
             'operate_date' : fields.datetime.now,
             'bill_no': lambda obj, cr, uid, context: obj.pool.get('ir.sequence').get(cr, uid, 'ktv.room_operate'),
             }
+
+    def _get_current_room_id(self,cr,uid,ids,fieldnames,args,context = None):
+        """
+        获取当前包厢id,由于存在换房情况,所以当前room_id可能并不是current_room_id
+        """
+        ret = dict()
+        the_room
+        for record in self.browse(cr,uid,ids):
+            ret[record.id]['current_room_id'] = False
+
 
     def process_operate(self,cr,uid,operate_values):
         """
@@ -69,3 +85,30 @@ class room_operate(osv.osv):
         :params dict cron_vals 定时任务相关属性
         """
         return self.pool.get('ir.cron').create(cr,uid,cron_vals)
+
+    def get_presale_last_checkout(self,cr,uid,id,context = None):
+        """
+        获取给定包厢id的最后一次预售结账信息
+        :params integer room_id 要查询的包厢id
+        :return dict 最后一次包厢结账信息
+                ret['model_name'] string 返回的最后一次结账的对象类型
+                ret['vals'] dict 最后一次结账信息数据
+                无最后一次结账信息,返回None
+        """
+        cur_operate_id = self.browse(cr,uid,id,context)
+
+        #如果当前没有包厢操作信息,或包厢不处于buytime buyout状态时,则返回None
+        if not cur_operate_id:
+            return None
+
+        #先判断有无换房结算信息,换房结算信息是最后一次结账信息
+        #_logger.debug("cur_operate_id 's attr :  %s " % dir(cur_operate_id))
+        last_checkouts = cur_operate_id.room_change_checkout_buyout_ids or cur_operate_id.room_change_checkout_buytime_ids
+
+        #如果换房结算信息不存在,则取room_checkout_buyout或room_checkout_buytime
+        if not last_checkouts:
+            last_checkouts = cur_operate_id.room_checkout_buyout_ids or cur_operate_id.room_checkout_buytime_ids
+
+        if not last_checkouts:
+            return None
+        return last_checkouts[0]

@@ -18,6 +18,8 @@ class room_checkout_buyout(osv.osv):
 
     _inherit = "ktv.room_checkout"
 
+    _order = "bill_datetime DESC"
+
     _columns = {
             "buyout_config_id" : fields.many2one("ktv.buyout_config","buyout_config_id",required = True,select = True,help="买断名称"),
             }
