@@ -169,11 +169,14 @@
     #进行换房操作
     room_change_buyout = {
     "osv_name" : 'ktv.room_checkout_buyout',
+    "origin_room_id" : ref('ktv_room_1'),
     "changed_room_id" : ref('ktv_room_2'),
     "changed_buyout_config_id" : ref('buyout_config_2'),
     }
     #重新计算运费
     ret2 = self.pool.get('ktv.room_change_checkout_buyout').re_calculate_fee(cr,uid,room_change_buyout)
+    ret2["room_id"] = room_change_buyout['changed_room_id']
+    ret2["buyout_config_id"] = room_change_buyout['changed_buyout_config_id']
     ret2.update(room_change_buyout)
     #保存换房信息操作
     ret = self.process_operate(cr,uid,ret2)

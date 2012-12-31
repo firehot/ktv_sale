@@ -58,6 +58,7 @@ class room_checkout_buyout(osv.osv):
                 'changed_room_hourly_fee' : 0,
                 'changed_room_minutes' : 0,
                 'merged_room_hourly_fee' : 0,
+                'sum_fee' : sum_hourly_fee,
                 'sum_should_fee' : sum_hourly_fee,
                 'discount_fee' : 0,
                 'discount_rate' : 0,

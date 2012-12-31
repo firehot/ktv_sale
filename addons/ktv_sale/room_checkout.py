@@ -23,7 +23,7 @@ class room_checkout(osv.osv):
         """
         ret = {}
         for record in self.browse(cr,uid,ids,context):
-            sum_fee = record.room_fee + record.sum_hourly_fee + record.sum_hourly_fee_p + record.service_fee + record.sum_buffet_fee + record.changed_room_hourly_fee + record.merged_room_hourly_fee + record.guest_damage_fee
+            sum_fee = record.room_fee + record.sum_hourly_fee +  record.service_fee +  record.changed_room_sum_hourly_fee + record.changed_room_fee + record.merged_room_hourly_fee + record.guest_damage_fee
             sum_discount_fee = record.member_room_fee_discount_fee + record.discount_card_room_fee_discount_fee + record.discounter_room_fee_discount_fee
             sum_should_fee = sum_fee - sum_discount_fee
             #找零金额 = 实际付款金额 - 现金支付金额
@@ -53,13 +53,9 @@ class room_checkout(osv.osv):
             "room_fee" : fields.float("room_fee", digits_compute= dp.get_precision('Ktv Room Default Precision'),help="包厢费"),
             "service_fee_rate" : fields.float("service_fee_rate",digits = (15,4),help="服务费费率"),
             "service_fee" : fields.float("service_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="服务费"),
-            "sum_hourly_fee" : fields.float("sum_hourly_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="合计钟点费,如果是买断时,则是买断费用,如果是买钟点时,则是买钟费用"),
-            "sum_hourly_fee_p" : fields.float("sum_hourly_fee_p",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="茶位费合计-按位钟点费"),
-            "sum_buffet_fee" : fields.float("sum_buffet_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="自助餐费用合计"),
+            "sum_hourly_fee" : fields.float("sum_hourly_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="合计钟点费,如果是买断时,则是买断费用,如果是买钟点时,则是买钟费用;如果是自助餐(buffet),则是自助餐费用;如果是按位计钟点,则是按位钟点费合计"),
             "changed_room_fee" : fields.float("changed_room_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="换房应补包厢费用"),
             "changed_room_sum_hourly_fee" : fields.float("changed_room_sum_hourly_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="换房应补钟点费"),
-            "changed_room_sum_hourly_fee_p" : fields.float("changed_room_sum_hourly_fee_p",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="换房应补按位钟点费"),
-            "changed_room_sum_buffet_fee" : fields.float("changed_room_sum_buffet_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="换房应补自助餐费"),
             "changed_room_service_fee" : fields.float("changed_room_service_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="换房应补服务费"),
             "changed_room_minutes" : fields.integer("changed_room_minutes",help="换房消费时长度"),
             "merged_room_hourly_fee" : fields.float("merged_room_hourly_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="并房费用"),
@@ -136,12 +132,8 @@ class room_checkout(osv.osv):
             "service_fee_rate" : 0,
             "service_fee" : 0,
             "sum_hourly_fee" : 0,
-            "sum_hourly_fee_p" : 0,
-            "sum_buffet_fee" : 0,
             "changed_room_fee" : 0,
             "changed_room_sum_hourly_fee" : 0,
-            "changed_room_sum_hourly_fee_p" : 0,
-            "changed_room_sum_buffet_fee" : 0,
             "changed_room_service_fee" : 0,
             "changed_room_minutes" : 0,
             "merged_room_hourly_fee" : 0,

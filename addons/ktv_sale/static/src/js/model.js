@@ -337,6 +337,8 @@ openerp.ktv_sale.model = function(erp_instance) {
 		initialize: function(attributes) {
 			Backbone.Model.prototype.initialize.apply(this, arguments);
 			this.set({
+                //最后一次结账信息
+                "last_checkout" : new Backbone.Model(),
 				//时段低消设置
 				"minimum_fee_config_lines": new Backbone.Collection(),
 				//设置包厢时段钟点费
@@ -455,6 +457,8 @@ openerp.ktv_sale.model = function(erp_instance) {
 				});
 			});
 			ret.hourly_fee_promotion_lines = hourly_fee_promotion_lines;
+            //最终结账信息
+            ret.last_checkout = this.get('last_checkout').toJSON();
 
 			return ret;
 		},
@@ -494,11 +498,21 @@ openerp.ktv_sale.model = function(erp_instance) {
 				"room_type_id": the_room.get("room_type_id")[0]
 			});
 		},
+        _get_last_checkout : function(){
+            var self = this;
+			var the_room = this.get("room");
+            return new erp_instance.web.Model('ktv.room').get_func('get_presale_last_checkout_dict')(the_room.get("id")).pipe(function(result){
+                if(result && result.id){
+                    self.get("last_checkout").set(result);
+                }
+            });
+        },
 		//包厢类别id发生变化
 		_on_room_type_id_change: function() {
 			var self = this;
 			var room = this.get("room");
 			var room_type_id = this.get("room_type_id");
+            //获取包厢最后一次结账信息
 			//获取room_type完整信息
 			model.fetch_by_osv_name("ktv.room_type", {
 				"domain": [["id", "=", room_type_id]]
@@ -552,7 +566,7 @@ openerp.ktv_sale.model = function(erp_instance) {
 					minimum_persons: minimum_persons
 				});
 			}).then(function() {
-				return $.when(self._set_fee_type(), self._set_minimum_fee(), self._set_hourly_fee_discount(), self._set_buyout_config(), self._set_buffet_config(), self._set_hourly_fee_promotion()).then(function() {
+				return $.when(self._get_last_checkout(),self._set_fee_type(), self._set_minimum_fee(), self._set_hourly_fee_discount(), self._set_buyout_config(), self._set_buffet_config(), self._set_hourly_fee_promotion()).then(function() {
 					self.ready.resolve();
 				});
 			});
@@ -776,6 +790,10 @@ openerp.ktv_sale.model = function(erp_instance) {
 			return json;
 		}
 	});
+    //换房-买断对象
+    model.RoomChangeCheckoutBuyout = model.BaseRoomOperate.extend({
+        "osv_name" : 'ktv.room_change_checkout_buyout'
+    });
 
 	//买钟对象
 	model.RoomCheckoutBuytime = model.BaseRoomOperate.extend({

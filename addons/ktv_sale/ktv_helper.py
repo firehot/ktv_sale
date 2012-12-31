@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from osv import fields
 from datetime import date,datetime,time,timedelta
+import openerp.tools as tools
 import logging
 _logger = logging.getLogger(__name__)
 #时间段选择
@@ -136,3 +137,13 @@ def calculate_present_minutes(buy_minutes,promotion_buy_minutes = 0,promotion_pr
     present_minutes = buy_minutes / promotion_buy_minutes * promotion_present_minutes
 
     return present_minutes
+
+def strptime(str_datetime):
+    """
+    以服务器端的格式格式化字符串为datetime类型
+    :params str_datetime string 日期字符串 required
+    :return datetime
+    """
+    return datetime.strptime(str_datetime,tools.DEFAULT_SERVER_DATETIME_FORMAT)
+
+

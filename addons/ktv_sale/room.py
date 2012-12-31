@@ -200,6 +200,23 @@ class room(osv.osv):
         else:
             return self.pool.get('ktv.room_operate').get_presale_last_checkout(cr,uid,the_room.current_room_operate_id.id)
 
+    def get_presale_last_checkout_dict(self,cr,uid,id,context = None):
+        """
+        获取包厢最后一次结账信息,并返回给客户端
+        """
+        last_checkout = self.get_presale_last_checkout(cr,uid,id,context)
+        if not last_checkout:
+            return None
 
+        pool = self.pool.get(last_checkout._table_name)
+        fields_list = pool.fields_get(cr,uid).keys()
+        ret = pool.read(cr,uid,last_checkout.id,fields_list)
+        #当前买断
+        buyout_config_id =  getattr(last_checkout,'buyout_config_id',None)
+        if buyout_config_id:
+            buyout_config_fields_list = self.pool.get('ktv.buyout_config').fields_get(cr,uid).keys()
+            buyout_config_dict = self.pool.get('ktv.buyout_config').read(cr,uid,buyout_config_id.id,buyout_config_fields_list)
 
+        ret['buyout_config_id'] = buyout_config_dict
 
+        return ret
