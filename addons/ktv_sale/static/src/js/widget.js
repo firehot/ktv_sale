@@ -1093,6 +1093,13 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			}));
 			return this;
 		},
+        //显示买断列表
+        _render_buyout_select : function(buyout_list){
+            this.$('.buyout-select-placeholder').empty();
+            this.$('.buyout-select-placeholder').html(qweb_template("buyout-select-template")({'buyout_config_lines' : buyout_list}));
+            this.$('#changed_buyout_config_id').off();
+			this.$('#changed_buyout_config_id').on('change',_.bind(this._onchange_buyout_config_id, this));
+        },
         //刷新包厢最后一次结账信息
         _refresh_last_checkout : function(){
         },
@@ -1106,6 +1113,8 @@ openerp.ktv_sale.widget = function(erp_instance) {
             self.changed_room = changed_room;
             self.changed_room_fee_info = changed_room_fee_info;
             changed_room_fee_info.ready.then(function(){
+                info = changed_room_fee_info.export_as_json();
+                self._render_buyout_select(info.active_buyout_config_lines);
                 self._re_calculate_fee();
             });
         },
@@ -1136,7 +1145,6 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			this._super();
 			//买断变化事件
 			this.$('#changed_room_id').change(_.bind(this._onchange_room_id, this));
-			this.$('#changed_buyout_config_id').change(_.bind(this._onchange_buyout_config_id, this));
 			//如果当前无可用买断,则确定按钮不可用
 			if (this.room_fee_info.get_active_buyout_config_lines().length == 0) {
 				erp_instance.ktv_sale.ktv_room_point.app.alert({

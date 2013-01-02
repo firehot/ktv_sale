@@ -61,9 +61,9 @@ class room_change_checkout_buyout(osv.osv):
         #原包厢结账信息
         last_checkout_info = {
                 #原包厢
-                "room_id" : last_checkout.room_operate_id.room_id,
+                "room_id" : last_checkout.room_operate_id.room_id.id,
                 #原买断信息
-                "buyout_config_id" : last_checkout.buyout_config_id,
+                "buyout_config_id" : last_checkout.buyout_config_id and last_checkout.buyout_config_id.id or None,
                 "open_time" : last_checkout.open_time,
                 #关闭时间是当前时间
                 "close_time" : datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -72,18 +72,18 @@ class room_change_checkout_buyout(osv.osv):
                 #现金
                 "cash_fee" : last_checkout.cash_fee,
                 #信用卡
-                "credit_card_no" : last_checkout.credit_card_no,
+                "credit_card_no" : last_checkout.credit_card_no or None,
                 "credit_card_fee" : last_checkout.credit_card_fee,
                 #会员卡
-                "member_card_id" : last_checkout.member_card_id,
+                "member_card_id" : last_checkout.member_card_id and last_checkout.member_card_id.id or None,
                 "member_card_fee" : last_checkout.member_card_fee,
                 #抵扣券
                 "sales_voucher_fee" : last_checkout.sales_voucher_fee,
                 #挂账
-                "on_crediter_id" : last_checkout.on_crediter_id,
+                "on_crediter_id" : last_checkout.on_crediter_id and last_checkout.on_crediter_id.id or None,
                 "on_credit_fee" : last_checkout.on_credit_fee,
                 #免单
-                "freer_id" : last_checkout.freer_id,
+                "freer_id" : last_checkout.freer_id and last_checkout.freer_id.id or None,
                 "free_fee" : last_checkout.free_fee,
                 #合计付款
                 "sum_should_fee" : last_checkout.sum_should_fee,
@@ -95,7 +95,7 @@ class room_change_checkout_buyout(osv.osv):
         #计算打折信息
         ret = {
                 #原费用信息
-                "last_checkout_info" : last_checkout_info,
+                "last_checkout_info" : {'a' : 1},
                 "origin_room_id" : context["origin_room_id"],
                 "changed_room_id" : context['changed_room_id'],
                 #原room_operate
