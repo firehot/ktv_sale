@@ -336,7 +336,7 @@
     </t>
     <!--结账 partial -->
     <t t-name="room-checkout-partial">
-        <table class='table table-striped table-condensed'>
+        <table class='table table-striped table-condensed table-bordered table-hover'>
             <caption>当前房费一览表</caption>
             <tr>
                 <th>开房时间:</th>
@@ -536,7 +536,7 @@
     </t>
     <!--换房结账-费用列表显示,显示换房前消费情况及换房后应补费用信息-->
     <t t-name="room-change-fee-table-template">
-        <table class='table table-striped table-condensed'>
+        <table class='table table-striped table-condensed table-bordered table-hover'>
             <caption>原房费一览表</caption>
             <tr>
                 <th>开房时间:</th>
@@ -584,7 +584,6 @@
             <div class='well well-small'>
                 <form class="form-horizontal" id="room_buyout_form">
                     <fieldset>
-                        <legend>原包厢信息</legend>
                         <div class="row">
                             <div class="control-group pull-left">
                                 <label class="control-label">原包厢:</label>
@@ -615,10 +614,9 @@
                         </div>
                     </fieldset>
                     <fieldset>
-                        <legend>新包厢信息</legend>
                         <div class="row">
                             <div class="control-group pull-left">
-                                <label class="control-label" for="changed_room_id">包厢名称:</label>
+                                <label class="control-label" for="changed_room_id">新包厢:</label>
                                 <div class="controls">
                                     <select id="changed_room_id" name="changed_room_id">
                                         <t t-foreach="free_rooms" t-as="r">

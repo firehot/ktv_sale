@@ -723,7 +723,7 @@ openerp.ktv_sale.model = function(erp_instance) {
 		"osv_name": "ktv.room_checkout_buyout",
 		defaults: {
 			"persons_count": 4,
-			"after_discount_fee": 0.0,
+			"sum_should_fee": 0.0,
 			"cash_fee": 0.0,
 			"member_card_fee": 0.0,
 			"credit_card_fee": 0.0,
@@ -741,13 +741,13 @@ openerp.ktv_sale.model = function(erp_instance) {
 		},
 		//重新计算应付现金
 		_re_calculate_cash_fee: function() {
-			var after_discount_fee = this.get('after_discount_fee');
+			var sum_should_fee = this.get('sum_should_fee');
 			var member_card_fee = this.get('member_card_fee');
 			var credit_card_fee = this.get('credit_card_fee');
 			var sales_voucher_fee = this.get('sales_voucher_fee');
 			var free_fee = this.get('free_fee');
 			var on_credit_fee = this.get('on_credit_fee');
-			var cash_fee = after_discount_fee - member_card_fee - credit_card_fee - sales_voucher_fee - free_fee - on_credit_fee
+			var cash_fee = sum_should_fee - member_card_fee - credit_card_fee - sales_voucher_fee - free_fee - on_credit_fee
 			this.set({
 				"cash_fee": cash_fee
 			},

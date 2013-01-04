@@ -128,8 +128,8 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			this.$(".action_room_opens").click(_.bind(this.action_room_opens, this));
 			this.$(".action_room_buyout").click(_.bind(this.action_room_buyout, this));
 			this.$(".action_room_buytime").click(_.bind(this.action_room_buytime, this));
-            //换房
-            this.$('.action_room_change').click(_.bind(this.action_room_change,this));
+			//换房
+			this.$('.action_room_change').click(_.bind(this.action_room_change, this));
 		},
 		//包厢预定
 		action_room_scheduled: function() {
@@ -161,7 +161,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 				r.start();
 			});
 		},
-        //买钟
+		//买钟
 		action_room_buytime: function() {
 			var r = new widget.RoomCheckoutBuytimeWidget(null, {
 				room: this.model
@@ -174,7 +174,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		},
 		//包厢换房-买断
 		action_room_change: function() {
-            console.log("enter into action_room_change");
+			console.log("enter into action_room_change");
 			var win = new widget.RoomChangeCheckoutBuyoutWidget(null, {
 				room: this.model,
 			});
@@ -601,7 +601,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 				var template_var = {
 					"room": self.room.export_as_json(),
 					'room_fee_info': room_fee_info.export_as_json(),
-                    'room_opens' : self.model.toJSON()
+					'room_opens': self.model.toJSON()
 				};
 				var print_doc = $(qweb_template("room-opens-bill-print-template")(template_var));
 				//处理可见元素
@@ -665,8 +665,10 @@ openerp.ktv_sale.widget = function(erp_instance) {
 	widget.BaseRoomCheckoutWidget = erp_instance.web.Widget.extend({
 		//当前model
 		model: new Backbone.Model(),
-        //定义时间
-        events: {"re_calculate_fee" : this.on_re_calculate_fee},
+		//定义时间
+		events: {
+			"re_calculate_fee": this.on_re_calculate_fee
+		},
 		init: function(parent, options) {
 			this._super(parent, options);
 			this.room = options.room;
@@ -687,7 +689,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 
 			//model发生变化时,重新显示计费信息
 			//this.model.bind('change', this._refresh_fee_table, this);
-            this.on('re_calculate_fee',this,this._refresh_fee_table);
+			this.on('re_calculate_fee', this, this._refresh_fee_table);
 
 			//抵用券发生变化时,计算抵用券费用
 			this.sales_voucher_collection.bind('change', this._re_calculate_sales_voucher_fee, this);
@@ -718,15 +720,16 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			var self = this;
 			return this.call_server_func().pipe(function(ret) {
 				self.model.set(ret);
-                self.trigger('re_calculate_fee');
+			}).then(function() {
+				self.trigger('re_calculate_fee');
 			});
 		},
 		//re_calculate_fee callback
 		//子类可添加callback函数
 		on_re_calculate_fee: function() {
-            this._re_calculate_sales_voucher_fee();
-            this._autoset_pay_type_member_card_fee();
-        },
+			this._re_calculate_sales_voucher_fee();
+			this._autoset_pay_type_member_card_fee();
+		},
 		//重新计算抵用券费用
 		_re_calculate_sales_voucher_fee: function() {
 			var sales_voucher_fee = 0;
@@ -740,7 +743,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		//重新显示费用列表
 		_refresh_fee_table: function() {
 			//需要将时间转换为本地时间
-            console.debug("in _refresh_fee_table:" + this.model.toJSON());
+			console.debug("in _refresh_fee_table:" + this.model.toJSON());
 			this.$('.open_time').html(this.model.get('context_open_time'));
 			this.$('.close_time').html(this.model.get('context_close_time'));
 			this.$('.consume_minutes').html(this.model.get('consume_minutes'));
@@ -1073,51 +1076,52 @@ openerp.ktv_sale.widget = function(erp_instance) {
 	widget.RoomChangeCheckoutBuyoutWidget = widget.BaseRoomCheckoutWidget.extend({
 		template_fct: qweb_template("room-change-checkout-buyout-template"),
 		model: new model.RoomChangeCheckoutBuyout(),
-        init : function(parent,options){
-            this._super(parent,options);
-            //获取当前包厢最后一次结账信息
-            //重新计算云覅时,刷新界面上的相关显示
-            this.on('re_calculate_fee',this,this._refresh_last_checkout);
-        },
+		init: function(parent, options) {
+			this._super(parent, options);
+			//获取当前包厢最后一次结账信息
+			//重新计算云覅时,刷新界面上的相关显示
+			this.on('re_calculate_fee', this, this._refresh_last_checkout);
+		},
 		renderElement: function() {
 			var self = this;
 			this.$el.html(self.template_fct({
-                //包厢换房-买断对象
+				//包厢换房-买断对象
 				"model": self.model.toJSON(),
-                //原包厢对象
+				//原包厢对象
 				"origin_room": self.room.toJSON(),
-                //原包厢费用信息
+				//原包厢费用信息
 				"origin_room_fee_info": self.room_fee_info.export_as_json(),
-                //当前空闲包厢
+				//当前空闲包厢
 				"free_rooms": erp_instance.ktv_sale.ktv_room_point.get_rooms_by_state('free').toJSON()
 			}));
 			return this;
 		},
-        //显示买断列表
-        _render_buyout_select : function(buyout_list){
-            this.$('.buyout-select-placeholder').empty();
-            this.$('.buyout-select-placeholder').html(qweb_template("buyout-select-template")({'buyout_config_lines' : buyout_list}));
-            this.$('#changed_buyout_config_id').off();
-			this.$('#changed_buyout_config_id').on('change',_.bind(this._onchange_buyout_config_id, this));
-        },
-        //刷新包厢最后一次结账信息
-        _refresh_last_checkout : function(){
-        },
+		//显示买断列表
+		_render_buyout_select: function(buyout_list) {
+			this.$('.buyout-select-placeholder').empty();
+			this.$('.buyout-select-placeholder').html(qweb_template("buyout-select-template")({
+				'buyout_config_lines': buyout_list
+			}));
+			this.$('#changed_buyout_config_id').off();
+			this.$('#changed_buyout_config_id').on('change', _.bind(this._onchange_buyout_config_id, this));
+		},
+		//刷新包厢最后一次结账信息
+		_refresh_last_checkout: function() {},
 
-        //选择包厢发生变化
-        _onchange_room_id : function(){
-            var self = this;
-            var changed_room_id = this.$("#changed_room_id").val();
-            var changed_room = erp_instance.ktv_sale.ktv_room_point.get("all_rooms").get(changed_room_id);
-            var changed_room_fee_info = changed_room.get_room_fee_info();
-            self.changed_room = changed_room;
-            self.changed_room_fee_info = changed_room_fee_info;
-            changed_room_fee_info.ready.then(function(){
-                info = changed_room_fee_info.export_as_json();
-                self._render_buyout_select(info.active_buyout_config_lines);
-                self._re_calculate_fee();
-            });
-        },
+		//选择包厢发生变化
+		_onchange_room_id: function() {
+			var self = this;
+			var changed_room_id = this.$("#changed_room_id").val();
+			var changed_room = erp_instance.ktv_sale.ktv_room_point.get("all_rooms").get(changed_room_id);
+			var changed_room_fee_info = changed_room.get_room_fee_info();
+			self.changed_room = changed_room;
+			self.changed_room_fee_info = changed_room_fee_info;
+			changed_room_fee_info.ready.then(function() {
+				info = changed_room_fee_info.export_as_json();
+				self._render_buyout_select(info.active_buyout_config_lines);
+				self._re_calculate_fee();
+			});
+		},
 		//买断设置发生变化
 		_onchange_buyout_config_id: function() {
 			this._re_calculate_fee();
@@ -1133,7 +1137,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			var buyout_config_id = this.$('#changed_buyout_config_id').val();
 			var context = {
 				origin_room_id: this.room.get("id"),
-                changed_room_id : this.changed_room.get("id"),
+				changed_room_id: this.changed_room.get("id"),
 				changed_buyout_config_id: parseInt(buyout_config_id)
 			};
 			if (this.member.get("id")) context.member_id = this.member.get("id");
@@ -1153,8 +1157,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 				});
 				this.close();
 			}
-			else
-                this._onchange_room_id();
+			else this._onchange_room_id();
 		}
 	});
 
@@ -1162,17 +1165,17 @@ openerp.ktv_sale.widget = function(erp_instance) {
 	widget.RoomCheckoutBuytimeWidget = widget.BaseRoomCheckoutWidget.extend({
 		template_fct: qweb_template("room-buytime-template"),
 		model: new model.RoomCheckoutBuytime(),
-        init : function(parent,options){
-            this._super(parent,options);
-            this.on('re_calculate_fee',this,this._refresh);
-        },
-        //重绘制界面
-        _refresh : function(){
-            //更新赠送时长,到钟时间
-            console.debug("重新计算赠送时间:" + this.model.get('present_minutes'));
-            this.$("#present_minutes").val(this.model.get("present_minutes"));
-            this.$("#close_time").val(this.model.get("context_close_time_str"));
-        },
+		init: function(parent, options) {
+			this._super(parent, options);
+			this.on('re_calculate_fee', this, this._refresh);
+		},
+		//重绘制界面
+		_refresh: function() {
+			//更新赠送时长,到钟时间
+			console.debug("重新计算赠送时间:" + this.model.get('present_minutes'));
+			this.$("#present_minutes").val(this.model.get("present_minutes"));
+			this.$("#close_time").val(this.model.get("context_close_time_str"));
+		},
 
 		renderElement: function() {
 			var self = this;
@@ -1196,15 +1199,15 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		//获取当前上下文环境
 		_get_context: function() {
 			var persons_count = parseInt(this.$('#persons_count').val());
-            var fee_type_id = parseInt(this.$("#fee_type_id").val());
-            var price_class_id = parseInt(this.$("#price_class_id").val());
-            var buy_minutes = parseInt(this.$("#buy_minutes").val());
+			var fee_type_id = parseInt(this.$("#fee_type_id").val());
+			var price_class_id = parseInt(this.$("#price_class_id").val());
+			var buy_minutes = parseInt(this.$("#buy_minutes").val());
 			var context = {
 				"room_id": this.room.get("id"),
-                "fee_type_id": fee_type_id,
-                "price_class_id" : price_class_id,
-                "buy_minutes" : buy_minutes,
-                'persons_count' : persons_count
+				"fee_type_id": fee_type_id,
+				"price_class_id": price_class_id,
+				"buy_minutes": buy_minutes,
+				'persons_count': persons_count
 			};
 			if (this.member.get("id")) context.member_id = this.member.get("id");
 
@@ -1214,10 +1217,10 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		},
 		start: function() {
 			this._super();
-            //设置计费方式为当前包厢默认计费方式
-            this.$("#fee_type_id,#price_class_id,#buy_minutes,#persons_count").change(_.bind(this._onchange_fields,this));
-            this.$("#fee_type_id").val(this.room.get("fee_type_id")[0])
-            this._onchange_fields();
+			//设置计费方式为当前包厢默认计费方式
+			this.$("#fee_type_id,#price_class_id,#buy_minutes,#persons_count").change(_.bind(this._onchange_fields, this));
+			this.$("#fee_type_id").val(this.room.get("fee_type_id")[0])
+			this._onchange_fields();
 		}
 	});
 
@@ -1341,7 +1344,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 	//openerp的入口组件,用于定义系统的初始入口处理
 	erp_instance.web.client_actions.add('ktv_room_pos.ui', 'erp_instance.ktv_sale.widget.MainRoomPointOfSale');
 	widget.MainRoomPointOfSale = erp_instance.web.Widget.extend({
-        template : "RoomPointOfSale",
+		template: "RoomPointOfSale",
 		init: function() {
 			this._super.apply(this, arguments);
 			if (erp_instance.ktv_sale.ktv_room_point) throw "ktv_room_point 已初始化.";
@@ -1358,11 +1361,11 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		render: function() {
 			return qweb_template("RoomPointOfSale")();
 		},
-        close : function() {
+		close: function() {
 			erp_instance.ktv_sale.ktv_room_point.timer.stop();
 			erp_instance.ktv_sale.ktv_room_point = undefined;
-            this.destroy();
-        }
+			this.destroy();
+		}
 	});
 };
 
