@@ -63,12 +63,12 @@ class room_change_checkout_buyout(osv.osv):
                 #原包厢
                 "room_id" : last_checkout.room_operate_id.room_id.id,
                 #原买断信息
-                "buyout_config_id" : last_checkout.buyout_config_id and last_checkout.buyout_config_id.id or None,
+                "buyout_config_id" : last_checkout.buyout_config_id and [last_checkout.buyout_config_id.id,last_checkout.buyout_config_id.name] or None,
                 "open_time" : last_checkout.open_time,
                 #关闭时间是当前时间
                 "close_time" : datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 #重新计算消费时长
-                "consume_minutes" : ktv_helper.timedelta_minutes(datetime.now(),ktv_helper.strptime(last_checkout.open_time)),
+                "consume_minutes" : ktv_helper.timedelta_minutes(ktv_helper.strptime(last_checkout.open_time),datetime.now()),
                 #现金
                 "cash_fee" : last_checkout.cash_fee,
                 #信用卡
@@ -95,7 +95,7 @@ class room_change_checkout_buyout(osv.osv):
         #计算打折信息
         ret = {
                 #原费用信息
-                "last_checkout_info" : {'a' : 1},
+                "last_checkout_info" : last_checkout_info,
                 "origin_room_id" : context["origin_room_id"],
                 "changed_room_id" : context['changed_room_id'],
                 #原room_operate

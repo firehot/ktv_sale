@@ -594,7 +594,7 @@
                             <div class="control-group info pull-left">
                                 <label class="control-label" for="buyout_config_id">原买断:</label>
                                 <div class="controls">
-                                    <span class="origin-buyout-config-name uneditable-input"><t t-esc="origin_room_fee_info.last_checkout.buyout_config_id[1]"/></span>
+                                    <span class="origin-buyout-config-name uneditable-input"><t t-esc="origin_room_fee_info.last_checkout.buyout_config_id.name"/></span>
                                 </div>
                             </div>
                         </div>

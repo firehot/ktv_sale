@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from osv import fields, osv
+from datetime import date,datetime
 import decimal_precision as dp
 import ktv_helper
 
@@ -211,6 +212,13 @@ class room(osv.osv):
         pool = self.pool.get(last_checkout._table_name)
         fields_list = pool.fields_get(cr,uid).keys()
         ret = pool.read(cr,uid,last_checkout.id,fields_list)
+        #关闭时间是当前时间
+        ret.update({
+                "close_time" : datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                #重新计算消费时长
+                "consume_minutes" : ktv_helper.timedelta_minutes(ktv_helper.strptime(last_checkout.open_time),datetime.now()),
+                })
+
         #当前买断
         buyout_config_id =  getattr(last_checkout,'buyout_config_id',None)
         if buyout_config_id:
