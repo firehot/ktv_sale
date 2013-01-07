@@ -824,18 +824,17 @@
                 <h4>刷卡</h4>
             </div>
             <div class="modal-body">
-                <form id="member_read_form" class="form-search">
+                <div id="member_read_form" class="form-search">
                     <div class="alert hide">
                         <strong>!</strong> 未找到卡信息.
                     </div>
                     <div class='input-append'>
                         <input type="text" id="input_card_no" autocomplete='off' class="input-xlarge search-query"/>
-
                         <div class="btn-group">
                             <button id="btn_search" class="btn"><i class='icon-search'></i></button>
                         </div>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     </t>

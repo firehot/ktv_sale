@@ -688,13 +688,13 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			this.ready = this.room_fee_info.ready;
 
 			//model发生变化时,重新显示计费信息
-			//this.model.bind('change', this._refresh_fee_table, this);
-			this.on('re_calculate_fee', this, this._refresh_fee_table);
+			this.model.bind('change', this._refresh_fee_table, this);
+			//this.on('re_calculate_fee', this, this._refresh_fee_table);
 
 			//抵用券发生变化时,计算抵用券费用
 			this.sales_voucher_collection.bind('change', this._re_calculate_sales_voucher_fee, this);
 
-			//会员信息发生变化时重新计算费用
+			// table-bordered table-bordered table-bordered会员信息发生变化时重新计算费用
 			this.member.bind("change", this.render_member_card_no, this);
 			this.member.bind("change", this._re_calculate_fee, this);
 			//打折卡信息发生变化时,重新计算费用
@@ -957,6 +957,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		},
 		//信用卡付款金额变化的处理
 		_onchange_credit_card_fee: function() {
+            console.debug("credit_card_fee changed");
 			var credit_card_fee = parseFloat(this.$('.credit_card_fee').val());
 			this.model.set({
 				'credit_card_fee': credit_card_fee
@@ -1369,3 +1370,4 @@ openerp.ktv_sale.widget = function(erp_instance) {
 	});
 };
 
+			//会员信息发生变化时重新计算费用

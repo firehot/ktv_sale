@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#正常开房结账信息
 import logging
 from osv import fields, osv
 import decimal_precision as dp

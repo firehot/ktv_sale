@@ -681,11 +681,53 @@ openerp.ktv_sale.model = function(erp_instance) {
 	model.BaseRoomOperate = Backbone.Model.extend({
 		//服a务器端的OSV_NAME
 		"osv_name": "",
+		defaults: {
+			"persons_count": 4,
+			"sum_should_fee": 0.0,
+			"cash_fee": 0.0,
+			"member_card_fee": 0.0,
+			"credit_card_fee": 0.0,
+			"sales_voucher_fee": 0.0,
+			"free_fee": 0.0,
+			"on_credit_fee": 0.0,
+			"act_pay_fee": 0.0,
+			"change_fee": 0.0
+		},
+
 		initialize: function(attrs) {
 			Backbone.Model.prototype.initialize.apply(this, arguments);
 			this.bind('change:open_time change:close_time', this._set_context_datetime, this);
 			console.debug("in parent class initialize");
+			var events = "change:free_fee change:on_credit_fee change:sales_voucher_fee change:member_card_fee change:credit_card_fee";
+			this.on(events, this._re_calculate_cash_fee, this);
+            this.on("change:act_pay_fee",this._calculate_change_fee,this);
 		},
+		//重新计算应付现金
+		_re_calculate_cash_fee: function() {
+			console.debug("in _re_calculate_cash_fee");
+			var sum_should_fee = this.get('sum_should_fee');
+			var member_card_fee = this.get('member_card_fee');
+			var credit_card_fee = this.get('credit_card_fee');
+			var sales_voucher_fee = this.get('sales_voucher_fee');
+			var free_fee = this.get('free_fee');
+			var on_credit_fee = this.get('on_credit_fee');
+			var cash_fee = sum_should_fee - member_card_fee - credit_card_fee - sales_voucher_fee - free_fee - on_credit_fee
+			this.set({
+				"cash_fee": cash_fee,
+				"act_pay_fee": cash_fee,
+				"change_fee": 0
+			});
+			//TODO 还需要
+		},
+		//计算找零金额
+		_calculate_change_fee: function() {
+			var act_pay_fee = this.get("act_pay_fee");
+			var change_fee = act_pay_fee - this.get('cash_fee');
+			this.set({
+				"change_fee": change_fee
+			});
+		},
+
 		//将数据上传至服务器
 		push: function(json_obj) {
 			var json_obj = this.export_as_json();
@@ -730,58 +772,6 @@ openerp.ktv_sale.model = function(erp_instance) {
 	//预售-买断对象
 	model.RoomCheckoutBuyout = model.BaseRoomOperate.extend({
 		"osv_name": "ktv.room_checkout_buyout",
-		defaults: {
-			"persons_count": 4,
-			"sum_should_fee": 0.0,
-			"cash_fee": 0.0,
-			"member_card_fee": 0.0,
-			"credit_card_fee": 0.0,
-			"sales_voucher_fee": 0.0,
-			"free_fee": 0.0,
-			"on_credit_fee": 0.0,
-			"act_pay_fee": 0.0,
-			"change_fee": 0.0
-		},
-		initialize: function(attrs) {
-			model.BaseRoomOperate.prototype.initialize.apply(this, arguments);
-			console.debug("in sub class initialize");
-			var events = "change:act_pay_fee change:free_fee change:on_credit_fee change:sales_voucher_fee change:member_card_fee change:credit_card_fee";
-			this.bind(events, this._re_calculate_cash_fee, this);
-		},
-		//重新计算应付现金
-		_re_calculate_cash_fee: function() {
-			var sum_should_fee = this.get('sum_should_fee');
-			var member_card_fee = this.get('member_card_fee');
-			var credit_card_fee = this.get('credit_card_fee');
-			var sales_voucher_fee = this.get('sales_voucher_fee');
-			var free_fee = this.get('free_fee');
-			var on_credit_fee = this.get('on_credit_fee');
-			var cash_fee = sum_should_fee - member_card_fee - credit_card_fee - sales_voucher_fee - free_fee - on_credit_fee
-			this.set({
-				"cash_fee": cash_fee
-			},
-			{
-				silent: true
-			});
-			this.set({
-				"act_pay_fee": cash_fee
-			},
-			{
-				silent: true
-			});
-			this.set({
-				"change_fee": 0
-			});
-			//TODO 还需要
-		},
-		//计算找零金额
-		_calculate_change_fee: function() {
-			var act_pay_fee = this.get("act_pay_fee");
-			var change_fee = act_pay_fee - this.get('cash_fee');
-			this.set({
-				"change_fee": change_fee
-			});
-		},
 		export_as_json: function() {
 			var json = this.toJSON();
 			//删除不需要的属性,以下这些字段使用服务器端的function计算
