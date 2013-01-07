@@ -336,56 +336,53 @@
     </t>
     <!--结账 partial -->
     <t t-name="room-checkout-partial">
-        <table class='table table-striped table-condensed table-bordered table-hover'>
+        <table class='table table-striped table-condensed table-hover'>
             <caption>当前房费一览表</caption>
             <tr>
-                <th>开房时间:</th>
-                <td><span class='open_time'></span></td>
-                <th>关房时间:</th>
-                <td><span class='close_time'></span></td>
-                <th>消费时长(分钟):</th>
-                <td><span class='consume_minutes'></span></td>
-                <td colspan='6'></td>
+                <th>起止时间:</th>
+                <td colspan='7'>
+                    <span class='open_time'></span>
+                    ~
+                    <span class='close_time'></span>
+                </td>
+                <th>消费时长:</th>
+                <td><span class='consume_minutes'>分钟</span></td>
             </tr>
             <tr>
-                <th>包厢费:</th>
+                <th>包厢费</th>
+                <th>钟点费</th>
+                <th>换房包厢费</th>
+                <th>换房钟点费</th>
+                <th>并房包厢费</th>
+                <th>并房钟点费</th>
+                <th>服务费</th>
+                <th>合计</th>
+                <th>折扣</th>
+                <th>应收合计</th>
+            </tr>
+            <tr>
                 <td><span class="room_fee"></span></td>
-                <th>钟点费:</th>
                 <td><span class='sum_hourly_fee'></span></td>
-
-                <th>换房包厢费:</th>
                 <td><span class='changed_room_fee'></span></td>
-                <th>换房钟点费:</th>
-                <td><span class='changed_room_sum_hourly_fee'></span></td>
-
-                <th>换房时长:</th>
-                <td><span class='changed_room_minutes'></span></td>
-                <th>并房费用:</th>
+                <td>
+                    <span class='changed_room_sum_hourly_fee'></span>/
+                    <span class='changed_room_minutes'></span>分钟
+                </td>
                 <td><span class='merged_room_hourly_fee'></span></td>
-            </tr>
-            <tr>
-                <th>服务费率:</th>
-                <td><span class='service_fee_rate'></span>%</td>
-                <th>服务费:</th>
-                <td><span class='service_fee'></span></td>
-                <td colspan="8"></td>
-            </tr>
-            <tr>
-                <th>应收合计:</th>
-                <td colspan='11'><span class='sum_fee'></span></td>
-            </tr>
-            <tr>
-                <th>折扣金额:</th>
-                <td><span class='discount_fee'></span></td>
-                <th>房费折扣率:</th>
-                <td colspan='9'><span class='discount_rate'></span>%</td>
-            </tr>
-            <tr>
-                <th>折后金额:</th>
-                <td colspan='11'><span class='sum_should_fee'></span></td>
+                <td><span class='merged_room_hourly_fee'></span></td>
+                <td>
+                    <span class='service_fee'></span>/
+                    <span class='service_fee_rate'></span>%
+                </td>
+                <td><span class='sum_fee'></span></td>
+                <td>
+                    <span class='discount_fee'></span>/
+                    <span class='discount_rate'></span>%
+                </td>
+                <td><span class='sum_should_fee'></span></td>
             </tr>
             <tr class='hide member-card-wrapper'>
-                <td colspan='10'>
+                <td colspan='11'>
                     <div class="input-prepend input-append">
                         <span class='add-on'>会员卡:</span>
                         <span id="member-card-no" class="input-xlarge uneditable-input"></span>
@@ -536,40 +533,47 @@
     </t>
     <!--换房结账-费用列表显示,显示换房前消费情况及换房后应补费用信息-->
     <t t-name="room-change-fee-table-template">
-        <table class='table table-striped table-condensed table-bordered table-hover'>
+        <table class='table table-striped table-condensed table-hover'>
             <caption>原房费一览表</caption>
             <tr>
-                <th>开房时间:</th>
-                <td><t t-esc="origin_room_fee_info.last_checkout.context_open_time" /></td>
-                <th>关房时间:</th>
-                <td><t t-esc="origin_room_fee_info.last_checkout.context_close_time" /></td>
+                <th>起止时间:</th>
+                <td colspan='6'>
+                    <t t-esc="origin_room_fee_info.last_checkout.context_open_time" />
+                    ~
+                    <t t-esc="origin_room_fee_info.last_checkout.context_close_time" />
+                </td>
                 <th>消费时长:</th>
                 <td><t t-esc="origin_room_fee_info.last_checkout.consume_minutes" />分钟</td>
-                <td colspan="2"></td>
             </tr>
             <tr>
-                <th>现金支付:</th>
+                <th>包厢费</th>
+                <th>钟点费</th>
+                <th>换房包厢费</th>
+                <th>换房钟点费</th>
+                <th>并房包厢费</th>
+                <th>并房钟点费</th>
+                <th>服务费</th>
+                <th>折扣</th>
+                <th>合计</th>
+            </tr>
+            <tr>
+                <th>现金</th>
+                <th colspan="2">会员卡</th>
+                <th colspan="2">信用卡</th>
+                <th>抵扣券</th>
+                <th>挂账</th>
+                <th>免单</th>
+                <th>合计</th>
+            </tr>
+
+            <tr>
                 <td><t t-esc="origin_room_fee_info.last_checkout.cash_fee" /></td>
-                <th>会员卡:</th>
-                <td><t t-esc="origin_room_fee_info.last_checkout.member_card_fee" />/<t t-esc="origin_room_fee_info.last_checkout.member"/></td>
-                <th>信用卡:</th>
-                <td><t t-esc="origin_room_fee_info.last_checkout.credit_card_fee" />/<t t-esc="origin_room_fee_info.last_checkout.credit_card_no" /></td>
-                <th>抵扣券:</th>
+                <td colspan="2"><t t-esc="origin_room_fee_info.last_checkout.member_card_fee" />/<t t-esc="origin_room_fee_info.last_checkout.member"/></td>
+                <td colspan="2"><t t-esc="origin_room_fee_info.last_checkout.credit_card_fee" />/<t t-esc="origin_room_fee_info.last_checkout.credit_card_no" /></td>
                 <td><t t-esc="origin_room_fee_info.last_checkout.sales_voucher_fee" />/<t t-esc="origin_room_fee_info.last_checkout.sales_vouchers" /></td>
-            </tr>
-            <tr>
-                <th>服务费:</th>
-                <td><t t-esc="origin_room_fee_info.last_checkout.service_fee" /></td>
-                <th>挂账:</th>
                 <td><t t-esc="origin_room_fee_info.last_checkout.on_credit_fee" /></td>
-                <th>免单:</th>
                 <td><t t-esc="origin_room_fee_info.last_checkout.free_fee" /></td>
-                <td colspan="2"></td>
-            </tr>
-            <tr>
-                <th>费用合计:</th>
                 <td><t t-esc="origin_room_fee_info.last_checkout.sum_should_fee" /></td>
-                <td colspan="6"></td>
             </tr>
         </table>
         <t t-call='room-checkout-partial'/>
