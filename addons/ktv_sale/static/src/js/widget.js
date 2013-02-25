@@ -121,18 +121,10 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			this.model = options.model;
 		},
 		start: function() {
+            this._set_room_action_list();
 			this.model.bind('change', _.bind(this.renderElement, this));
 			this.$el.click(_.bind(this.on_click, this));
-			//预定事件
-
-            this.$el.on("click",".action_room_scheduled",_.bind(this.action_room_scheduled,this));
-			this.$el.on('click',".action_room_scheduled",_.bind(this.action_room_scheduled, this));
-			this.$el.on("click",".action_room_opens",_.bind(this.action_room_opens, this));
-			this.$el.on("click",".action_room_buyout",_.bind(this.action_room_buyout, this));
-			this.$el.on("click",".action_room_buytime",_.bind(this.action_room_buytime, this));
-			//换房
-			this.$el.on('click','.action_room_change',_.bind(this.action_room_change, this));
-		},
+        },
 		//包厢预定
 		action_room_scheduled: function() {
 			var win = new widget.RoomScheduledWidget(null, {
@@ -186,6 +178,12 @@ openerp.ktv_sale.widget = function(erp_instance) {
 				win.start();
 			});
 		},
+        //TODO 正常开房结账
+        action_room_checkout : function(){},
+        //TODO 结账重开
+        action_room_reopen : function(){},
+        //TODO 并房操作
+        action_room_merge : function() {},
 
 		//当前包厢点击事件
 		on_click: function() {
@@ -196,7 +194,31 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		renderElement: function() {
 			this.$el.empty();
 			this.$el.html(this.template_fct(this.model.export_as_json()));
-		}
+		},
+        //设置当前包厢可用的action
+        _set_room_action_list : function() {
+            var actions_list = erp_instance.ktv_sale.helper.get_room_actions_list(this.model.get('state'));
+            var actions_array = erp_instance.ktv_sale.helper.get_room_actions_array(this.model.get('state'));
+            var all_actions_array = erp_instance.ktv_sale.helper.all_room_actions_array();
+            this.$el.find('.room-action-menu li').addClass('disabled');
+            this.$el.find(actions_list).removeClass('disabled');
+            //先将所有已绑定的事件解除
+            _.each(all_actions_array,function(action){this.$el.off('click',action);},this);
+            //只绑定需要的操作
+            _.each(actions_array,function(action){this.$el.on('click',action,_.bind(this[action.substr(1)],this));},this);
+
+            /*
+            //先附加所有click事件
+            this.$el.on("click",".action_room_scheduled",_.bind(this.action_room_scheduled,this));
+			this.$el.on("click",".action_room_opens",_.bind(this.action_room_opens, this));
+			this.$el.on("click",".action_room_buyout",_.bind(this.action_room_buyout, this));
+			this.$el.on("click",".action_room_buytime",_.bind(this.action_room_buytime, this));
+			//换房
+			this.$el.on('click','.action_room_change',_.bind(this.action_room_change, this));
+            this.$el.off('click',action_list);
+            */
+        }
+
 	});
 	//房间列表
 	widget.RoomListWidget = erp_instance.web.Widget.extend({

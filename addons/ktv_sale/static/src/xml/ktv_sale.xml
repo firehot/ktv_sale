@@ -70,21 +70,21 @@
                             <t t-esc="name"/>
                             <span class="caret"></span>
                         </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="action_room_scheduled" href="#">预定</a></li>
-                            <li><a class="action_room_scheduled_cancel" href="#">取消预定</a></li>
+                        <ul class="dropdown-menu room-action-menu">
+                            <li class="action_room_scheduled"><a  href="#">预定</a></li>
+                            <li class="action_room_scheduled_cancel"><a href="#">取消预定</a></li>
                             <li class="divider"></li>
-                            <li><a class="action_room_opens" href="#">开房</a></li>
-                            <li><a class="action_room_change" href="#">换房</a></li>
-                            <li><a class="action_room_merge" href="#">并房</a></li>
+                            <li class="action_room_opens"><a href="#">开房</a></li>
+                            <li class="action_room_change"><a href="#">换房</a></li>
+                            <li class="action_room_merge"><a href="#">并房</a></li>
                             <li class="divider"></li>
-                            <li><a class="action_room_buytime" href="#">买钟</a></li>
-                            <li><a class="action_room_buyout" href="#">买断</a></li>
-                            <li><a class="action_room_buy_time_continue" href="#">续钟</a></li>
-                            <li><a class="action_room_buy_time_back" href="#">退钟</a></li>
+                            <li class="action_room_buytime"><a href="#">买钟</a></li>
+                            <li class="action_room_buyout"><a href="#">买断</a></li>
+                            <li class="action_room_buytime_continue"><a href="#">续钟</a></li>
+                            <li class="action_room_buytime_back"><a href="#">退钟</a></li>
                             <li class="divider"></li>
-                            <li><a class="action_room_checkout" href="#">结账</a></li>
-                            <li><a class="action_room_reopen" href="#">结账重开</a></li>
+                            <li class="action_room_checkout"><a href="#">结账</a></li>
+                            <li class="action_room_reopen"><a href="#">结账重开</a></li>
                         </ul>
                     </div>
                 </td>
@@ -99,7 +99,7 @@
             -->
             <tr>
                 <td colspan="3">
-                    <span class="label label-warning"><t t-esc="state"/></span>
+                    <span class="label label-warning"><t t-esc="state_description"/></span>
                 </td>
             </tr>
             <tr>
@@ -673,7 +673,7 @@
             <t t-call='room-checkout-buttons'/>
         </div>
     </t>
-<!--包厢买断-->
+    <!--包厢买断-->
     <t t-name="room-buyout-template">
         <div class='well well-small'>
             <div class="modal-header">

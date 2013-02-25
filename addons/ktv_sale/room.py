@@ -224,7 +224,6 @@ class room(osv.osv):
         if buyout_config_id:
             buyout_config_fields_list = self.pool.get('ktv.buyout_config').fields_get(cr,uid).keys()
             buyout_config_dict = self.pool.get('ktv.buyout_config').read(cr,uid,buyout_config_id.id,buyout_config_fields_list)
-
-        ret['buyout_config_id'] = buyout_config_dict
+            ret['buyout_config_id'] = buyout_config_dict
 
         return ret
