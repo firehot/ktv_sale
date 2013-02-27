@@ -123,7 +123,6 @@ class room_change_checkout_buyout(osv.osv):
                 "sum_buffet_fee" : 0,
                 "changed_room_fee" : 0,
                 "changed_room_sum_hourly_fee" : changed_room_sum_hourly_fee,
-                "changed_room_sum_hourly_fee" : 0,
                 "changed_room_sum_hourly_fee_p" : 0,
                 "changed_room_sum_buffet_fee" : 0,
                 "changed_room_service_fee" : 0,
@@ -212,7 +211,8 @@ class room_change_checkout_buyout(osv.osv):
         room_buyout_id = self.create(cr,uid,buyout_vals)
         fields = self.fields_get(cr,uid).keys()
         room_buyout = self.read(cr,uid,room_buyout_id,fields)
-        return (room_buyout,None,self._build_cron(room_id,room_buyout))
+        #TODO 需要取消原包厢的cron任务
+        return (room_buyout,None,self._build_cron(changed_room_id,room_buyout))
 
     def _build_cron(self,room_id,room_buyout_vals):
         """

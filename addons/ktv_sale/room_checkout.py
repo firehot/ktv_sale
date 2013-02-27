@@ -28,7 +28,7 @@ class room_checkout(osv.osv):
         for record in self.browse(cr,uid,ids,context):
             sum_fee = record.room_fee + record.sum_hourly_fee +  record.service_fee +  record.changed_room_sum_hourly_fee + record.changed_room_fee + record.merged_room_hourly_fee + record.guest_damage_fee
             sum_discount_fee = record.member_room_fee_discount_fee + record.discount_card_room_fee_discount_fee + record.discounter_room_fee_discount_fee
-            sum_should_fee = sum_fee - sum_discount_fee
+            sum_should_fee = sum_fee - sum_discount_fee - record.prepay_fee
             #找零金额 = 实际付款金额 - 现金支付金额
             change_fee = record.act_pay_fee - record.cash_fee
 
@@ -60,12 +60,12 @@ class room_checkout(osv.osv):
             "changed_room_fee" : fields.float("changed_room_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="换房应补包厢费用"),
             "changed_room_sum_hourly_fee" : fields.float("changed_room_sum_hourly_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="换房应补钟点费"),
             "changed_room_service_fee" : fields.float("changed_room_service_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="换房应补服务费"),
-            "changed_room_minutes" : fields.integer("changed_room_minutes",help="换房消费时长度"),
+            "changed_room_minutes" : fields.integer("changed_room_minutes",help="换房消费时长"),
             "merged_room_hourly_fee" : fields.float("merged_room_hourly_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="并房费用"),
-            #最低消费暂不使用
+            #FIXME 最低消费暂不使用
             "minimum_fee" : fields.float("minimum_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="低消费用"),
             "minimum_fee_diff" : fields.float("minimum_fee_diff",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="低消差额"),
-            #最低消费暂不使用
+            #FIXME 最低消费暂不使用
             "prepay_fee" : fields.float("prepay_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="预付金额"),
             "drinks_fee" : fields.float("drinks_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="酒水费"),
             "uncheckout_drinks_fee" : fields.float("uncheckout_drinks_fee",digits_compute = dp.get_precision('Ktv Room Default Precision'),help="未结酒水费"),

@@ -44,13 +44,15 @@ class room_checkout_buytime(osv.osv):
         :params context 包含计算上下问信息,required
         :params context[room_id] integer 包厢id,required
         :params context[fee_type_id] integer 计费方式id required
-        :params context[buytime_minutes] integer 买钟时间 required
+        :params context[buy_minutes] integer 买钟时间 required
         :params context[price_class_id] integer 价格类型 required
         :params context[persons_count] integer 客人人数
         :params context[member_id] integer 会员卡id
         :params context[discount_card_id] integer 打折卡id
         :params context[discounter_id] integer 员工id,用于记录打折员工信息
        """
+        _logger.debug(context)
+
 
         #获取当前包厢费用信息
         room_id = context.pop('room_id')

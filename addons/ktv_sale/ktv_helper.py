@@ -146,4 +146,9 @@ def strptime(str_datetime):
     """
     return datetime.strptime(str_datetime,tools.DEFAULT_SERVER_DATETIME_FORMAT)
 
+def strftime(dt):
+    """
+    以服务端的格式格式化日期对象
+    """
+    return dt.strftime(tools.DEFAULT_SERVER_DATETIME_FORMAT)
 

@@ -195,7 +195,9 @@
     buytime_vals = {
     "osv_name" : 'ktv.room_checkout_buytime',
     "room_id" : ref('ktv_room_1'),
-    "buytime_minutes" : 30,
+    "fee_type_id" : ref("fee_type_2"),
+    "price_class_id" : ref('price_class_1'),
+    "buy_minutes" : 30,
     "guest_name" : "程东辉",
     "persons_count" : 8,
     }
