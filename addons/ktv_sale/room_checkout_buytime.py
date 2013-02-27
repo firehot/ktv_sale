@@ -224,4 +224,3 @@ class room_checkout_buytime(osv.osv):
                 "args" : "(%s,{'state' : '%s','current_room_operate_id' : None})" % (room_id ,room.STATE_FREE)
                 }
         return cron_vals
-

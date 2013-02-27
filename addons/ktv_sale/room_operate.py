@@ -69,7 +69,8 @@ class room_operate(osv.osv):
         room_id = operate_values['room_id']
         (operate_obj,room_state,cron) = self.pool.get(operate_values['osv_name']).process_operate(cr,uid,operate_values)
         #更新包厢状态
-        self.pool.get('ktv.room').write(cr,uid,room_id,{'state' : room_state})
+        if room_state:
+            self.pool.get('ktv.room').write(cr,uid,room_id,{'state' : room_state})
         #TODO 添加cron对象
         if cron:
             self._create_operate_cron(cr,uid,cron)

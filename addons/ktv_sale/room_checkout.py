@@ -4,6 +4,7 @@ import logging
 from osv import fields, osv
 import decimal_precision as dp
 import ktv_helper
+from room import room
 
 _logger = logging.getLogger(__name__)
 
@@ -12,6 +13,7 @@ class room_checkout(osv.osv):
     _name="ktv.room_checkout"
 
     _order = "bill_datetime DESC"
+
 
     def _compute_sum_fee(self,cr,uid,ids,name,args,context = None):
         """
@@ -169,4 +171,7 @@ class room_checkout(osv.osv):
         room_checkout_vals.update({"room_operate_id" : cur_rp_id})
         id = self.create(cr,uid,room_checkout_vals)
         room_checkout_vals['id'] = id
-        return room_checkout_vals
+        fields = self.fields_get(cr,uid).keys()
+        room_checkout = self.read(cr,uid,id,fields)
+        state = self.room_state_after_process(cr,uid)
+        return (room_checkout,room.STATE_CHECKOUT,None)

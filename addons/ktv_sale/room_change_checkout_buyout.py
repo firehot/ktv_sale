@@ -5,6 +5,9 @@ from osv import fields, osv
 import decimal_precision as dp
 from datetime import *
 import ktv_helper
+from fee_type import fee_type
+from room import room
+
 
 _logger = logging.getLogger(__name__)
 
@@ -23,8 +26,14 @@ class room_change_checkout_buyout(osv.osv):
     _order = "bill_datetime DESC"
 
     _columns = {
+            "changed_room_id" : fields.many2one("ktv.room","changed_room_id",required = True,help="新包厢id"),
             #原买断及原包厢信息通过计算获取
             'buyout_config_id' : fields.many2one('ktv.buyout_config',string="买断",required = True,help="新包厢的买断设置id"),
+            }
+
+    _defaults = {
+            #默认情况下,计费方式是买断
+            "fee_type_id" : lambda obj,cr,uid,context: obj.pool.get('ktv.fee_type').get_fee_type_id(cr,uid,fee_type.FEE_TYPE_BUYOUT_FEE)
             }
 
     def re_calculate_fee(self,cr,uid,context):
@@ -46,14 +55,15 @@ class room_change_checkout_buyout(osv.osv):
         :return dict 计算后的买断换房结算信息
         """
         #原包厢
-        origin_room = self.pool.get('ktv.room').browse(cr,uid,context["origin_room_id"])
+        origin_room = self.pool.get('ktv.room').browse(cr,uid,context["room_id"])
+        #换房后的包厢
         changed_room = self.pool.get('ktv.room').browse(cr,uid,context['changed_room_id'])
 
         #当前买断信息
         active_buyout_config = self.pool.get('ktv.buyout_config').get_active_buyout_fee(cr,uid,context['changed_buyout_config_id'])
 
         #最后结账信息
-        last_checkout = self.pool.get('ktv.room').get_presale_last_checkout(cr,uid,context["origin_room_id"])
+        last_checkout = self.pool.get('ktv.room').get_presale_last_checkout(cr,uid,context["room_id"])
 
         if not last_checkout:
             raise osv.except_osv(_("错误"), _('找不到包厢:%s的最后结账信息.' % origin_room.name))
@@ -96,7 +106,7 @@ class room_change_checkout_buyout(osv.osv):
         ret = {
                 #原费用信息
                 "last_checkout_info" : last_checkout_info,
-                "origin_room_id" : context["origin_room_id"],
+                "room_id" : context["room_id"],
                 "changed_room_id" : context['changed_room_id'],
                 #原room_operate
                 "ref_room_operate_id" : last_checkout.room_operate_id.id,
@@ -178,3 +188,42 @@ class room_change_checkout_buyout(osv.osv):
             'sales_voucher_fee' : 0.0,
             })
         return ret
+
+    def process_operate(self,cr,uid,buyout_vals):
+        """
+        处理换房-买断结账信息
+        原包厢关闭,新包厢打开
+        :param buyout_vals dict 换房-买断相关信息
+        :param buyout_vals['room_id'] 原包厢
+        :param buyout_vals['changed_room_id'] 新包厢
+        """
+        room_id = buyout_vals.pop("room_id")
+        changed_room_id = buyout_vals['changed_room_id']
+
+        cur_rp_id = self.pool.get('ktv.room').find_or_create_room_operate(cr,uid,room_id)
+
+        #修改原包厢状态
+        self.pool.get('ktv.room').write(cr,uid,room_id,{'state' : room.STATE_FREE,'current_room_operate_id' : None})
+        #修改新包厢状态
+        self.pool.get('ktv.room').write(cr,uid,changed_room_id,{'state' : room.STATE_BUYOUT,'current_room_operate_id' : cur_rp_id})
+
+        buyout_vals.update({"room_operate_id" : cur_rp_id})
+
+        room_buyout_id = self.create(cr,uid,buyout_vals)
+        fields = self.fields_get(cr,uid).keys()
+        room_buyout = self.read(cr,uid,room_buyout_id,fields)
+        return (room_buyout,None,self._build_cron(room_id,room_buyout))
+
+    def _build_cron(self,room_id,room_buyout_vals):
+        """
+        生成cron对象的值
+        """
+        cron_vals = {
+                "name" : room_buyout_vals["room_operate_id"][1],
+                "nextcall" : datetime.strptime(room_buyout_vals['close_time'],"%Y-%m-%d %H:%M:%S"),
+                "model" : "ktv.room",
+                "function" : "write",
+                #需要定时修改包厢状态,并清空包厢当前operate_id
+                "args" : "(%s,{'state' : '%s','current_room_operate_id' : None})" % (room_id ,room.STATE_FREE)
+                }
+        return cron_vals

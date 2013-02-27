@@ -123,7 +123,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		start: function() {
             this._set_room_action_list();
 			this.model.bind('change', _.bind(this.renderElement, this));
-			this.$el.click(_.bind(this.on_click, this));
+			this.$el.on('click',_.bind(this.on_click, this));
         },
 		//包厢预定
 		action_room_scheduled: function() {
@@ -1163,7 +1163,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		_get_context: function() {
 			var buyout_config_id = this.$('#changed_buyout_config_id').val();
 			var context = {
-				origin_room_id: this.room.get("id"),
+				room_id: this.room.get("id"),
 				changed_room_id: this.changed_room.get("id"),
 				changed_buyout_config_id: parseInt(buyout_config_id)
 			};
@@ -1396,4 +1396,3 @@ openerp.ktv_sale.widget = function(erp_instance) {
 	});
 };
 
-			//会员信息发生变化时重新计算费用

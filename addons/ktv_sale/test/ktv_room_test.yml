@@ -168,17 +168,51 @@
     ret = self.process_operate(cr,uid,ret)
     #进行换房操作
     room_change_buyout = {
-    "osv_name" : 'ktv.room_checkout_buyout',
-    "origin_room_id" : ref('ktv_room_1'),
+    "osv_name" : 'ktv.room_change_checkout_buyout',
+    "room_id" : ref('ktv_room_1'),
     "changed_room_id" : ref('ktv_room_2'),
     "changed_buyout_config_id" : ref('buyout_config_2'),
     }
     #重新计算运费
     ret2 = self.pool.get('ktv.room_change_checkout_buyout').re_calculate_fee(cr,uid,room_change_buyout)
-    ret2["room_id"] = room_change_buyout['changed_room_id']
     ret2["buyout_config_id"] = room_change_buyout['changed_buyout_config_id']
-    ret2.update(room_change_buyout)
+    ret2["osv_name"] = 'ktv.room_change_checkout_buyout'
     #保存换房信息操作
     ret = self.process_operate(cr,uid,ret2)
     assert(ret)
 
+-
+  应能够正确进行换房处理
+-
+  !python {model: ktv.room_operate}: |
+   #先进行开房操作
+   #进行换房操作
+-
+  应能够正确保存买钟换房信息
+-
+  !python {model: ktv.room_operate}: |
+    #先进行一次买钟操作
+    buytime_vals = {
+    "osv_name" : 'ktv.room_checkout_buytime',
+    "room_id" : ref('ktv_room_1'),
+    "buytime_minutes" : 30,
+    "guest_name" : "程东辉",
+    "persons_count" : 8,
+    }
+    ret = self.pool.get('ktv.room_checkout_buytime').re_calculate_fee(cr,uid,buytime_vals)
+    ret.update(buytime_vals)
+    ret['room_id'] = ref('ktv_room_1')
+    ret = self.process_operate(cr,uid,ret)
+    #进行换房操作
+    room_change_buytime = {
+    "osv_name" : 'ktv.room_change_checkout_buytime',
+    "room_id" : ref('ktv_room_1'),
+    "changed_room_id" : ref('ktv_room_2'),
+    }
+    #重新计算运费
+    ret2 = self.pool.get('ktv.room_change_checkout_buytime').re_calculate_fee(cr,uid,room_change_buytime)
+    ret2['room_id'] = room_change_buytime['room_id']
+    ret2.update(room_change_buytime)
+    #保存换房信息操作
+    ret = self.process_operate(cr,uid,ret2)
+    assert(ret)
