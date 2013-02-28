@@ -106,7 +106,7 @@ class room_change_checkout_buytime(osv.osv):
         #客人人数
         persons_count = ('persons_count' in context and context['persons_count']) or minimum_persons
         #换房后钟点费合计:
-        new_sum_hourly_fee = hourly_fee*buy_minutes
+        new_sum_hourly_fee = hourly_fee*buy_minutes/60
 
         #时长合计 = 买钟时间 + 赠送时间
         sum_minutes = buy_minutes + present_minutes
@@ -116,7 +116,7 @@ class room_change_checkout_buytime(osv.osv):
 
         #计算新包厢消费时长及关闭时间
         #在原包厢已消费时长
-        al_consume_minutes = ktv_helper.timedelta_minutes(datetime.now(),ktv_helper.strptime(last_checkout.open_time))
+        al_consume_minutes = ktv_helper.timedelta_minutes(ktv_helper.strptime(last_checkout.open_time),datetime.now())
         #在新包厢消费时长
         changed_open_time = datetime.now()
         #在新包厢的消费时长
@@ -134,7 +134,7 @@ class room_change_checkout_buytime(osv.osv):
                 #"price_class_id" : last_checkout.price_class_id.id,
                 "open_time" : ktv_helper.strftime(changed_open_time),
                 "close_time" : ktv_helper.strftime(changed_close_time),
-                "consume_minutes" : 0,
+                "consume_minutes" : changed_consume_minutes,
                 "present_minutes" : present_minutes,
                 "room_fee" : 0,
                 "service_fee_rate" : 0,
@@ -232,6 +232,7 @@ class room_change_checkout_buytime(osv.osv):
         room_change_buytime_id = self.create(cr,uid,buytime_vals)
         fields = self.fields_get(cr,uid).keys()
         room_change_buytime = self.read(cr,uid,room_change_buytime_id,fields)
+        #TODO 删除原cron任务
         return (room_change_buytime,None,self._build_cron(changed_room_id,room_change_buytime))
 
     def _build_cron(self,changed_room_id,room_buytime_vals):

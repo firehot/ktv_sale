@@ -217,7 +217,7 @@
     present_minutes: 120
     active_datetime_limit: True
     datetime_from: 2012-01-01 16:30:00
-    datetime_to: 2013-01-20 18:00:00
+    datetime_to: 2014-01-20 18:00:00
     mon_active: True
     tue_active: True
     wed_active: True

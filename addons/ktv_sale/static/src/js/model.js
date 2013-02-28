@@ -682,7 +682,17 @@ openerp.ktv_sale.model = function(erp_instance) {
 		//服a务器端的OSV_NAME
 		"osv_name": "",
 		defaults: {
+            "guest_name" : null,
 			"persons_count": 4,
+            "room_fee" : 0.0,
+            "room_fee" : 0.0,
+            "service_fee_rate" : 0.0,
+            "service_fee" : 0.0,
+            "sum_hourly_fee" : 0.0,
+            "changed_room_fee" : 0.0,
+            "changed_room_sum_hourly_fee" : 0.0,
+            "changed_room_service_fee" : 0.0,
+            "changed_room_minutes" : 0.0,
 			"sum_should_fee": 0.0,
 			"cash_fee": 0.0,
 			"member_card_fee": 0.0,
@@ -691,12 +701,14 @@ openerp.ktv_sale.model = function(erp_instance) {
 			"free_fee": 0.0,
 			"on_credit_fee": 0.0,
 			"act_pay_fee": 0.0,
-			"change_fee": 0.0
+			"change_fee": 0.0,
+            "discount_fee" : 0.0,
+            "discount_rate" : 0.0
 		},
 
 		initialize: function(attrs) {
 			Backbone.Model.prototype.initialize.apply(this, arguments);
-			this.bind('change:open_time change:close_time', this._set_context_datetime, this);
+			this.on('change:open_time change:close_time', this._set_context_datetime, this);
 			console.debug("in parent class initialize");
 			var events = "change:free_fee change:on_credit_fee change:sales_voucher_fee change:member_card_fee change:credit_card_fee";
 			this.on(events, this._re_calculate_cash_fee, this);
@@ -801,5 +813,9 @@ openerp.ktv_sale.model = function(erp_instance) {
 			'persons_count': 2
 		}
 	});
+    //换房-买钟对象
+    model.RoomChangeCheckoutBuytime = model.BaseRoomOperate.extend({
+        "osv_name" : 'ktv.room_change_checkout_buytime'
+    });
 };
 
