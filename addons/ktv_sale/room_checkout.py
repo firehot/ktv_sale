@@ -161,6 +161,14 @@ class room_checkout(osv.osv):
             "free_fee" : 0,
             }
 
+    def re_calculate_fee(self,cr,uid,room_checkout_dict):
+        '''
+        计算正常开房-结账费用信息
+        :param room_checkout_dict['room_id'] integer required 结账包厢id
+        :return 计算费用后的结账对象 dict
+        '''
+        pass
+
 
     def process_operate(self,cr,uid,room_checkout_vals):
         '''

@@ -218,3 +218,55 @@
     #保存换房信息操作
     ret = self.process_operate(cr,uid,ret2)
     assert(ret)
+
+-
+  应能正确处理room_change
+-
+  !python {model: ktv.room_operate}: |
+    #先进行开房操作
+    open_vals = {
+    "osv_name" : "ktv.room_opens",
+    "room_id" : ref("ktv_room_1"),
+    'guest_name' : '程东辉',
+    'persons_count' : 5,
+    'fee_type_id' : ref('fee_type1'),
+    'price_class_id' : ref('price_class_1'),
+    }
+    rs = self.pool.get('ktv.room_opens').process_operate(cr,uid,open_vals)
+    assert rs
+    #进行结账操作
+    room_change_vals = {
+    "osv_name" : 'ktv.room_change',
+    "room_id" : ref('ktv_room_1'),
+    "changed_room_id" : ref('ktv_room_2'),
+    }
+    #保存换房信息操作
+    ret = self.process_operate(cr,uid,room_change_vals)
+    assert(ret)
+-
+  应能够正确保存room_checkout信息
+-
+  !python {model : ktv.room_operate}: |
+    #先进行开房操作
+    open_vals = {
+    "osv_name" : "ktv.room_opens",
+    "room_id" : ref("ktv_room_1"),
+    'guest_name' : '程东辉',
+    'persons_count' : 5,
+    'fee_type_id' : ref('fee_type1'),
+    'price_class_id' : ref('price_class_1'),
+    }
+    rs = self.pool.get('ktv.room_opens').process_operate(cr,uid,open_vals)
+    assert rs
+    #进行结账操作
+    room_checkout = {
+    "osv_name" : 'ktv.room_checkout',
+    "room_id" : ref('ktv_room_1'),
+    }
+    #重新计算运费
+    ret_re_calculate_fee = self.pool.get('ktv.room_checkout').re_calculate_fee(cr,uid,room_checkout)
+    #保存换房信息操作
+    ret = self.process_operate(cr,uid,ret_re_calculate_fee)
+    assert(ret)
+
+

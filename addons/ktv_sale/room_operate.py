@@ -30,6 +30,7 @@ class room_operate(osv.osv):
             "bill_no" : fields.char("bill_no",size = 64,required = True,help = "账单号"),
             "room_scheduled_ids" : fields.one2many("ktv.room_scheduled","room_operate_id",help="预定信息列表"),
             "room_opens_ids" : fields.one2many("ktv.room_opens","room_operate_id",help="开房信息列表"),
+            "room_change_ids" : fields.one2many("ktv.room_change","room_operate_id",help="换房信息列表"),
             "room_checkout_ids" : fields.one2many("ktv.room_checkout","room_operate_id",help="包厢结账信息列表"),
             "room_checkout_buyout_ids" : fields.one2many("ktv.room_checkout_buyout","room_operate_id",help="包厢买断结账信息列表"),
             "room_checkout_buytime_ids" : fields.one2many("ktv.room_checkout_buytime","room_operate_id",help="包厢买钟结账信息列表"),
@@ -41,15 +42,6 @@ class room_operate(osv.osv):
             'operate_date' : fields.datetime.now,
             'bill_no': lambda obj, cr, uid, context: obj.pool.get('ir.sequence').get(cr, uid, 'ktv.room_operate'),
             }
-
-    def _get_current_room_id(self,cr,uid,ids,fieldnames,args,context = None):
-        """
-        获取当前包厢id,由于存在换房情况,所以当前room_id可能并不是current_room_id
-        """
-        ret = dict()
-        the_room
-        for record in self.browse(cr,uid,ids):
-            ret[record.id]['current_room_id'] = False
 
 
     def process_operate(self,cr,uid,operate_values):
@@ -104,12 +96,15 @@ class room_operate(osv.osv):
 
         #先判断有无换房结算信息,换房结算信息是最后一次结账信息
         #_logger.debug("cur_operate_id 's attr :  %s " % dir(cur_operate_id))
-        last_checkouts = cur_operate_id.room_change_checkout_buyout_ids or cur_operate_id.room_change_checkout_buytime_ids
+        last_checkouts = cur_operate_id.room_change_checkout_buyout_ids or cur_operate_id.room_change_checkout_buytime_ids or cur_operate_id.room_checkout_buyout_ids or cur_operate_id.room_checkout_buytime_ids
 
-        #如果换房结算信息不存在,则取room_checkout_buyout或room_checkout_buytime
-        if not last_checkouts:
-            last_checkouts = cur_operate_id.room_checkout_buyout_ids or cur_operate_id.room_checkout_buytime_ids
+        return last_checkouts and last_checkouts[0] or None
 
-        if not last_checkouts:
-            return None
-        return last_checkouts[0]
+    def previous_room_opens_and_change(self,cr,uid,op_id):
+        """
+        获取最近一次包厢开房信息和换房信息,只适用于正常开房
+        :param op_id integer room_operate id
+        :return tuple room_open和room_change对象
+        """
+        operate_id = self.browse(cr,uid,op_id)
+        return (operate_id.room_opens_ids and operate_id.room_opens_ids[0] or None,operate_id.room_change_ids and operate_id.room_change_ids[0] or None )
