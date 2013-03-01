@@ -216,7 +216,6 @@ openerp.ktv_sale.model = function(erp_instance) {
 			var room_fee_info = new model.RoomFeeInfo({
 				"room": this
 			});
-            this.set("room_fee_info",room_fee_info);
 			return room_fee_info;
 		},
 		//导出到json
@@ -743,7 +742,7 @@ openerp.ktv_sale.model = function(erp_instance) {
 		},
 
 		//将数据上传至服务器
-		push: function(json_obj) {
+		push: function() {
 			var json_obj = this.export_as_json();
 			json_obj.osv_name = this.osv_name;
 			return new erp_instance.web.Model('ktv.room_operate').get_func('process_operate')(json_obj);
@@ -833,7 +832,14 @@ openerp.ktv_sale.model = function(erp_instance) {
 			if (this.get("close_time")) this.set({
 				context_close_time: erp_instance.web.str_to_datetime(this.get('close_time')).toString('yyyy-MM-dd HH:mm')
 			});
-		}
+		},
+		//将数据上传至服务器
+		push: function() {
+            json_obj = this.toJSON();
+            json_obj.osv_name = "ktv.room_change";
+			return new erp_instance.web.Model('ktv.room_operate').get_func('process_operate')(json_obj);
+		},
+
     });
 };
 

@@ -348,13 +348,13 @@
                             <div class="control-group pull-left">
                                 <label class="control-label" for="room_id">原包厢名称:</label>
                                 <div class="controls">
-                                    <input id="room_id" name="room_id" type='text' t-att-value="room.name" disabled="true" />
+                                    <input id="room_name" name="room_name" type='text' t-att-value="room.name" disabled="true" />
                                 </div>
                             </div>
                             <div class="control-group pull-left">
                                 <label class="control-label" for="hourly_fee">原钟点费:</label>
                                 <div class="controls">
-                                    <input type="text" id="hourly_fee" name="hourly_fee" t-att-value="room.room_fee_info.hourly_fee" disabled="true"/>
+                                    <input type="text" id="hourly_fee" name="hourly_fee" t-att-value="room_fee_info.hourly_fee" disabled="true"/>
                                 </div>
                             </div>
                         </div>
@@ -362,13 +362,13 @@
                             <div class="control-group pull-left">
                                 <label class="control-label" for="room_fee">原包厢费:</label>
                                 <div class="controls">
-                                    <input id="room_fee" name="room_fee" type='text' t-att-value="room.room_fee_info.room_fee" disabled="true" />
+                                    <input id="room_fee" name="room_fee" type='text' t-att-value="room_fee_info.room_fee" disabled="true" />
                                 </div>
                             </div>
                             <div class="control-group pull-left">
                                 <label class="control-label" for="minimum_fee">原最低消费:</label>
                                 <div class="controls">
-                                    <input type="text" id="minimum_fee" name="minimum_fee" t-att-value="room.room_fee_info.minimum_fee" disabled="true" />
+                                    <input type="text" id="minimum_fee" name="minimum_fee" t-att-value="room_fee_info.minimum_fee" disabled="true" />
                                 </div>
                             </div>
                         </div>
