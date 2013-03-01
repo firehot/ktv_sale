@@ -176,8 +176,9 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			//买钟换房 RoomChangeCheckoutBuytimeWidget
 			//买断换房 RoomChangeCheckoutBuyoutWidget
 			if (this.model.get('state') == 'in_use')
-			//TODO
-			;
+                win = new widget.RoomChangeWidget(null, {
+				room: this.model,
+			});
 			if (this.model.get('state') == 'buyout') var win = new widget.RoomChangeCheckoutBuyoutWidget(null, {
 				room: this.model,
 			});
@@ -1332,6 +1333,104 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		}
 	});
 
+    //换房-正常开房界面
+	widget.RoomChangeWidget = erp_instance.web.Widget.extend({
+		template_fct: qweb_template("room-change-template"),
+		init: function(parent, options) {
+			this._super(parent, options);
+			//当前包厢
+			this.room = options.room;
+			this.model = new model.RoomChange();
+			this.ready = this.room.get_room_fee_info().ready;
+		},
+		start: function() {
+			//隐藏其他元素
+			$('#room_status').hide();
+			$('#room_filter').hide();
+			$('#room_list').hide();
+			this.$el.on('click', '.btn-close-room-change', _.bind(this.close, this));
+			//绑定相关事件
+			this.$form = this.$("#room_change_form");
+			this.$("#room_id").val(this.room.get("id"));
+			this.$el.on('change', "#changed_room_id", _.bind(this.on_change_room, this));
+			this.$el.on('click', ".btn-save-room-change", _.bind(this.save, this));
+            this.model.on("change:changed_room_id",this._refresh_on_change_room,this);
+            this.on_change_room();
+		},
+		close: function() {
+			this.$el.off();
+			$('#room_status').show();
+			$('#room_filter').show();
+			$('#room_list').show();
+			this.destroy();
+		},
+		renderElement: function() {
+			this.$el.html(this.template_fct({
+				rooms: erp_instance.ktv_sale.ktv_room_point.get_rooms_by_state('free').toJSON(),
+				room: this.room.export_as_json()
+			}));
+			return this;
+		},
+		on_change_room: function() {
+			this.model.set({
+				"changed_room_id": this.$('#changed_room_id').val()
+			});
+		},
+        //换房时更新界面
+        _refresh_on_change_room : function(){
+            console.debug("RoomChange#_refresh_on_change_room");
+            var self = this;
+            //获取当前换房信息
+            var changed_room = erp_instance.ktv_sale.ktv_room_point.get("all_rooms").get(this.model.get('changed_room_id'));
+			var changed_room_fee_info = changed_room.get_room_fee_info();
+			changed_room_fee_info.ready.then(function() {
+                self.$('#changed_hourly_fee').val(changed_room_fee_info.get('hourly_fee'));
+                self.$('#changed_room_fee').val(changed_room_fee_info.get('room_fee'));
+                self.$('#changed_minimum_fee').val(changed_room_fee_info.get('minimum_fee'));
+            });
+        },
+		save: function() {
+			var self = this;
+			var success_func = function() {
+				erp_instance.ktv_sale.ktv_room_point.app.alert({
+					'alert_class': "alert-success",
+					'info': "保存换房信息成功,打印换房条!"
+				});
+				self.close();
+				self.print();
+			};
+			var fail_func = function() {
+				erp_instance.ktv_sale.ktv_room_point.app.alert({
+					'alert_class': "alert-error",
+					'info': "保存换房信息失败!"
+				});
+
+			};
+			this.model.push().pipe(function(result) {
+				//更新包厢状态
+				self.room.set(result["room"]);
+				//更新操作结果
+				self.model.set(result['room_operate']);
+				self.close();
+			}).then(success_func, fail_func);
+		},
+		//打印换房条
+		print: function() {
+			var self = this;
+			var room_fee_info = this.room.get_room_fee_info();
+			room_fee_info.ready.then(function() {
+				var template_var = {
+					"room": self.room.export_as_json(),
+					'room_fee_info': room_fee_info.export_as_json(),
+					'room_opens': self.model.toJSON()
+				};
+				var print_doc = $(qweb_template("room-opens-bill-print-template")(template_var));
+				//处理可见元素
+				var print_doc = print_doc.jqprint();
+			});
+		}
+	});
+
 	//刷卡界面
 	widget.ScanCardWidget = widget.BootstrapModal.extend({
 		template_fct: qweb_template("scan-card-template"),
@@ -1449,6 +1548,10 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		},
 
 	});
+
+
+
+
 	//openerp的入口组件,用于定义系统的初始入口处理
 	erp_instance.web.client_actions.add('ktv_room_pos.ui', 'erp_instance.ktv_sale.widget.MainRoomPointOfSale');
 	widget.MainRoomPointOfSale = erp_instance.web.Widget.extend({
