@@ -244,7 +244,7 @@
     ret = self.process_operate(cr,uid,room_change_vals)
     assert(ret)
 -
-  应能够正确保存room_checkout信息
+  应能够正确调用room_checkout#re_calculate_fee
 -
   !python {model : ktv.room_operate}: |
     #先进行开房操作
@@ -262,11 +262,11 @@
     room_checkout = {
     "osv_name" : 'ktv.room_checkout',
     "room_id" : ref('ktv_room_1'),
+    'fee_type_id' : ref('fee_type1'),
+    'price_class_id' : ref('price_class_1'),
     }
     #重新计算运费
-    ret_re_calculate_fee = self.pool.get('ktv.room_checkout').re_calculate_fee(cr,uid,room_checkout)
-    #保存换房信息操作
-    ret = self.process_operate(cr,uid,ret_re_calculate_fee)
+    ret = self.pool.get('ktv.room_checkout').re_calculate_fee(cr,uid,room_checkout)
     assert(ret)
 
 

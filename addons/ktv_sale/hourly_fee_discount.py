@@ -13,6 +13,7 @@ class hourly_fee_discount(osv.osv):
     """包厢钟点费打折设置,设置包厢每周各天的钟点费打折情况"""
     _name = "ktv.hourly_fee_discount"
     _description = "包厢钟点费打折设置,设置包厢每周各天的钟点费打折情况"
+    _order = "time_from ASC"
     #费用字段定义
     #其中discount字段存储的是百分比
     _fee_fields = [
@@ -106,9 +107,9 @@ class hourly_fee_discount(osv.osv):
     def get_active_configs(self,cr,uid,room_type_id,context=None):
         """
         获取当前有效的钟点费打折设置信息
-        :params room_type_id integer 包厢类别id M
-        :params context['price_class_id'] integer 价格类别id O
-        :params context['member_class_id'] integer 会员类别id O
+        :params room_type_id integer 包厢类别id required
+        :params context['price_class_id'] integer 价格类别id
+        :params context['member_class_id'] integer 会员类别id
         :return array 有效的钟点费打折信息数组
         """
         ret = []
@@ -134,7 +135,7 @@ class hourly_fee_discount(osv.osv):
         s_days = self.pool.get(osv_name).read(cr,uid,s_day_ids,['room_type_id','special_day'])
         s_days_list = [s_day['special_day'] for s_day in s_days]
 
-        #如果当日是特殊日,则直接返回所有买断设置
+        #如果当日是特殊日,则直接返回所有设置
         in_sp_day = datetime.today() in s_days_list
         #根据设置的星期是否有效来得到返回的设置
         for c in configs:

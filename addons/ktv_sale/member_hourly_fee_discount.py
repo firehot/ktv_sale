@@ -7,6 +7,9 @@ class member_hourly_fee_discount(osv.osv):
     '''会员钟点费优惠设置'''
     _name = "ktv.member_hourly_fee_discount"
     _inherit = "ktv.hourly_fee_discount"
+
+    _order = "time_from ASC"
+
     _description = "会员钟点费优惠设置"
 
     _columns ={

@@ -12,6 +12,8 @@ _logger = logging.getLogger(__name__)
 class minimum_fee_config(osv.osv):
     """针对收取最低消费的量贩KTV而言,可能存在不同时段其包厢的不一样，在此可以对包厢设置不同时段的最低消费、包厢费、按位低销及开房套餐等参数，系统按时间自动选取场次对应的设置"""
     _name = "ktv.minimum_fee_config"
+
+    _order = "time_from ASC"
     _description = "时段低消设置"
     _fee_fields = [
             "mon_minimum_fee",

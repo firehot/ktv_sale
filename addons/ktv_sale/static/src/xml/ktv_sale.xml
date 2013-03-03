@@ -133,18 +133,51 @@
         <!--包厢状态-->
         <div class="btn-toolbar">
             <div class='btn-group'>
-                <button class='btn btn-room-state-filter active' data-room-state="-1">显示所有状态</button>
-                <button class='btn btn-room-state-filter' data-room-state="free">空闲</button>
-                <button class='btn btn-room-state-filter' data-room-state="in_use">使用</button>
-                <button class='btn btn-room-state-filter' data-room-state="scheduled">预定</button>
-                <button class='btn btn-room-state-filter' data-room-state="locked">锁定</button>
-                <button class='btn btn-room-state-filter' data-room-state="checkout">已结账</button>
-                <button class='btn btn-room-state-filter' data-room-state="buyout">买断</button>
-                <button class='btn btn-room-state-filter' data-room-state="buytime">买钟</button>
-                <button class='btn btn-room-state-filter' data-room-state="malfunction">故障</button>
-                <button class='btn btn-room-state-filter' data-room-state="visit">带客</button>
-                <button class='btn btn-room-state-filter' data-room-state="clean">清洁</button>
-                <button class="btn btn-room-state-filter" data-room-state="debug">调试</button>
+                <button class='btn btn-room-state-filter active' data-room-state="-1">所有状态</button>
+                <button class='btn btn-room-state-filter' data-room-state="free">
+                    空闲
+                    <span class="badge room-count-free"></span>
+                </button>
+                <button class='btn btn-room-state-filter' data-room-state="in_use">
+                    使用
+                    <span class="badge room-count-in_use"></span>
+                </button>
+                <button class='btn btn-room-state-filter' data-room-state="scheduled">
+                    预定
+                    <span class="badge room-count-scheduled"></span>
+                </button>
+                <button class='btn btn-room-state-filter' data-room-state="locked">
+                    锁定
+                    <span class="badge room-count-locked"></span>
+                </button>
+                <button class='btn btn-room-state-filter' data-room-state="checkout">
+                    已结账
+                    <span class="badge room-count-checkout"></span>
+                </button>
+                <button class='btn btn-room-state-filter' data-room-state="buyout">
+                    买断
+                    <span class="badge room-count-buyout"></span>
+                </button>
+                <button class='btn btn-room-state-filter' data-room-state="buytime">
+                    买钟
+                    <span class="badge room-count-buytime"></span>
+                </button>
+                <button class='btn btn-room-state-filter' data-room-state="malfunction">
+                    故障
+                    <span class="badge room-count-malfunction"></span>
+                </button>
+                <button class='btn btn-room-state-filter' data-room-state="visit">
+                    带客
+                    <span class="badge room-count-visit"></span>
+                </button>
+                <button class='btn btn-room-state-filter' data-room-state="clean">
+                    清洁
+                    <span class="badge room-count-clean"></span>
+                </button>
+                <button class="btn btn-room-state-filter" data-room-state="debug">
+                    调试
+                    <span class="badge room-count-debug"></span>
+                </button>
             </div>
         </div>
 
