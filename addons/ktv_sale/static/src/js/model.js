@@ -686,7 +686,6 @@ openerp.ktv_sale.model = function(erp_instance) {
             "guest_name" : null,
 			"persons_count": 4,
             "room_fee" : 0.0,
-            "room_fee" : 0.0,
             "service_fee_rate" : 0.0,
             "service_fee" : 0.0,
             "sum_hourly_fee" : 0.0,
@@ -841,5 +840,11 @@ openerp.ktv_sale.model = function(erp_instance) {
 		},
 
     });
+
+    //结账-正常开房
+    model.RoomCheckout =  model.BaseRoomOperate.extend({
+        "osv_name" : 'ktv.room_checkout'
+    });
+
 };
 

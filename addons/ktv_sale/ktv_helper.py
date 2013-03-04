@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import decimal_precision as dp
 from osv import fields
 from datetime import date,datetime,time,timedelta
 import openerp.tools as tools
@@ -151,4 +152,27 @@ def strftime(dt):
     以服务端的格式格式化日期对象
     """
     return dt.strftime(tools.DEFAULT_SERVER_DATETIME_FORMAT)
+
+def utc_now_str():
+    """
+    返回服务默认格式的utc 时间字符串
+    """
+    return strftime(datetime.now())
+
+def float_round(cr,f_val,application = None):
+    """
+    使用decimal precision 设置ktv_fee,四舍五入给定的float
+    """
+    dp_name = application if application else "ktv_fee"
+    dp_compute = dp.get_precision(dp_name)
+
+    precision,scale = dp_compute(cr)
+
+    ret = tools.float_round(f_val,precision_digits=scale)
+    return ret
+
+
+
+
+
 

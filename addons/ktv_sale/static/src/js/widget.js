@@ -193,7 +193,17 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			});
 		},
 		//TODO 正常开房结账
-		action_room_checkout: function() {},
+		action_room_checkout: function() {
+            var r = new widget.RoomCheckoutWidget(null, {
+				room: this.model
+			});
+			r.ready.then(function() {
+				$('#operate_area').html(r.$el);
+				r.renderElement();
+				r.start();
+			});
+
+        },
 		//TODO 结账重开
 		action_room_reopen: function() {},
 		//TODO 并房操作
@@ -1246,8 +1256,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			var self = this;
 			this.$el.html(self.template_fct({
 				"model": self.model.toJSON(),
-				"room": self.room.toJSON(),
-				"room_fee_info": self.room_fee_info.export_as_json()
+				"room": self.room.toJSON()
 			}));
 			return this;
 		},
@@ -1288,6 +1297,57 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			this._onchange_fields();
 		}
 	});
+
+    //包厢结账-正常开房
+	widget.RoomCheckoutWidget = widget.BaseRoomCheckoutWidget.extend({
+		template_fct: qweb_template("room-checkout-template"),
+		model: new model.RoomCheckout(),
+		init: function(parent, options) {
+			this._super(parent, options);
+		},
+		renderElement: function() {
+			var self = this;
+			this.$el.html(self.template_fct({
+				"model": self.model.toJSON(),
+				"room": self.room.toJSON()
+			}));
+			return this;
+		},
+		//相关字段发生变化
+		_onchange_fields: function() {
+            console.debug('RoomCheckoutWidget#_on_change_fields');
+			this._re_calculate_fee();
+		},
+
+		call_server_func: function() {
+			var self = this;
+			var context = this._get_context();
+			return new erp_instance.web.Model('ktv.room_checkout').get_func('re_calculate_fee')(context);
+		},
+		//获取当前上下文环境
+		_get_context: function() {
+			var fee_type_id = parseInt(this.$("#fee_type_id").val());
+			var price_class_id = parseInt(this.$("#price_class_id").val());
+			var context = {
+				"room_id": this.room.get("id"),
+				"fee_type_id": fee_type_id,
+				"price_class_id": price_class_id
+			};
+			if (this.member.get("id")) context.member_id = this.member.get("id");
+
+			if (this.discount_card.get("id")) context.discount_card_id = this.discount_card.get("id");
+
+			return context;
+		},
+		start: function() {
+			this._super();
+			//设置计费方式为当前包厢默认计费方式
+			this.$("#fee_type_id,#price_class_id").change(_.bind(this._onchange_fields, this));
+			this.$("#fee_type_id").val(this.room.get("fee_type_id")[0])
+			this._onchange_fields();
+		}
+	});
+
 	//包厢换房-买钟界面
 	widget.RoomChangeCheckoutBuytimeWidget = widget.BaseRoomCheckoutWidget.extend({
 		template_fct: qweb_template("room-change-checkout-buytime-template"),

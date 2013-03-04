@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 import logging
-from osv import fields, osv
-from datetime import date,datetime
+from osv import osv,fields
+from room import room
 import decimal_precision as dp
 import ktv_helper
-from room import room
+
+
 
 _logger = logging.getLogger(__name__)
 
@@ -43,7 +44,7 @@ class room_change(osv.osv):
         (room_opens,room_change) = self.pool.get('ktv.room_operate').previous_room_opens_and_change(cr,uid,cur_rp_id)
 
         #修改room_opens或上次room_change的close_time
-        close_time = datetime.now()
+        close_time = ktv_helper.utc_now_str()
         if room_change:
             self.pool.get('ktv.room_change').write(cr,uid,room_change.id,{"close_time" : close_time})
         elif room_opens:

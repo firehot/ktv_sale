@@ -967,6 +967,74 @@
             <t t-call='room-checkout-buttons'/>
         </div>
     </t>
+    <!--结账-->
+    <t t-name="room-checkout-template">
+        <div class='well well-small'>
+            <div class="modal-header">
+                <button type="button" class="close btn-cancel">&#x00D7;</button>
+                <h5>结账</h5>
+            </div>
+            <form class="form-horizontal" id="room_buytime_form">
+                <fieldset>
+                    <div class="row">
+                        <div class="control-group pull-left">
+                            <label class="control-label" for="room_id">包厢名称:</label>
+                            <div class="controls">
+                                <span class="input-large uneditable-input"><t t-esc="room.name"/></span>
+                            </div>
+                        </div>
+                        <div class="control-group pull-left">
+                            <label class="control-label" for="saler_id">销售经理:</label>
+                            <div class="controls">
+                                <input type="text" id="saler_id" name="saler_id" placeholder="选择销售经理" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="control-group info pull-left">
+                            <label class="control-label" for="guest_name">客人姓名:</label>
+                            <div class="controls">
+                                <input type="text" id="guest_name" name="guest_name" />
+                            </div>
+                        </div>
+                        <div class="control-group info pull-left">
+                            <label class="control-label" for="persons_count">客人人数:</label>
+                            <div class="controls">
+                                <input type="text" id="persons_count" name="persons_count" class="number" t-att-value="model.persons_count" />
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <div class="row">
+                        <div class="control-group info pull-left">
+                            <label class="control-label" for="fee_type_id">计费方式:</label>
+                            <div class="controls">
+                                <select id="fee_type_id" name="fee_type_id">
+                                    <t t-foreach="fee_types" t-as="f">
+                                        <option t-att-value="f.id"><t t-esc="f.name"/></option>
+                                    </t>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="control-group info pull-left">
+                            <label class="control-label" for="price_class_id">价格类型:</label>
+                            <div class="controls">
+                                <select id="price_class_id" name="price_class_id">
+                                    <t t-foreach="price_classes" t-as="p">
+                                        <option t-att-value="p.id"><t t-esc="p.name"/></option>
+                                    </t>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+            <t t-call='room-checkout-partial'/>
+            <t t-call='room-checkout-buttons'/>
+        </div>
+    </t>
+
     <!--包厢操作-买钟换房-->
     <t t-name='room-change-checkout-buytime-template'>
         <div class='well well-small'>

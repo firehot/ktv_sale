@@ -132,12 +132,12 @@
         <!--费用精度-->
         <!--房费取整-->
         <record id="ktv_fee_precision" model="decimal.precision">
-            <field name="name">Ktv Fee</field>
+            <field name="name">ktv_fee</field>
             <field name="digits">0</field>
         </record>
         <!--折扣取两位小数-->
         <record id="ktv_room_fee_discount_rate_precision" model="decimal.precision">
-            <field name="name">Ktv Fee Discount Rate</field>
+            <field name="name">ktv_fee_discount_rate</field>
             <field name="digits">2</field>
         </record>
 

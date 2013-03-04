@@ -266,7 +266,18 @@
     'price_class_id' : ref('price_class_1'),
     }
     #重新计算运费
-    ret = self.pool.get('ktv.room_checkout').re_calculate_fee(cr,uid,room_checkout)
+    ret_checkout_vals = self.pool.get('ktv.room_checkout').re_calculate_fee(cr,uid,room_checkout)
+    #调用process_operate
+    assert(ret_checkout_vals)
+    ret_checkout_vals['osv_name'] = "ktv.room_checkout"
+    #保存换房信息操作
+    ret = self.process_operate(cr,uid,ret_checkout_vals)
     assert(ret)
-
-
+-
+  测试ktv_helper.float_round
+-
+  !python {model : ktv.room_operate}: |
+    import ktv_sale.ktv_helper
+    f = 12.343434
+    ret = ktv_sale.ktv_helper.float_round(cr,f)
+    assert(ret == 12.0)
