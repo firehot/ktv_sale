@@ -84,6 +84,17 @@ def timedelta_minutes(datetime_from,datetime_to):
     '''
     return int((datetime_to - datetime_from).total_seconds()/60)
 
+def str_timedelta_minutes(datetime_from_str,datetime_to_str):
+    '''
+    计算给定两个时间的相差分钟数
+    :param datetime_from_str string 起始时间
+    :param datetime_to_str string 结束时间
+
+    :return integer 两个时间的相差分钟数
+    '''
+    return int((strptime(datetime_to_str) - strptime(datetime_from_str)).total_seconds()/60)
+
+
 
 def float_time_minutes_delta(float_time_from,float_time_to):
     '''

@@ -18,6 +18,17 @@ class room_checkout(osv.osv):
 
     _order = "bill_datetime DESC"
 
+    def _compute_consume_minutes(self,cr,uid,ids,name,args,context = None):
+        """
+        计算消费时长
+        """
+        ret = {}
+        for record in self.browse(cr,uid,ids):
+            #close_time可能为空,当时尚未关闭
+            close_time = record.close_time if record.close_time else ktv_helper.utc_now_str()
+            consume_minutes = ktv_helper.str_timedelta_minutes(record.open_time,close_time)
+            ret[record.id]=consume_minutes
+        return ret
 
     def _compute_total_fee(self,cr,uid,ids,name,args,context = None):
         """
@@ -67,7 +78,8 @@ class room_checkout(osv.osv):
             "prepay_fee" : fields.float("prepay_fee",digits_compute = dp.get_precision('ktv_fee'),help="预付金额"),
             "room_fee" : fields.float("room_fee", digits_compute= dp.get_precision('ktv_fee'),help="包厢费"),
             "hourly_fee" : fields.float("hourly_fee",digits_compute = dp.get_precision('ktv_fee'),help="合计钟点费,如果是买断时,则是买断费用,如果是买钟点时,则是买钟费用;如果是自助餐(buffet),则是自助餐费用;如果是按位计钟点,则是按位钟点费合计"),
-            "consume_minutes" : fields.integer("consume_minutes",required = True,help="消费时长"),
+            #"consume_minutes" : fields.integer('consume_minutes',help="消费时长"),
+            "consume_minutes" : fields.function(_compute_consume_minutes,string="消费时长",type='integer'),
             "present_minutes" : fields.integer("present_minutes",help="赠送时长"),
 
             #换房费用字段

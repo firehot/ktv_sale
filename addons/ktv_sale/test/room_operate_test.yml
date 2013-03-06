@@ -13,6 +13,7 @@
     result = self.process_operate(cr,uid,ret)
     room_checkout_buyout = result['room_operate']
     assert room_checkout_buyout['total_fee'] > 0
-    operate_id = room_checkout_buyout['room_operate_id']
-    paid_info = self.calculate_sum_paid_info(cr,uid,operateid)
-    assert pard_info['total_fee'] > 0
+
+    operate_id = room_checkout_buyout['room_operate_id'][0]
+    paid_info = self.calculate_sum_paid_info(cr,uid,operate_id)
+    assert paid_info['total_fee'] > 0

@@ -55,7 +55,7 @@ class room_checkout_buyout(osv.osv):
         sum_pay_info.update({
                 'open_time': active_buyout_config['time_from'],
                 'close_time': active_buyout_config['time_to'],
-                'consume_minutes' : active_buyout_config['buyout_time'],
+                #'consume_minutes' : active_buyout_config['buyout_time'],
                 'hourly_fee' : total_fee,
                 'total_fee' : total_fee,
                 })
@@ -65,6 +65,8 @@ class room_checkout_buyout(osv.osv):
         sum_pay_info.update(discount_info)
 
         self.set_calculate_fields(cr,sum_pay_info)
+
+        _logger.debug("sum_pay_info = % s" % sum_pay_info)
 
         return sum_pay_info
 
