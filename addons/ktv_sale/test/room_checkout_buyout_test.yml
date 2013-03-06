@@ -1,0 +1,25 @@
+-
+  测试calculate_sum_pay_info
+-
+  !python {model: ktv.room_checkout_buyout}: |
+    ctx_args = {
+    "buyout_config_id" : ref('buyout_config_1'),
+    "room_id" : ref('ktv_room_1')
+    }
+    ret = self.calculate_sum_pay_info(cr,uid,ctx_args)
+    assert ret['total_fee'] > 0
+-
+  测试process_operate
+-
+  !python {model: ktv.room_operate}: |
+    #先做一个buyout_checkout
+    ctx_args = {
+        "room_id" : ref('ktv_room_1'),
+        "buyout_config_id" : ref('buyout_config_1')
+    }
+    ret = self.pool.get('ktv.room_checkout_buyout').re_calculate_fee(cr,uid,ctx_args)
+    assert ret
+    ret['osv_name'] = 'ktv.room_checkout_buyout'
+    op_result = self.process_operate(cr,uid,ret)
+    assert op_result['room_operate']['total_fee'] > 0
+

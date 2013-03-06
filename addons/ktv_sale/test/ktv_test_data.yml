@@ -83,6 +83,37 @@
     is_member: False
     time_from: 17.00
     time_to: 15.59
+    #周一
+    mon_buyout_enable : True
+    #周二
+    tue_buyout_enable : True
+    #周三
+    wed_buyout_enable : True
+    #周四
+    thu_buyout_enable : True
+    #周五
+    fri_buyout_enable : True
+    #周六
+    sat_buyout_enable : True
+    #周日
+    sun_buyout_enable : True
+    #周1
+    mon_buyout_fee : 100
+    #周二
+    tue_buyout_fee : 110
+    #周三
+    wed_buyout_fee : 120
+    #周四
+    thu_buyout_fee : 130
+    #周五
+    fri_buyout_fee : 140
+    #周六
+    sat_buyout_fee : 150
+    #周日
+    sun_buyout_fee : 160
+
+
+
 -
   !record {model: ktv.buyout_config,id: buyout_config_2}:
     name: vip下午场买断
@@ -90,6 +121,36 @@
     is_member: False
     time_from: 18.00
     time_to: 15.59
+    #周一
+    mon_buyout_enable : True
+    #周二
+    tue_buyout_enable : True
+    #周三
+    wed_buyout_enable : True
+    #周四
+    thu_buyout_enable : True
+    #周五
+    fri_buyout_enable : True
+    #周六
+    sat_buyout_enable : True
+    #周日
+    sun_buyout_enable : True
+    #周1
+    mon_buyout_fee : 100
+    #周二
+    tue_buyout_fee : 110
+    #周三
+    wed_buyout_fee : 120
+    #周四
+    thu_buyout_fee : 130
+    #周五
+    fri_buyout_fee : 140
+    #周六
+    sat_buyout_fee : 150
+    #周日
+    sun_buyout_fee : 160
+
+
 -
   应能够成功保存买断特殊日设置
 -

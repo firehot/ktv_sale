@@ -125,8 +125,8 @@ class buyout_config(osv.osv):
                     "room_type_id" : c.room_type_id.id,
                     "name" : getattr(c,"name"),
                     #起始时间是当前时间
-                    "time_from" : time_from.strftime('%Y-%m-%d %H:%M:%S'),
-                    "time_to" : time_to.strftime('%Y-%m-%d %H:%M:%S'),
+                    "time_from" : ktv_helper.strftime(time_from),
+                    "time_to" : ktv_helper.strftime(time_to),
                     "is_member" : getattr(c,'is_member'),
                     "buyout_fee" : buyout_fee,
                     #计算实际买断分钟数量
@@ -134,12 +134,11 @@ class buyout_config(osv.osv):
                     })
         return ret
 
-    def get_active_buyout_fee(self,cr,uid,buyout_config_id,context = None):
+    def get_active_buyout_fee(self,cr,uid,buyout_config_id,only_member=False,context = None):
         '''
         获取当前有效的买断费用信息,需要判断如下情况
         1、当前日期是否在买断设置日期范围内
         2、当前时间是否在买断规定时间段内
-        3、另:还需判断特殊日设置
         4、另:还需判断是否会员设置
         '''
         config = self.browse(cr,uid,buyout_config_id)
@@ -148,6 +147,10 @@ class buyout_config(osv.osv):
         _logger.debug(buyout_config_id)
         _logger.debug(active_buyout_configs)
         ret = [c for c in active_buyout_configs if c['id'] == buyout_config_id]
+        #仅仅只获取会员设置
+        if only_member:
+            ret = [c for c in ret if c['is_member']]
         if not active_buyout_configs or not ret:
             raise osv.except_osv(_("错误"), _('当前选择的买断设置信息无效.'))
+        _logger.debug("get_active_buyout_fee = %s" % ret)
         return ret[0]

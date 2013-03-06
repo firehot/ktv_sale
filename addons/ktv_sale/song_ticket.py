@@ -10,7 +10,7 @@ class song_ticket(osv.osv):
 
     _columns = {
             'name' : fields.char('name',size = 64,required = True),
-            'room_type_id' : fields.many2one('ktv.room_type','room_type_id',help = "包厢类别"),
+            'room_type_id' : fields.many2one('ktv.room_type','room_type_id',help = "包厢类别,为空时所有包厢都可使用"),
             'equal_minutes' : fields.integer('equal_minutes'),
             'active_time_limit' : fields.boolean('active_time_limit'),
             "time_from": fields.float("time_from",help = "欢唱券限制使用时间" ),

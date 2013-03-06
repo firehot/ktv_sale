@@ -11,6 +11,7 @@ from room import room
 
 _logger = logging.getLogger(__name__)
 
+
 class room_change_checkout_buyout(osv.osv):
     """
     换房情况下的结算,在预售时(买钟、买断),如果发生换房业务，则需要进行结算,结算遵循以下业务规则：

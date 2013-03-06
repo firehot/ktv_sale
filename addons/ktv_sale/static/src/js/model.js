@@ -688,21 +688,21 @@ openerp.ktv_sale.model = function(erp_instance) {
             "room_fee" : 0.0,
             "service_fee_rate" : 0.0,
             "service_fee" : 0.0,
-            "sum_hourly_fee" : 0.0,
+            "hourly_fee" : 0.0,
             "changed_room_fee" : 0.0,
-            "changed_room_sum_hourly_fee" : 0.0,
-            "changed_room_service_fee" : 0.0,
+            "changed_room_hourly_fee" : 0.0,
             "changed_room_minutes" : 0.0,
-			"sum_should_fee": 0.0,
-			"cash_fee": 0.0,
+            "total_fee" : 0.0,
+            "total_discount_fee" : 0.0,
+            "total_after_discount_fee" : 0.0,
+            "total_after_discount_cash_fee" : 0.0,
 			"member_card_fee": 0.0,
 			"credit_card_fee": 0.0,
 			"sales_voucher_fee": 0.0,
 			"free_fee": 0.0,
 			"on_credit_fee": 0.0,
-			"act_pay_fee": 0.0,
-			"change_fee": 0.0,
-            "discount_fee" : 0.0,
+			"act_pay_cash_fee": 0.0,
+			"cash_change_fee": 0.0,
             "discount_rate" : 0.0
 		},
 
@@ -712,31 +712,30 @@ openerp.ktv_sale.model = function(erp_instance) {
 			console.debug("in parent class initialize");
 			var events = "change:free_fee change:on_credit_fee change:sales_voucher_fee change:member_card_fee change:credit_card_fee";
 			this.on(events, this._re_calculate_cash_fee, this);
-            this.on("change:act_pay_fee",this._calculate_change_fee,this);
+            this.on("change:act_pay_cash_fee",this._calculate_change_fee,this);
 		},
 		//重新计算应付现金
 		_re_calculate_cash_fee: function() {
 			console.debug("in _re_calculate_cash_fee");
-			var sum_should_fee = this.get('sum_should_fee');
+			var total_after_discount_fee = this.get('total_after_discount_fee');
 			var member_card_fee = this.get('member_card_fee');
 			var credit_card_fee = this.get('credit_card_fee');
 			var sales_voucher_fee = this.get('sales_voucher_fee');
 			var free_fee = this.get('free_fee');
 			var on_credit_fee = this.get('on_credit_fee');
-			var cash_fee = sum_should_fee - member_card_fee - credit_card_fee - sales_voucher_fee - free_fee - on_credit_fee
+			var total_after_discount_cash_fee = total_after_discount_fee - member_card_fee - credit_card_fee - sales_voucher_fee - free_fee - on_credit_fee
 			this.set({
-				"cash_fee": cash_fee,
-				"act_pay_fee": cash_fee,
-				"change_fee": 0
+				"total_after_discount_cash_fee": total_after_discount_cash_fee,
+				"act_pay_cash_fee": cash_fee,
+				"cash_change": 0
 			});
-			//TODO 还需要
 		},
 		//计算找零金额
 		_calculate_change_fee: function() {
-			var act_pay_fee = this.get("act_pay_fee");
-			var change_fee = act_pay_fee - this.get('cash_fee');
+			var act_pay_cash_fee = this.get("act_pay_cash_fee");
+			var cash_change = act_pay_cash_fee - this.get('total_after_discount_cash_fee');
 			this.set({
-				"change_fee": change_fee
+				"cash_change": cash_change
 			});
 		},
 

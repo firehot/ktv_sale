@@ -465,6 +465,7 @@
                 <td><span class='consume_minutes'>0</span>分钟</td>
             </tr>
             <tr>
+                <th>预付费</th>
                 <th>包厢费</th>
                 <th>钟点费</th>
                 <th>换房包厢费</th>
@@ -477,11 +478,12 @@
                 <th>应收合计</th>
             </tr>
             <tr>
+                <td><span class="prepay_fee"></span></td>
                 <td><span class="room_fee"></span></td>
-                <td><span class='sum_hourly_fee'></span></td>
+                <td><span class='hourly_fee'></span></td>
                 <td><span class='changed_room_fee'></span></td>
                 <td>
-                    <span class='changed_room_sum_hourly_fee'></span>/
+                    <span class='changed_room_hourly_fee'></span>/
                     <span class='changed_room_minutes'></span>分钟
                 </td>
                 <td><span class='merged_room_hourly_fee'></span></td>
@@ -490,12 +492,12 @@
                     <span class='service_fee'></span>/
                     <span class='service_fee_rate'></span>%
                 </td>
-                <td><span class='sum_fee'></span></td>
+                <td><span class='total_fee'></span></td>
                 <td>
-                    <span class='discount_fee'></span>/
+                    <span class='total_discount_fee'></span>/
                     <span class='discount_rate'></span>%
                 </td>
-                <td><span class='label label-important sum_should_fee'></span></td>
+                <td><span class='label label-important total_after_discount_fee'></span></td>
             </tr>
 
             <tr class='hide member-card-wrapper'>
@@ -550,7 +552,7 @@
                 <td>
                     <div class='input-prepend'>
                         <span class='add-on'>现金:</span>
-                        <input type='text' class='cash_fee input-mini' disabled='true'/>
+                        <input type='text' class='total_after_discount_cash_fee input-mini' disabled='true'/>
                     </div>
                 </td>
                 <td>
@@ -605,13 +607,13 @@
                 <td>
                     <div class="input-prepend input-append">
                         <span class='add-on'>实付:</span>
-                        <input type='text' class='act_pay_fee input-mini'/>
+                        <input type='text' class='act_pay_cash_fee input-mini'/>
                     </div>
                 </td>
                 <td colspan='2'>
                     <div class="input-prepend input-append">
                         <span class='add-on'>找零:</span>
-                        <span class="change_fee input-mini uneditable-input"></span>
+                        <span class="cash_change input-mini uneditable-input"></span>
                     </div>
                 </td>
             </tr>

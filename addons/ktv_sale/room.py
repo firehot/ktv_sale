@@ -115,7 +115,7 @@ class room(osv.osv):
 
     def get_current_fee(self,cr,uid,room_id,context = None):
         """
-        根据包厢低消费设置,获取包厢的费用信息,逻辑如下:
+        根据包厢消费设置,获取包厢的费用信息,逻辑如下:
         room_fee 包厢费,如果没有对应低消设置,则取包厢本身设置信息
         hourly_fee 钟点费,如果没有对应的钟点优惠设置,则取包厢自身设置
         hourly_fee_p 同上

@@ -42,7 +42,6 @@ openerp.ktv_sale.helper = function(erp_instance) {
             var actions_array = actions_str.split(',');
             return actions_array;
 
-
         },
         //根据当前房态获取操作列表
         get_room_actions_list : function(r_state){

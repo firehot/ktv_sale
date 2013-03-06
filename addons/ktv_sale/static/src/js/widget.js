@@ -819,26 +819,27 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			this.$('.open_time').html(this.model.get('context_open_time'));
 			this.$('.close_time').html(this.model.get('context_close_time'));
 			this.$('.consume_minutes').html(this.model.get('consume_minutes'));
+			this.$('.prepay_fee').html(this.model.get('prepay_fee'));
 			this.$('.room_fee').html(this.model.get('room_fee'));
 			this.$('.service_fee_rate').html(this.model.get('service_fee_rate'));
 			this.$('.service_fee').html(this.model.get('service_fee'));
-			this.$('.sum_hourly_fee').html(this.model.get('sum_hourly_fee'));
+			this.$('.hourly_fee').html(this.model.get('hourly_fee'));
 			this.$('.minimum_fee').html(this.model.get('minimum_fee'));
 			this.$('.minimum_fee_diff').html(this.model.get('minimum_fee_diff'));
-			this.$('.changed_room_sum_hourly_fee').html(this.model.get('changed_room_sum_hourly_fee'));
+			this.$('.changed_room_hourly_fee').html(this.model.get('changed_room_hourly_fee'));
 			this.$('.changed_room_minutes').html(this.model.get('changed_room_minutes'));
 			this.$('.merged_room_hourly_fee').html(this.model.get('merged_room_hourly_fee'));
-			this.$('.sum_fee').html(this.model.get('sum_fee'));
-			this.$('.discount_fee').html(this.model.get('discount_fee'));
+			this.$('.total_fee').html(this.model.get('total_fee'));
+			this.$('.total_discount_fee').html(this.model.get('total_discount_fee'));
 			this.$('.discount_rate').html(this.model.get('discount_rate'));
-			this.$('.sum_should_fee').html(this.model.get('sum_should_fee'));
-			this.$('.cash_fee').val(this.model.get('cash_fee'));
+			this.$('.total_after_discount_fee').html(this.model.get('total_after_discount_fee'));
+			this.$('.total_after_discount_cash_fee').val(this.model.get('total_after_discount_cash_fee'));
 			this.$('.member_card_fee').val(this.model.get('member_card_fee'));
 			this.$('.credit_card_fee').val(this.model.get('credit_card_fee'));
 			this.$('.sales_voucher_fee').val(this.model.get('sales_voucher_fee'));
 			this.$('.free_fee').val(this.model.get('free_fee'));
-			this.$('.act_pay_fee').val(this.model.get('act_pay_fee'));
-			this.$('.change_fee').html(this.model.get('change_fee'));
+			this.$('.act_pay_cash_fee').val(this.model.get('act_pay_cash_fee'));
+			this.$('.cash_change').html(this.model.get('cash_change'));
 		},
 		//自动设置会员卡支付费用
 		_autoset_pay_type_member_card_fee: function() {
@@ -960,8 +961,8 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			//不同付款方式费用变化
 			this.$el.on('change', '.member_card_fee', _.bind(this._onchange_member_card_fee, this));
 			this.$el.on('change', '.credit_card_fee', _.bind(this._onchange_credit_card_fee, this));
-			this.$el.on('change', '.act_pay_fee', _.bind(this._onchange_act_pay_fee, this));
-			//TODO 暂时注释
+			this.$el.on('change', '.act_pay_cash_fee', _.bind(this._onchange_act_pay_cash_fee, this));
+			//TODO 暂时注释,后期实现
 			//this.$('.free_fee').change(_.bind(this._onchange_member_card_fee,this));
 			//this.$('.on_credit_fee').change(_.bind(this._onchange_member_card_fee,this));
 		},
@@ -1037,10 +1038,10 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			});
 		},
 		//实付金额变化
-		_onchange_act_pay_fee: function() {
-			var act_pay_fee = parseFloat(this.$('.act_pay_fee').val());
+		_onchange_act_pay_cash_fee: function() {
+			var act_pay_cash_fee = parseFloat(this.$('.act_pay_cash_fee').val());
 			this.model.set({
-				'act_pay_fee': act_pay_fee
+				'act_pay_cash_fee': act_pay_cash_fee
 			});
 
 		},

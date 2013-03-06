@@ -25,8 +25,6 @@ class room_operate(osv.osv):
 
     _columns = {
             "operate_date" : fields.datetime('operate_datetime',required = True),
-            "room_id" : fields.many2one('ktv.room','room_id',required = True,help="与此操作关联的包厢id"),
-            "ref_room_operate_id" : fields.many2one('ktv.room_operate','ref_room_operate_id',help = "原包厢操作对象,换房时会存在"),
             "bill_no" : fields.char("bill_no",size = 64,required = True,help = "账单号"),
             "room_scheduled_ids" : fields.one2many("ktv.room_scheduled","room_operate_id",help="预定信息列表"),
             "room_opens_ids" : fields.one2many("ktv.room_opens","room_operate_id",help="开房信息列表"),
@@ -36,12 +34,22 @@ class room_operate(osv.osv):
             "room_checkout_buytime_ids" : fields.one2many("ktv.room_checkout_buytime","room_operate_id",help="包厢买钟结账信息列表"),
             "room_change_checkout_buytime_ids" : fields.one2many("ktv.room_change_checkout_buytime","room_operate_id",help="买钟-换房结账信息列表"),
             "room_change_checkout_buyout_ids" : fields.one2many("ktv.room_change_checkout_buyout","room_operate_id",help="买断-换房结账信息列表"),
+
+            #以下为计算字段列表
             }
 
     _defaults = {
             'operate_date' : fields.datetime.now,
             'bill_no': lambda obj, cr, uid, context: obj.pool.get('ir.sequence').get(cr, uid, 'ktv.room_operate'),
             }
+
+    def calculate_sum_paid_info(self,cr,uid,operate_id):
+        """
+        获取该operate中所有已支付费用dict
+        """
+        #TODO
+        pass
+
 
 
     def process_operate(self,cr,uid,operate_values):

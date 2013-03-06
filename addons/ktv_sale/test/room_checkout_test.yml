@@ -1,0 +1,28 @@
+-
+  测试get_default_checkout_dict
+-
+  !python {model: ktv.room_checkout }: |
+    rp = self.get_default_checkout_dict(cr,uid)
+    assert rp
+    assert rp['total_fee'] == 0
+-
+  测试get_default_checkout_dict#set_calculate_fields
+-
+  !python {model: ktv.room_checkout}: |
+    rp = self.get_default_checkout_dict(cr,uid)
+    rp['total_fee']= 1000
+    rp['total_discount_fee'] = 100
+    self.set_calculate_fields(cr,rp)
+    assert rp['total_after_discount_fee'] == 900
+-
+  测试set_discount_info
+-
+  !python {model: ktv.room_checkout}: |
+    ctx = {
+      "total_fee" : 1000,
+      "member_id" : ref('member_card_1'),
+      "discount_card_id" : ref('discount_card_1'),
+      "discounter_id" : None,
+    }
+    ret = self.set_discount_info(cr,uid,**ctx)
+    assert ret['total_discount_fee'] > 0

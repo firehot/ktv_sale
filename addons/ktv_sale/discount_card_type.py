@@ -11,11 +11,11 @@ class discount_card_type(osv.osv):
     _columns = {
             'name' : fields.char('name',size = 64,required = True),
             #酒水折扣,按照百分比计算
-            'drinks_fee_discount' : fields.float('drinks_fee_discount',digits_compute = dp.get_precision('Ktv Fee')),
+            'drinks_fee_discount' : fields.float('drinks_fee_discount',digits_compute = dp.get_precision('ktv_fee')),
             #房费折扣,按照百分比计算
-            'room_fee_discount' : fields.float('room_fee_discount',digits_compute = dp.get_precision('Ktv Fee')),
+            'room_fee_discount' : fields.float('room_fee_discount',digits_compute = dp.get_precision('ktv_fee')),
             #制卡费用
-            'card_fee' : fields.float('card_fee',digits_compute = dp.get_precision('Ktv Fee')),
+            'card_fee' : fields.float('card_fee',digits_compute = dp.get_precision('ktv_fee')),
             #描述
             'description' : fields.text('description',size = 255),
             'active' : fields.boolean('active'),

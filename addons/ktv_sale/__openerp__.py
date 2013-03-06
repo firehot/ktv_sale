@@ -77,7 +77,10 @@
     'test': [
         'test/ktv_test_data.yml',
         'test/member_test_data.yml',
-        'test/ktv_room_test.yml',
+        'test/room_checkout_test.yml',
+        'test/room_checkout_buyout_test.yml',
+        'test/room_operate_test.yml',
+        #'test/ktv_room_test.yml',
         ],
     'installable': True,
     'application': True,
