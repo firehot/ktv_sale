@@ -39,6 +39,9 @@ class room_operate(osv.osv):
         for record in self.browse(cr,uid,ids,context):
             #依次判断所有开房相关操作:room_opens > room_checkout_buyout > room_checkout_buytime
             which_room_open_ops = record.room_opens_ids or record.room_checkout_buyout_ids or record.room_checkout_buytime_ids
+
+            fee_type_id = which_room_open_ops[0].fee_type_id.id
+            price_class_id = getattr(which_room_open_ops[0].price_class_id,'id',None)
             open_time = which_room_open_ops[0].open_time
             guest_name = which_room_open_ops[0].guest_name
             persons_count = which_room_open_ops[0].persons_count
@@ -47,8 +50,19 @@ class room_operate(osv.osv):
             #依次判断关房操作,也有可能当前包厢尚未关闭,close_time可能为空
             #room_change > room_checkout > room_change_checkout_buytime > room_change_checkout_buyout > room_checkout_buytime
             #TODO 还需要加上 续钟与退钟操作
-            which_room_close_ops = record.room_change_ids or record.room_checkout_ids or record.room_change_checkout_buyout_ids or record.room_checkout_buyout_ids or record.room_change_checkout_buytime_ids or record.room_checkout_buytime_ids
-            close_time = which_room_close_ops[0].close_time
+            which_room_close_ops = record.room_checkout_ids or record.room_change_ids or record.room_change_checkout_buyout_ids or record.room_checkout_buyout_ids or record.room_change_checkout_buytime_ids or record.room_checkout_buytime_ids
+            close_time = None
+            last_member = None
+            if which_room_close_ops:
+                close_time = which_room_close_ops[-1].close_time
+                #获取最后一次操作的member_id
+                last_member =getattr(which_room_close_ops[-1],'member_id',None)
+
+            if not last_member:
+                last_member = which_room_open_ops[0].member_id
+
+            last_member_id = getattr(last_member,'id',None)
+
 
             #计算consume_minutes
             consume_minutes = changed_room_minutes = song_ticket_minutes =present_minutes =  0
@@ -80,6 +94,9 @@ class room_operate(osv.osv):
             ret[record.id] = {
                     'guest_name' : guest_name,
                     'persons_count' : persons_count or 1,
+                    'fee_type_id' : fee_type_id,
+                    'price_class_id' : price_class_id,
+                    'last_member_id' : last_member_id,
                     'open_time' : open_time,
                     'close_time' : close_time,
                     'prepay_fee' : prepay_fee or 0.0,
@@ -119,6 +136,10 @@ class room_operate(osv.osv):
 
             #以下为计算字段列表,FIXME 字段名称与room_checkout中的完全一致
             #基础信息
+
+            "fee_type_id" : fields.function(_compute_fields,type='many2one',obj="ktv.fee_type",multi='compute_fields',string='计费方式'),
+            "price_class_id" : fields.function(_compute_fields,type='many2one',obj="ktv.price_class",multi='compute_fields',string='价格类型(可能为None)'),
+            "last_member_id" : fields.function(_compute_fields,type='many2one',obj="ktv.member",multi='compute_fields',string='会员id',help="最近一次使用的会员卡"),
             "guest_name" : fields.function(_compute_fields,type='string',multi='compute_fields',string='客人姓名'),
             "persons_count": fields.function(_compute_fields,type='integer',multi='compute_fields',string='客人人数'),
             "open_time" : fields.function(_compute_fields,type='datetime',multi="compute_fields",string="开房时间"),
@@ -158,13 +179,12 @@ class room_operate(osv.osv):
 
     def calculate_sum_paid_info(self,cr,uid,operate_id,context=None):
         """
-        获取该operate中所有已支付费用dict
+        获取该room_operate中所有已支付费用dict
         """
         fields = self.fields_get(cr,uid).keys()
         _logger.debug("fields = %s" % fields)
         _logger.debug("operate_id = %s" % type(operate_id))
         return self.read(cr,uid,operate_id,fields,context)
-
 
     def process_operate(self,cr,uid,operate_values):
         """

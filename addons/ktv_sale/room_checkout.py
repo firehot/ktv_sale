@@ -198,6 +198,7 @@ class room_checkout(osv.osv):
             "total_after_discount_cash_fee" : 0,
             "cash_change" : 0,
             }
+
     def set_discount_info(self,cr,uid,total_fee,member_id=None,discount_card_id=None,discounter_id=None):
         """
         计算并设置折扣信息
@@ -231,8 +232,8 @@ class room_checkout(osv.osv):
         ret['total_discount_fee']  = total_discount_fee
         return ret
 
-    def re_calculate_fee(self,cr,uid,context):
-        '''
+    def _calculate_sum_should_pay_info(self,cr,uid,context):
+        """
         计算正常开房-结账费用信息
         :params context 包含计算上下文信息,required
         :param context['room_id'] integer required 结账包厢id
@@ -242,218 +243,121 @@ class room_checkout(osv.osv):
         :params context[discount_card_id] integer 打折卡id
         :params context[discounter_id] integer 员工id,用于记录打折员工信息
         :return 计算费用后的结账对象 dict
-        计算步骤:
-        1 计算正常开房及关房(room_opens),计算费用
-        2 计算换房数据(可能会存在多次换房信息)(room_chnage),计算换房费用
-        3 计算折扣费用
-        4 根据付款方式,价格类型计算实际应付费用
-        5 返回计算结果,类型为dict
-        '''
+        """
+        pool = self.pool
+        room_id = context['room_id']
+        room = pool.get('ktv.room').browse(cr,uid,room_id)
+        r_op = room.current_room_operate_id
+        fee_type_id = context.get('fee_type_id')
+        price_class_id = context.get('price_class_id')
+        discount_card_id = context.get('discount_card_id',None)
+        discounter_id = context.get('discounter_id',None)
+        sum_should_pay_info = self.get_default_checkout_dict(cr,uid)
 
-        _logger.info(context)
+        #如果member_id为空,则默认使用上次包厢操作的member_id
+        member_id = context.get('member_id',None)
+        member = pool.get('ktv.member').browse(cr,uid,member_id) if member_id else r_op.last_member_id
 
-        #获取当前包厢费用信息
-        room_id = context.pop('room_id')
-        room = self.pool.get('ktv.room').browse(cr,uid,room_id)
+        room_opens = r_op.room_opens_ids and r_op.room_opens_ids[0]
+        room_changes = r_op.room_change_ids
+        #如果没有开房信息,或包厢已结账room_checkout,则返回None
+        if r_op.room_checkout_ids or not room_opens:
+            _logger.debug("Not Found room_opens or room_checkout")
+            raise osv.except_osv(_("错误"), _('包厢操作数据错误,该包厢已结账或找不到开房信息.'))
 
-        cur_operate_id = room.current_room_operate_id
+        #计算room_opens的room_fee和hourly_fee
+        origin_room = room_opens.room_id
+        #关闭时间,如果room_opens未关闭,则为当前时间,否则为room_opens关闭时间
+        close_time = room_opens.close_time if room_opens.close_time else ktv_helper.utc_now_str()
+        sum_should_pay_info['open_time'] = room_opens.open_time
+        sum_should_pay_info['room_fee'] = origin_room.room_fee
+        sum_should_pay_info['service_fee_rate'] = origin_room.service_fee_rate
 
-        ret = {
-                "room_id" : room_id,
-                "fee_type_id" : context['fee_type_id'],
-                "price_class_id" : context['price_class_id'],
-                "open_time" : None,
-                "close_time" : ktv_helper.utc_now_str(),
-                "persons_count" : 0,
-                "consume_minutes" : 0,
-                "present_minutes" : 0,
-                "room_fee" : 0,
-                "changed_room_fee" : 0,
-                "sum_hourly_fee" : 0,
-                "sum_hourly_fee_p" : 0,
-                "changed_room_hourly_fee" : 0,
-                "changed_room_minutes" : 0,
-                "merged_room_hourly_fee" : 0,
-                "minimum_fee" : 0,
-                "minimum_fee_diff" : 0,
-                "service_fee_rate" : 0,
-                "service_fee" : 0,
-                "discount_rate" : 0,
-                "discount_fee" : 0,
+        #计算钟点费环境变量
+        cal_ctx = {
+                'datetime_open' : room_opens.open_time,
+                'datetime_close' : close_time,
+                'price_class_id' : price_class_id
                 }
-
-        member = None
-        if "member_id" in context and context['member_id']:
-            member = self.pool.get('ktv.member').browse(context['member_id'])
-
-        #计算room_opens应付费用合计
-        (room_opens_sum_hourly_fee,room_opens_consume_minutes,room_opens_sum_hourly_fee_p,room_open_consume_minutes_p) = (0,0,0,0)
-        #FIXME 一个room_operate应该只有一个room_opens
-        room_opens = cur_operate_id.room_opens_ids and cur_operate_id.room_opens_ids[0]
-        if room_opens:
-            #原包厢
-            origin_room = cur_operate_id.room_id
-            ret['open_time'] = room_opens.open_time
-            ret['persons_count'] = room_opens.persons_count
-            #包厢费
-            ret['room_fee'] = origin_room.room_fee
-            #服务费率
-            ret['service_fee_rate'] = origin_room.service_fee_rate
-            #钟点费
-            cal_hourly_fee_ctx = {
-                    'datetime_open' : room_opens.open_time,
-                    'datetime_close' : room_opens.close_time if room_opens.close_time else ktv_helper.utc_now_str(),
-                    'price_class_id' : context['price_class_id'],
-                    'persons_count' : room_opens.persons_count,
-                    }
-            if member:
-                cal_hourly_fee_ctx['member_class_id'] = member.member_class_id.id
-
-            #钟点费合计
-            (room_opens_consume_minutes,room_opens_sum_hourly_fee) = self._get_sum_hourly_fee(cr,uid,origin_room.id,cal_hourly_fee_ctx)
-            #按位钟点费合计
-            cal_hourly_fee_ctx['is_hourly_fee_p'] = True
-            (room_opens_consume_minutes_p,room_opens_sum_hourly_fee_p) = self._get_sum_hourly_fee(cr,uid,origin_room.id,cal_hourly_fee_ctx)
-            ret['sum_hourly_fee'] = room_opens_sum_hourly_fee
-            ret['consume_minutes'] = room_opens_consume_minutes
-            ret['sum_hourly_fee_p'] = room_opens_sum_hourly_fee_p
-            ret['consume_minutes_p'] = room_opens_consume_minutes_p
-
-        #计算room_change应付费用合计
-
-        (room_change_sum_hourly_fee,room_change_sum_hourly_fee_p,room_change_minutes,room_change_minutes_p) = (0,0,0,0)
-        for room_change in cur_operate_id.room_change_ids:
-            changed_room = room_change.changed_room_id
-            cal_room_change_hourly_fee_ctx = {
-                    'datetime_open' : room_change.open_time,
-                    'datetime_close' : room_opens.close_time if room_opens.close_time else ktv_helper.utc_now_str(),
-                    'price_class_id' : context['price_class_id'],
-                    'persons_count' : room_opens.persons_count,
-                    }
-
-            if member:
-                cal_room_change_hourly_fee_ctx['member_class_id'] = member.member_class_id.id
-
-            #钟点费合计
-            (m,h) =  self._get_sum_hourly_fee(cr,uid,changed_room.id,cal_room_change_hourly_fee_ctx)
-            room_change_sum_hourly_fee += h;room_change_minutes += m
-            #按位钟点费合计
-            cal_room_change_hourly_fee_ctx['is_hourly_fee_p'] = True
-            (m,h) =  self._get_sum_hourly_fee(cr,uid,changed_room.id,cal_room_change_hourly_fee_ctx)
-            room_change_minutes_p += m;room_change_sum_hourly_fee_p += h
-
-            #服务费
-            ret['service_fee_rate'] = changed_room.service_fee_rate
-            #计算应补包厢费
-            ret['changed_room_fee'] = 0
-            #默认以费用高的包厢费为准
-            if changed_room.room_fee > ret['room_fee']:
-                ret['room_fee'] = changed_room.room_fee
-
-        ret['changed_room_sum_hourly_fee'] = room_change_sum_hourly_fee
-        ret['changed_room_minutes'] = room_change_minutes
-        ret['changed_room_sum_hourly_fee_p'] = room_change_sum_hourly_fee_p
-        ret['changed_room_minutes_p'] = room_change_minutes_p
-
-        #默认无折扣
-        discount_rate = 0;discount_fee = 0
-
-        #原钟点费合计
-        sum_origin_hourly_fee = room_opens_sum_hourly_fee + room_change_sum_hourly_fee
-        sum_origin_hourly_fee_p = room_opens_sum_hourly_fee_p + room_change_sum_hourly_fee_p
-
-        #打折卡折扣
-        discount_card = None
-        if 'discount_card_id' in context and context['discount_card_id']:
-            discount_card = self.pool.get('ktv.discount_card').browse(cr,uid,context['discount_card_id'])
-            discount_card_id = context['discount_card_id']
-            discount_card_room_fee_discount_rate = discount_card.discount_card_type_id.room_fee_discount
-            discount_card_room_fee_discount_fee = sum_origin_hourly_fee*(100 - discount_card_room_fee_discount_rate)/100
-            discount_rate = discount_card_room_fee_discount_rate
-            discount_fee = discount_card_room_fee_discount_fee
-
-            ret.update({
-                "discount_card_id" : discount_card.id,
-                "discount_card_room_fee_discount_rate" : discount_card_room_fee_discount_rate,
-                "discount_card_room_fee_discount_fee" : discount_card_room_fee_discount_fee,
-                })
-
-
-
-        #计算会员折扣信息
-        #FIXME 此处需要处理会员折扣的问题：
-        #存在这样的情况：当前已存在会员钟点折扣设置,此时会员卡又有房费折扣设置,此时取哪一种折扣设置
-        #逻辑判断:如果当前是会员时段,则总房费不再折扣,否则按照总房费对会员消费折扣
-
         if member:
-            member_room_fee_discount_rate = member.member_class_id.room_fee_discount
-            member_room_fee_discount_fee = sum_origin_hourly_fee*(100 - member.member_class_id.room_fee_discount) /100
-            discount_rate = member_room_fee_discount_rate
-            discount_fee = member_room_fee_discount_fee
-            ret.update({
-                "member_id" : member.id,
-                "member_room_fee_discount_rate" : member_room_fee_discount_rate,
-                "member_room_fee_discount_fee" : member_room_fee_discount_fee,
-                })
+            cal_ctx['member_class_id'] = member.member_class_id.id
 
-        ret.update({
-                "merged_room_hourly_fee" : 0,
-                "minimum_fee" : 0,
-                "minimum_fee_diff" : 0,
-                "service_fee_rate" : room.service_fee_rate,
-                "discount_rate" : discount_rate,
-                "discount_fee" : discount_fee,
-                })
+        consume_minutes,hourly_fee = self._get_sum_hourly_fee(cr,uid,origin_room.id,cal_ctx)
 
+        #计算room_change的room_fee和hourly_fee
+        changed_room_fee,changed_room_hourly_fee,change_room_minutes = (0.0,0.0,0)
+        for room_change in r_op.room_change_ids:
+            close_time = room_change.close_time if room_change.close_time else ktv_helper.utc_now_str()
+            changed_room = room_change.changed_room_id
+            cal_ctx.update({
+                    'datetime_open' : room_change.open_time,
+                    'datetime_close' : room_change.close_time if room_change.close_time else ktv_helper.utc_now_str(),
+                })
+            #钟点费合计
+            (m,h) =  self._get_sum_hourly_fee(cr,uid,changed_room.id,cal_ctx)
+            changed_room_hourly_fee += h;changed_room_minutes += m
+            #计算changed_room_fee,默认按照room_fee高的补差价
+            if changed_room.room_fee > origin_room.room_fee:
+                changed_room_fee = changed_room.room_fee - origin_room.room_fee
+
+        #合并两项费用
+        total_fee = room_fee + changed_room_fee + hourly_fee + changed_room_hourly_fee
+        sum_should_pay_info.update({
+            'room_operate_id' : r_op.id,
+            'room_id' : context['room_id'],
+            'price_class_id' : price_class_id,
+            'fee_type_id' : fee_type_id,
+            'guest_name' : r_op.guest_name,
+            'persons_count' : r_op.persons_count,
+            'open_time' : room_opens.open_time,
+            'close_time' : close_time,
+            'prepay_fee' : r_op.prepay_fee,
+
+            'room_fee' : origin_room.room_fee,
+            'hourly_fee' : hourly_fee,
+            'consume_minutes' : consume_minutes,
+
+            'changed_room_fee' : changed_room_fee,
+            'changed_room_hourly_fee' : changed_room_hourly_fee,
+            'changed_room_minutes' : changed_room_minutes,
+            'guest_damage_fee' : r_op.guest_damage_fee,
+            })
+
+        #计算折扣
+        discount_info = self.set_discount_info(cr,uid,total_fee,member_id,discount_card_id,discounter_id)
+        sum_should_pay_info.update(discount_info)
+
+        #根据fee_type_id计算费用
+        self.calculate_with_fee_type_id(cr,uid,fee_type_id,sum_should_pay_info)
+        self.set_calculate_fields(cr,uid,sum_should_pay_info)
+        _logger.debug('sum_pay_info = % ' % sum_should_pay_info)
+
+        return sum_should_pay_info
+
+    def calculate_with_fee_type_id(self,cr,uid,fee_type_id,sum_pay_info_vals):
         #根据计费方式计算费用信息
-        fee_type = self.pool.get('ktv.fee_type').browse(cr,uid,context['fee_type_id'])
-
-        _logger.debug("return result = %s,",ret)
+        pool = self.pool
+        fee_type = pool.get('ktv.fee_type').browse(cr,uid,fee_type_id)
         _logger.debug("fee_type = %s,: %s",fee_type.fee_type_code,fee_type.name)
         #只收包厢费
         if fee_type.fee_type_code == fee_type.FEE_TYPE_ONLY_ROOM_FEE:
-            ret.update({
+            sum_pay_info_vals.update({
                 "service_fee_rate" : 0,
                 "service_fee" : 0,
-                "sum_hourly_fee" : 0,
-                "sum_hourly_fee_p" : 0,
-                "changed_room_sum_hourly_fee" : 0,
-                "changed_room_sum_hourly_fee_p" : 0,
+                "hourly_fee" : 0,
+                "changed_room_hourly_fee" : 0,
                 })
 
         #只收钟点费
         elif fee_type.fee_type_code == fee_type.FEE_TYPE_ONLY_HOURLY_FEE:
-            ret.update({
+            sum_pay_info_vals.update({
                 "room_fee" : 0,
                 "changed_room_fee" : 0,
-                "sum_hourly_fee_p" : 0,
                 })
 
-        #包厢费加钟点费
-        elif fee_type.fee_type_code == fee_type.FEE_TYPE_ROOM_FEE_PLUS_HOURLY_FEE:
-            ret.update({"sum_hourly_fee_p" : 0 })
-       #按位钟点费
-        elif fee_type.fee_type_code == fee_type.FEE_TYPE_HOURLY_FEE_P:
-            ret.update({"room_fee" : 0,'changed_room_fee' : 0,"sum_hourly_fee" : 0})
         else:
-            #NOTE 其他计费方式不适用
             pass
-        #计算其他费用
-        #服务费
-        ret['service_fee'] = (ret['room_fee'] + ret['changed_room_fee'] + ret['sum_hourly_fee'] + ret['sum_hourly_fee_p'])*ret['service_fee_rate']
-        ret['sum_fee'] = ret['room_fee'] + ret['changed_room_fee'] + ret['sum_hourly_fee'] + ret['sum_hourly_fee_p'] + ret['service_fee']
-        ret['sum_should_fee'] = ret['sum_fee'] - ret['discount_fee']
-        ret['cash_fee'] = ret['sum_should_fee']
-        ret['act_pay_fee'] = ret['cash_fee']
-        ret['change_fee'] = 0.0
-        ret.update({
-            'member_card_fee' : 0.0,
-            'credit_card_fee' : 0.0,
-            'sales_voucher_fee' : 0.0,
-            })
-
-        return ret
-
+        return sum_apy_info_vals
     def process_operate(self,cr,uid,room_checkout_vals):
         '''
         自客户端传入的数据创建包厢结账单据
@@ -489,76 +393,60 @@ class room_checkout(osv.osv):
         给定一个消费时间段,根据hourly_fee_discount及member_hourly_fee_discount中的设置计算分段钟点费用
         :param room_id integer 包厢id
         :param context dict required
-        :param context[is_hourly_fee_p] boolean  是否是计算按位钟点费 required
-        :param context[datetime_open] datetime 包厢消费起始时间 required
-        :param context[datetime_close] datetime 包厢消费结束时间 required
+        :param context[datetime_open] string 包厢消费起始时间 required
+        :param context[datetime_close] string 包厢消费结束时间 required
         :param context[price_class_id] integer 价格类型id required
         :param context[member_id] integer 会员卡id
-        :param context[persons_count] integer 消费人数
         :return decimal 各个时段的钟点费合计
         """
-        room = self.pool.get('ktv.room').browse(cr,uid,room_id)
+        pool = self.pool
         datetime_open = ktv_helper.strptime(context['datetime_open'])
         datetime_close = ktv_helper.strptime(context['datetime_close'])
-        price_class_id = context['price_class_id']
-        member_class_id = 'member_class_id' in context and context['member_class_id']
-        #计算最低消费人数
-        persons_count = 'persons_count' in context and context['persons_count'] or 1
-        if persons_count < room.minimum_persons:
-            persons_count = room.minimum_persons
+
+        room = pool.get('ktv.room').browse(cr,uid,room_id)
         room_type_id = room.room_type_id.id
+
+        price_class_id = context.get('price_class_id')
+        member_id = context.get('member_id',None)
+        member_class_id = None
+        if memeber_id:
+            member = pool.get('ktv.member').browse(cr,uid,member_id)
+            member_class_id = member.member_class_id.id
+
+        #hourly_fee_configs 包厢时段设置
+        hourly_fee_discount_configs = []
 
         domain = {'price_class_id' : price_class_id,'ignore_time_range' : True}
         if member_class_id:
             domain['member_class_id'] = member_class_id
-        #hourly_fee_configs 包厢时段设置
-        hourly_fee_discount_configs = []
-        #member_hourly_fee_config 会员包厢时段设置
-        if member_class_id:
             domain['which_fee']="member_hourly_fee_discount"
             hourly_discount_configs = self.pool.get('ktv.member_hourly_fee_discount').get_active_conifg(cr,uid,room_type_id,domain)
 
-        #判断是否计算按位钟点费
-        is_hourly_fee_p = 'is_hourly_fee_p' in context and context['is_hourly_fee_p']
-        if is_hourly_fee_p:
-            hourly_discount_configs = self.pool.get("ktv.hourly_fee_p_discount").get_active_configs(cr,uid,room_type_id,domain)
-        #否则取hourly_fee_discount设置
-        elif not hourly_fee_discount_configs:
-            hourly_discount_configs = self.pool.get('ktv.hourly_fee_discount').get_active_configs(cr,uid,room_type_id,domain)
+        hourly_discount_configs = self.pool.get("ktv.hourly_fee_p_discount").get_active_configs(cr,uid,room_type_id,domain)
 
         #合计钟点费及消费分钟数
         sum_hourly_fee = 0
         sum_consume_minutes = 0
         #形成config_array数组
-        def construct_config_array():
-            ret_array =[]
-            for c in hourly_discount_configs:
-                config_datetime_from = ktv_helper.float_time_to_datetime(c['time_from'])
-                config_datetime_to = ktv_helper.float_time_to_datetime(c['time_to'])
-                #如果config_datetime_to < config_datetime_from,则config_datetime_to + 1 day
-                if config_datetime_to < config_datetime_from:
-                    config_datetime_to = config_datetime_to + timedelta(days = 1)
-
-                #先形成时间顺序的数组
-                #FIXME 此处要求在设置时间时,必须是连续的
-                ret_array.append({
-                    'datetime_from' : config_datetime_from,
-                    'datetime_to' : config_datetime_to,
-                    'hourly_fee' : c['hourly_fee'],
-                    'hourly_discount' : c['hourly_discount'],
-                    })
-            return ret_array
-
-        config_array =  construct_config_array()
-
-        #根据获取到的设置进行分段费用计算
-        for c in hourly_discount_configs:
+        def construct_config_array(c):
             config_datetime_from = ktv_helper.float_time_to_datetime(c['time_from'])
             config_datetime_to = ktv_helper.float_time_to_datetime(c['time_to'])
             #如果config_datetime_to < config_datetime_from,则config_datetime_to + 1 day
             if config_datetime_to < config_datetime_from:
                 config_datetime_to = config_datetime_to + timedelta(days = 1)
+                #先形成时间顺序的数组
+                #FIXME 此处要求在设置时间时,必须是连续的
+            return {
+                    'datetime_from' : config_datetime_from,
+                    'datetime_to' : config_datetime_to,
+                    'hourly_fee' : c['hourly_fee'],
+                    'hourly_discount' : c['hourly_discount'],
+                }
 
+        config_array =  [construct_config_array(c) for c in hourly_discount_configs]
+
+        #根据获取到的设置进行分段费用计算
+        for c in config_array:
             #判断时间情况如下所列,共有6种情况
             #         |--1--|-2--|--3--|--4-|
             # |----|
@@ -635,7 +523,6 @@ class room_checkout(osv.osv):
                     })
                 config_array[0]['datetime_from'] = datetime_open
 
-
         #逐个计算费用信息
         for c in config_array:
             consume_minutes= ktv_helper.timedelta_minutes(c["datetime_from"],c["datetime_to"])
@@ -648,9 +535,10 @@ class room_checkout(osv.osv):
         #如果没有钟点费用信息,则设置默认钟点费信息
         if not config_array:
             sum_consume_minutes = ktv_helper.timedelta_minutes(datetime_open,datetime_close)
-
             sum_hourly_fee = room.hourly_fee_p*sum_consume_minutes/60*persons_count if is_hourly_fee_p else room.hourly_fee*sum_consume_minutes/60
 
         _logger.debug("sum_consume_minutes = %d;sum_hourly_fee = %d",sum_consume_minutes,sum_hourly_fee)
 
         return (sum_consume_minutes,ktv_helper.float_round(cr,sum_hourly_fee))
+
+room_checkout.re_calculate_fee = room_checkout._calculate_sum_should_pay_info

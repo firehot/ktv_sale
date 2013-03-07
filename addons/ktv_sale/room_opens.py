@@ -16,6 +16,7 @@ class room_opens(osv.osv):
 
     _columns = {
             "room_operate_id" : fields.many2one('ktv.room_operate',"room_operate_id",required = True),
+            "room_id" : fields.many2one("ktv.room","room_id",required = True,help="结账单所对应的kt.room对象"),
             "open_time" : fields.datetime('open_time',required = True,readonly = True,help = "开房时间"),
             "close_time" : fields.datetime('close_time',readonly = True,help = "关房时间"),
             "saler_id" : fields.many2one('res.users','saler_id',help = "销售经理"),

@@ -26,3 +26,36 @@
     }
     ret = self.set_discount_info(cr,uid,**ctx)
     assert ret['total_discount_fee'] > 0
+-
+  测试re_calculate_fee
+-
+  !python {model: ktv.room_operate}: |
+    #先进行room_opens操作
+    open_vals = {
+    "osv_name" : "ktv.room_opens",
+    "room_id" : ref("ktv_room_1"),
+    'guest_name' : '程东辉',
+    'persons_count' : 5,
+    'fee_type_id' : ref('fee_type1'),
+    'price_class_id' : ref('price_class_1'),
+    }
+    ret1 = self.process_operate(cr,uid,open_vals)
+    assert ret1
+    #进行结账操作
+    room_change_vals = {
+    "osv_name" : 'ktv.room_change',
+    "room_id" : ref('ktv_room_1'),
+    "changed_room_id" : ref('ktv_room_2'),
+    }
+    #保存换房信息操作
+    ret2 = self.process_operate(cr,uid,room_change_vals)
+    assert ret2
+    #调用calculate_sum_should_pay_info
+    room_checkout_vals = {
+        'room_id' : ref('ktv_room_2'),
+        'fee_type_id' : ref('fee_type1'),
+        'price_class_id' : ref('price_class_1'),
+        'member_id' : ref('member_1'),
+    }
+    ret3 = self.pool.get('ktv.room_checkout').re_calculate_fee(cr,uid,room_checkout_vals)
+    assert ret3['total_fee'] > 0

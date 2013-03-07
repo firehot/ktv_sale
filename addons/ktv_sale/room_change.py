@@ -18,6 +18,7 @@ class room_change(osv.osv):
 
     _columns = {
             "room_operate_id" : fields.many2one("ktv.room_operate","room_operate_id",required = True,help="本操作所对应的room_operate对象"),
+            "room_id" : fields.many2one("ktv.room","room_id",required = True,help="原包厢id"),
             "changed_room_id" : fields.many2one("ktv.room","changed_room_id",required = True,help="新包厢id"),
             "bill_datetime" : fields.datetime("bill_datetime",required = True,readonly = True,help="换房时间"),
             "open_time" : fields.datetime("open_time",required = True,help="开房时间"),

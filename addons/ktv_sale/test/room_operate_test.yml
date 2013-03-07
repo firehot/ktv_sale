@@ -17,3 +17,4 @@
     operate_id = room_checkout_buyout['room_operate_id'][0]
     paid_info = self.calculate_sum_paid_info(cr,uid,operate_id)
     assert paid_info['total_fee'] > 0
+
