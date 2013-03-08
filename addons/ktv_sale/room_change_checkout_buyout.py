@@ -7,7 +7,7 @@ from datetime import *
 import ktv_helper
 from fee_type import fee_type
 from room import room
-
+from room_checkout_buyout import calculate_sum_pay_info,room_checkout_buyout
 
 _logger = logging.getLogger(__name__)
 
@@ -48,146 +48,50 @@ class room_change_checkout_buyout(osv.osv):
                 context['discount_card_id'] 打折卡id,可能为空
                 context['discounter_id'] 员工id,可能为空
         计算方法:
-        1 获取原包厢最后结算信息
+        1 获取已支付费用信息
         2 计算新包厢应收费用信息
         3 计算各项费用应补差额
         4 计算折扣信息
 
         :return dict 计算后的买断换房结算信息
         """
-        #原包厢
-        origin_room = self.pool.get('ktv.room').browse(cr,uid,context["room_id"])
-        #换房后的包厢
-        changed_room = self.pool.get('ktv.room').browse(cr,uid,context['changed_room_id'])
+        pool = self.pool
+        room_id = context.get('room_id')
+        changed_room_id = context.get('changed_room_id')
+        room = pool.get('ktv.room').browse(cr,uid,room_id)
+        r_op = room.current_room_operate_id
+        changed_room = pool.get('ktv.room').browse(cr,uid,changed_room_id)
 
-        #当前买断信息
-        active_buyout_config = self.pool.get('ktv.buyout_config').get_active_buyout_fee(cr,uid,context['changed_buyout_config_id'])
-
-        #最后结账信息
-        last_checkout = self.pool.get('ktv.room').get_presale_last_checkout(cr,uid,context["room_id"])
-
-        if not last_checkout:
-            raise osv.except_osv(_("错误"), _('找不到包厢:%s的最后结账信息.' % origin_room.name))
-
-        #原包厢结账信息
-        last_checkout_info = {
-                #原包厢
-                "room_id" : last_checkout.room_operate_id.room_id.id,
-                #原买断信息
-                "buyout_config_id" : last_checkout.buyout_config_id and [last_checkout.buyout_config_id.id,last_checkout.buyout_config_id.name] or None,
-                "open_time" : last_checkout.open_time,
-                #关闭时间是当前时间
-                "close_time" : datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                #重新计算消费时长
-                "consume_minutes" : ktv_helper.timedelta_minutes(ktv_helper.strptime(last_checkout.open_time),datetime.now()),
-                #现金
-                "cash_fee" : last_checkout.cash_fee,
-                #信用卡
-                "credit_card_no" : last_checkout.credit_card_no or None,
-                "credit_card_fee" : last_checkout.credit_card_fee,
-                #会员卡
-                "member_card_id" : last_checkout.member_card_id and last_checkout.member_card_id.id or None,
-                "member_card_fee" : last_checkout.member_card_fee,
-                #抵扣券
-                "sales_voucher_fee" : last_checkout.sales_voucher_fee,
-                #挂账
-                "on_crediter_id" : last_checkout.on_crediter_id and last_checkout.on_crediter_id.id or None,
-                "on_credit_fee" : last_checkout.on_credit_fee,
-                #免单
-                "freer_id" : last_checkout.freer_id and last_checkout.freer_id.id or None,
-                "free_fee" : last_checkout.free_fee,
-                #合计付款
-                "sum_should_fee" : last_checkout.sum_should_fee,
-                }
-
-        #应补钟点费 = 新包厢买断费 - 原支付费用
-        changed_room_sum_hourly_fee = active_buyout_config['buyout_fee'] - last_checkout_info['sum_should_fee']
-
-        #计算打折信息
-        ret = {
-                #原费用信息
-                "last_checkout_info" : last_checkout_info,
-                "room_id" : context["room_id"],
-                "changed_room_id" : context['changed_room_id'],
-                #原room_operate
-                "ref_room_operate_id" : last_checkout.room_operate_id.id,
-                "buyout_config_id" : context['changed_buyout_config_id'],
-                "open_time" : active_buyout_config['time_from'],
-                "close_time" : active_buyout_config['time_to'],
-                "consume_minutes" : active_buyout_config['buyout_time'],
-                "present_minutes" : 0,
-                "room_fee" : 0,
-                "service_fee_rate" : 0,
-                "service_fee" : 0,
-                "sum_hourly_fee" : 0,
-                "sum_hourly_fee_p" : 0,
-                "sum_buffet_fee" : 0,
-                "changed_room_fee" : 0,
-                "changed_room_sum_hourly_fee" : changed_room_sum_hourly_fee,
-                "changed_room_sum_hourly_fee_p" : 0,
-                "changed_room_sum_buffet_fee" : 0,
-                "changed_room_service_fee" : 0,
-                "changed_room_minutes" : 0,
-                "merged_room_hourly_fee" : 0,
-                "minimum_fee" : 0,
-                "minimum_fee_diff" : 0,
-                "prepay_fee" : 0,
-                "drinks_fee" : 0,
-                "uncheckout_drinks_fee" : 0,
-                "minimum_drinks_fee" : 0,
-                "guest_damage_fee" : 0,
-                "member_room_fee_discount_rate" : 0,
-                "member_room_fee_discount_fee" : 0,
-                "discount_card_room_fee_discount_rate" : 0,
-                "discount_card_room_fee_discount_fee" : 0,
-                "discounter_room_fee_discount_rate" : 0,
-                "discounter_room_fee_discount_fee" : 0,
-                "discount_fee" : 0,
-                "discount_rate" : 0,
-                "cash_fee" : 0,
-                "member_card_fee" : 0,
-                "sales_voucher_fee" : 0,
-                "credit_card_fee" : 0,
-                "on_credit_fee" : 0,
-                "free_fee" : 0,
-                }
-        #同时只能有一种打折方式可用
-        #会员打折费用
-
-        #打折卡打折
-        if 'discount_card_id' in context and context['discount_card_id']:
-            discount_card = self.pool.get('ktv.discount_card').browse(cr,uid,context['discount_card_id'])
-            ret['discount_card_id'] = context['discount_card_id']
-            ret['discount_card_room_fee_discount_rate'] = discount_card_room_fee_discount_rate = discount_card.discount_card_type_id.room_fee_discount
-            ret['discount_card_room_fee_discount_fee'] = discount_card_room_fee_discount_fee = active_buyout_config['buyout_fee']*(100 - discount_card_room_fee_discount_rate)/100
-            ret['discount_rate'] = discount_card_room_fee_discount_rate
-            ret['discount_fee'] = discount_card_room_fee_discount_fee
-
-        if 'member_id' in context and context['member_id']:
-            the_member = self.pool.get('ktv.member').browse(cr,uid,context['member_id'])
-            ret['member_id'] = context['member_id']
-            ret['member_room_fee_discount_rate'] = member_room_fee_discount_rate = the_member.member_class_id.room_fee_discount
-            ret['member_room_fee_discount_fee'] = member_room_fee_discount_fee = active_buyout_config['buyout_fee']*(100 - member_room_fee_discount_rate)/100
-            ret['discount_rate'] = member_room_fee_discount_rate
-            ret['discount_fee'] = member_room_fee_discount_fee
-
-
-        #员工打折
-        #TODO
-        #if 'discounter_id' in context and context['discounter_id']:
-
-        #默认情况下,重新计算后,费用做如下处理:
-
-        ret['sum_should_fee'] = changed_room_sum_hourly_fee - ret['discount_fee']
-        ret['cash_fee'] = ret['sum_should_fee']
-        ret['act_pay_fee'] = ret['cash_fee']
-        ret['change_fee'] = 0.0
-        ret.update({
-            'member_card_fee' : 0.0,
-            'credit_card_fee' : 0.0,
-            'sales_voucher_fee' : 0.0,
+        #计算新包厢应付买断费用
+        clone_dict = {k : v for k,v in context.items()}
+        clone_dict['room_id'] = changed_room_id
+        clone_dict['buyout_config_id'] = clone_dict['changed_buyout_config_id']
+        clone_dict.pop('changed_room_id')
+        clone_dict.pop('changed_buyout_config_id')
+        #计算应支付费用
+        sum_should_pay_info = self.calculate_sum_pay_info(cr,uid,clone_dict)
+        _logger.debug('sum_should_pay_info = %s' % sum_should_pay_info)
+        #计算已支付费用
+        sum_paid_info = pool.get('ktv.room_operate').calculate_sum_paid_info(cr,uid,r_op.id)
+        _logger.debug('sum_paid_info = %s' % sum_paid_info)
+        #计算应补差额
+        total_fee = sum_should_pay_info['hourly_fee'] - sum_paid_info['hourly_fee'] - sum_paid_info['changed_room_fee'] - sum_paid_info['prepay_fee']
+        sum_should_pay_info.update({
+            'changed_room_hourly_fee': total_fee,
+            'hourly_fee' : 0.0,
+            'total_fee' : total_fee,
             })
-        return ret
+
+        #计算折扣信息
+        tmp_dict = {k : v for k,v in context.items() if k in ('member_id','discount_card_id','discounter_id')}
+        discount_info = self.set_discount_info(cr,uid,sum_should_pay_info['total_fee'],**tmp_dict)
+
+        sum_should_pay_info.update(discount_info)
+
+        #重新计算相关字段
+        self.set_calculate_fields(cr,uid,sum_should_pay_info)
+        sum_should_pay_info.update(context)
+        return sum_should_pay_info
 
     def process_operate(self,cr,uid,buyout_vals):
         """
@@ -228,3 +132,6 @@ class room_change_checkout_buyout(osv.osv):
                 "args" : "(%s,{'state' : '%s','current_room_operate_id' : None})" % (room_id ,room.STATE_FREE)
                 }
         return cron_vals
+
+#计算换房后的费用信息,调用room_checkout_buyout#calculate_sum_pay_info
+room_change_checkout_buyout.calculate_sum_pay_info = calculate_sum_pay_info

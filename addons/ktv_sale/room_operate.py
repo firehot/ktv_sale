@@ -53,10 +53,17 @@ class room_operate(osv.osv):
             which_room_close_ops = record.room_checkout_ids or record.room_change_ids or record.room_change_checkout_buyout_ids or record.room_checkout_buyout_ids or record.room_change_checkout_buytime_ids or record.room_checkout_buytime_ids
             close_time = None
             last_member = None
+            last_buyout_config = None
             if which_room_close_ops:
                 close_time = which_room_close_ops[-1].close_time
                 #获取最后一次操作的member_id
                 last_member =getattr(which_room_close_ops[-1],'member_id',None)
+                last_buyout_config = getattr(which_room_close_ops[-1],'buyout_config_id',None)
+
+            if not last_buyout_config:
+                #最后买断id
+                last_buyout_config = getattr(which_room_open_ops[0],'buyout_config_id',None)
+            last_buyout_config_id = getattr(last_buyout_config,'id',None)
 
             if not last_member:
                 last_member = which_room_open_ops[0].member_id
@@ -97,6 +104,7 @@ class room_operate(osv.osv):
                     'fee_type_id' : fee_type_id,
                     'price_class_id' : price_class_id,
                     'last_member_id' : last_member_id,
+                    'last_buyout_config_id' : last_buyout_config_id,
                     'open_time' : open_time,
                     'close_time' : close_time,
                     'prepay_fee' : prepay_fee or 0.0,
@@ -140,6 +148,7 @@ class room_operate(osv.osv):
             "fee_type_id" : fields.function(_compute_fields,type='many2one',obj="ktv.fee_type",multi='compute_fields',string='计费方式'),
             "price_class_id" : fields.function(_compute_fields,type='many2one',obj="ktv.price_class",multi='compute_fields',string='价格类型(可能为None)'),
             "last_member_id" : fields.function(_compute_fields,type='many2one',obj="ktv.member",multi='compute_fields',string='会员id',help="最近一次使用的会员卡"),
+            "last_buyout_config_id" : fields.function(_compute_fields,type='many2one',obj="ktv.buyout_config",multi='compute_fields',string='最近买断id',help="获取当前操作的最后一次买断id"),
             "guest_name" : fields.function(_compute_fields,type='string',multi='compute_fields',string='客人姓名'),
             "persons_count": fields.function(_compute_fields,type='integer',multi='compute_fields',string='客人人数'),
             "open_time" : fields.function(_compute_fields,type='datetime',multi="compute_fields",string="开房时间"),
@@ -221,27 +230,6 @@ class room_operate(osv.osv):
         :params dict cron_vals 定时任务相关属性
         """
         return self.pool.get('ir.cron').create(cr,uid,cron_vals)
-
-    def get_presale_last_checkout(self,cr,uid,id,context = None):
-        """
-        获取给定包厢id的最后一次预售结账信息
-        :params integer room_id 要查询的包厢id
-        :return dict 最后一次包厢结账信息
-                ret['model_name'] string 返回的最后一次结账的对象类型
-                ret['vals'] dict 最后一次结账信息数据
-                无最后一次结账信息,返回None
-        """
-        cur_operate_id = self.browse(cr,uid,id,context)
-
-        #如果当前没有包厢操作信息,或包厢不处于buytime buyout状态时,则返回None
-        if not cur_operate_id:
-            return None
-
-        #先判断有无换房结算信息,换房结算信息是最后一次结账信息
-        #_logger.debug("cur_operate_id 's attr :  %s " % dir(cur_operate_id))
-        last_checkouts = cur_operate_id.room_change_checkout_buyout_ids or cur_operate_id.room_change_checkout_buytime_ids or cur_operate_id.room_checkout_buyout_ids or cur_operate_id.room_checkout_buytime_ids
-
-        return last_checkouts and last_checkouts[0] or None
 
     def previous_room_opens_and_change(self,cr,uid,op_id):
         """

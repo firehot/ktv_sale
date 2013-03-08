@@ -185,45 +185,23 @@ class room(osv.osv):
         return (room_id,vals['room_fee'],vals['minimum_fee'],vals['minimum_fee_p'],vals['minimum_persons'],vals['is_member_hourly_fee'],vals['hourly_fee'],vals['hourly_discount'],vals['hourly_fee_p'],vals['hourly_p_discount'])
 
 
-    def get_presale_last_checkout(self,cr,uid,id,context = None):
-        """
-        获取当前包厢最近的checkout信息,包括以下信息:
-        room_checkout_buytime
-        room_checkout_buyout
-        room_change_checkout_buytime
-        room_change_checkout_buyout
-        当前包厢状态应为:buytime或buyout
-        :return browse_record
-        """
-        the_room = self.browse(cr,uid,id,context)
-        if not the_room.current_room_operate_id and not the_room.state in [room.STATE_BUYTIME,room.STATE_BUYOUT]:
-            return None
-        else:
-            return self.pool.get('ktv.room_operate').get_presale_last_checkout(cr,uid,the_room.current_room_operate_id.id)
-
-    def get_presale_last_checkout_dict(self,cr,uid,id,context = None):
+    def get_presale_last_checkout_dict(self,cr,uid,room_id,context = None):
         """
         获取包厢最后一次结账信息,并返回给客户端
         """
-        last_checkout = self.get_presale_last_checkout(cr,uid,id,context)
-        if not last_checkout:
+        pool = self.pool
+        the_room = self.browse(cr,uid,room_id,context)
+        operate_id = the_room.current_room_operate_id
+        ret = {}
+        if not operate_id and not the_room.state in [room.STATE_BUYTIME,room.STATE_BUYOUT]:
             return None
+        else:
+            ret = pool.get('ktv.room_operate').calculate_sum_paid_info(cr,uid,operate_id.id,context)
 
-        pool = self.pool.get(last_checkout._table_name)
-        fields_list = pool.fields_get(cr,uid).keys()
-        ret = pool.read(cr,uid,last_checkout.id,fields_list)
-        #关闭时间是当前时间
-        ret.update({
-                "close_time" : datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                #重新计算消费时长
-                "consume_minutes" : ktv_helper.timedelta_minutes(ktv_helper.strptime(last_checkout.open_time),datetime.now()),
-                })
-
-        #当前买断
-        buyout_config_id =  getattr(last_checkout,'buyout_config_id',None)
-        if buyout_config_id:
-            buyout_config_fields_list = self.pool.get('ktv.buyout_config').fields_get(cr,uid).keys()
-            buyout_config_dict = self.pool.get('ktv.buyout_config').read(cr,uid,buyout_config_id.id,buyout_config_fields_list)
+        #如果有买断信息则返回最后一次买断设置
+        if ret['buyout_config_id']:
+            buyout_config_fields_list = pool.get('ktv.buyout_config').fields_get(cr,uid).keys()
+            buyout_config_dict = pool.get('ktv.buyout_config').read(cr,uid,buyout_config_id[0],buyout_config_fields_list)
             ret['buyout_config_id'] = buyout_config_dict
 
         return ret
