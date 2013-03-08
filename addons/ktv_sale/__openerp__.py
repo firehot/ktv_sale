@@ -81,6 +81,7 @@
         'test/room_checkout_buyout_test.yml',
         'test/room_operate_test.yml',
         'test/room_change_checkout_buyout.yml',
+        'test/room_checkout_buytime_test.yml',
         #'test/ktv_room_test.yml',
         ],
     'installable': True,

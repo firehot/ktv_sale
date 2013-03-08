@@ -1,0 +1,14 @@
+-
+  应能够正确处调用room_checkout_buytime#re_calculate_fee
+-
+  !python {model: ktv.room_operate}: |
+    vals = {
+    "osv_name" : 'ktv.room_checkout_buytime',
+    "room_id" : ref('ktv_room_1'),
+    "buy_minutes" : 60,
+    "price_class_id" : ref('price_class_1'),
+    "guest_name" : "程东辉",
+    "persons_count" : 8,
+    }
+    ret = self.pool.get('ktv.room_checkout_buytime').re_calculate_fee(cr,uid,vals)
+    assert ret['total_fee'] > 0

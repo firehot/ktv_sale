@@ -101,17 +101,18 @@ class room_change_checkout_buyout(osv.osv):
         :param buyout_vals['room_id'] 原包厢
         :param buyout_vals['changed_room_id'] 新包厢
         """
-        room_id = buyout_vals.pop("room_id")
+        room_id = buyout_vals.get("room_id")
         changed_room_id = buyout_vals['changed_room_id']
 
         cur_rp_id = self.pool.get('ktv.room').find_or_create_room_operate(cr,uid,room_id)
+
+        buyout_vals.update({"room_operate_id" : cur_rp_id})
 
         #修改原包厢状态
         self.pool.get('ktv.room').write(cr,uid,room_id,{'state' : room.STATE_FREE,'current_room_operate_id' : None})
         #修改新包厢状态
         self.pool.get('ktv.room').write(cr,uid,changed_room_id,{'state' : room.STATE_BUYOUT,'current_room_operate_id' : cur_rp_id})
 
-        buyout_vals.update({"room_operate_id" : cur_rp_id})
 
         room_buyout_id = self.create(cr,uid,buyout_vals)
         fields = self.fields_get(cr,uid).keys()

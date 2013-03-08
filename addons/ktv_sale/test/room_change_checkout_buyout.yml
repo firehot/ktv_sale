@@ -1,5 +1,5 @@
 -
-  应能够正确调用room_change_checkout_buyout#re_calculate
+  应能够正确调用room_change_checkout_buyout#re_calculate_fee
 -
   !python {model: ktv.room_operate}: |
     #先进行一次买断操作
@@ -23,5 +23,9 @@
     #重新计算运费
     ret2 = self.pool.get('ktv.room_change_checkout_buyout').re_calculate_fee(cr,uid,room_change_buyout)
     assert ret2['total_fee'] != 0
+    #调用process_operate
+    #room_buyout,r1,r2 = self.process_operate(cr,uid,ret2)
+    ret3 = self.process_operate(cr,uid,ret2)
+    assert ret3['room_operate']['id']
 
 
