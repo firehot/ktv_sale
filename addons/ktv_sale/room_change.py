@@ -36,7 +36,7 @@ class room_change(osv.osv):
         :param room_change_vals dict 换房对象数据
         :return  (room_change,包厢状态,cron定时任务对象)
         """
-        room_id = room_change_vals.pop("room_id")
+        room_id = room_change_vals.get("room_id")
         changed_room_id = room_change_vals['changed_room_id']
 
         cur_rp_id = self.pool.get('ktv.room').find_or_create_room_operate(cr,uid,room_id)

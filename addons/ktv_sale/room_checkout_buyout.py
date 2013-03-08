@@ -64,7 +64,7 @@ class room_checkout_buyout(osv.osv):
         discount_info = self.set_discount_info(cr,uid,total_fee,member_id,discount_card_id,discounter_id)
         sum_pay_info.update(discount_info)
 
-        self.set_calculate_fields(cr,sum_pay_info)
+        self.set_calculate_fields(cr,uid,sum_pay_info)
 
         _logger.debug("sum_pay_info = % s" % sum_pay_info)
 

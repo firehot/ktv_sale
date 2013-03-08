@@ -39,7 +39,7 @@ class room_opens(osv.osv):
         """
         处理开房操作
         """
-        room_id = opens_vals.pop("room_id")
+        room_id = opens_vals.get("room_id")
         cur_rp_id = self.pool.get('ktv.room').find_or_create_room_operate(cr,uid,room_id)
         opens_vals.update({"room_operate_id" : cur_rp_id})
         room_opens_id = self.create(cr,uid,opens_vals)

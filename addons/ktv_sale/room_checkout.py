@@ -267,6 +267,7 @@ class room_checkout(osv.osv):
 
         #计算room_opens的room_fee和hourly_fee
         origin_room = room_opens.room_id
+        room_fee = origin_room.room_fee
         #关闭时间,如果room_opens未关闭,则为当前时间,否则为room_opens关闭时间
         close_time = room_opens.close_time if room_opens.close_time else ktv_helper.utc_now_str()
         sum_should_pay_info['open_time'] = room_opens.open_time
@@ -285,7 +286,7 @@ class room_checkout(osv.osv):
         consume_minutes,hourly_fee = self._get_sum_hourly_fee(cr,uid,origin_room.id,cal_ctx)
 
         #计算room_change的room_fee和hourly_fee
-        changed_room_fee,changed_room_hourly_fee,change_room_minutes = (0.0,0.0,0)
+        changed_room_fee,changed_room_hourly_fee,changed_room_minutes = (0.0,0.0,0)
         for room_change in r_op.room_change_ids:
             close_time = room_change.close_time if room_change.close_time else ktv_helper.utc_now_str()
             changed_room = room_change.changed_room_id
@@ -301,7 +302,6 @@ class room_checkout(osv.osv):
                 changed_room_fee = changed_room.room_fee - origin_room.room_fee
 
         #合并两项费用
-        total_fee = room_fee + changed_room_fee + hourly_fee + changed_room_hourly_fee
         sum_should_pay_info.update({
             'room_operate_id' : r_op.id,
             'room_id' : context['room_id'],
@@ -323,14 +323,16 @@ class room_checkout(osv.osv):
             'guest_damage_fee' : r_op.guest_damage_fee,
             })
 
-        #计算折扣
-        discount_info = self.set_discount_info(cr,uid,total_fee,member_id,discount_card_id,discounter_id)
-        sum_should_pay_info.update(discount_info)
-
         #根据fee_type_id计算费用
         self.calculate_with_fee_type_id(cr,uid,fee_type_id,sum_should_pay_info)
+
+        #计算折扣
+        discount_info = self.set_discount_info(cr,uid,sum_should_pay_info['total_fee'],member_id,discount_card_id,discounter_id)
+        sum_should_pay_info.update(discount_info)
+
         self.set_calculate_fields(cr,uid,sum_should_pay_info)
-        _logger.debug('sum_pay_info = % ' % sum_should_pay_info)
+
+        _logger.debug("sum_pay_info = %s " % sum_should_pay_info)
 
         return sum_should_pay_info
 
@@ -354,10 +356,12 @@ class room_checkout(osv.osv):
                 "room_fee" : 0,
                 "changed_room_fee" : 0,
                 })
-
         else:
             pass
-        return sum_apy_info_vals
+
+        sum_pay_info_vals['total_fee'] = sum_pay_info_vals['room_fee']+ sum_pay_info_vals['changed_room_fee'] + sum_pay_info_vals['hourly_fee'] + sum_pay_info_vals['changed_room_hourly_fee']
+        return sum_pay_info_vals
+
     def process_operate(self,cr,uid,room_checkout_vals):
         '''
         自客户端传入的数据创建包厢结账单据
@@ -381,7 +385,8 @@ class room_checkout(osv.osv):
         ret = {f_name : (defs[f_name] if f_name in defs else None) for f_name in fields}
         return ret
 
-    def set_calculate_fields(self,cr,fields_dict):
+    def set_calculate_fields(self,cr,uid,fields_dict):
+
         fields_dict['total_after_discount_fee'] = fields_dict['total_fee'] - fields_dict['total_discount_fee']
         fields_dict['total_after_discount_cash_fee']= fields_dict['total_after_discount_fee'] -  fields_dict['member_card_fee'] - fields_dict['credit_card_fee'] - fields_dict['sales_voucher_fee'] - fields_dict['free_fee']
         fields_dict['act_pay_cash_fee'] = fields_dict['total_after_discount_cash_fee']
@@ -409,7 +414,7 @@ class room_checkout(osv.osv):
         price_class_id = context.get('price_class_id')
         member_id = context.get('member_id',None)
         member_class_id = None
-        if memeber_id:
+        if member_id:
             member = pool.get('ktv.member').browse(cr,uid,member_id)
             member_class_id = member.member_class_id.id
 
@@ -467,7 +472,7 @@ class room_checkout(osv.osv):
                 config_array.append({
                     "datetime_from" : datetime_open,
                     "datetime_to" : datetime_close,
-                    "hourly_fee" : room.hourly_fee_p if is_hourly_fee_p else room.hourly_fee,
+                    "hourly_fee" :  room.hourly_fee,
                     "hourly_discount" : 100,
                     })
 
@@ -486,13 +491,13 @@ class room_checkout(osv.osv):
                 config_array.insert(0,{
                     "datetime_from" : datetime_open,
                     "datetime_to" : config_datetime_min,
-                    "hourly_fee" : room.hourly_fee_p if is_hourly_fee_p else room.hourly_fee,
+                    "hourly_fee" : room.hourly_fee,
                     "hourly_discount" : 100,
                     })
                 config_array.append({
                     "datetime_from" : datetime_max,
                     "datetime_to" : config_datetime_close,
-                    "hourly_fee" : room.hourly_fee_p if is_hourly_fee_p else room.hourly_fee,
+                    "hourly_fee" : room.hourly_fee,
                     "hourly_discount" : 100,
                     })
 
@@ -504,7 +509,7 @@ class room_checkout(osv.osv):
                 config_array.insert(0,{
                     "datetime_from" : datetime_open,
                     "datetime_to" : config_datetime_min,
-                    "hourly_fee" : room.hourly_fee_p if is_hourly_fee_p else room.hourly_fee,
+                    "hourly_fee" : room.hourly_fee,
                     "hourly_discount" : 100,
                     })
                 config_array[-1]['datetime_to'] = datetime_close
@@ -518,7 +523,7 @@ class room_checkout(osv.osv):
                 config_array.append({
                     "datetime_from" : config_datetime_max,
                     "datetime_to" : datetime_close,
-                    "hourly_fee" : room.hourly_fee_p if is_hourly_fee_p else room.hourly_fee,
+                    "hourly_fee" : room.hourly_fee,
                     "hourly_discount" : 100,
                     })
                 config_array[0]['datetime_from'] = datetime_open
@@ -526,7 +531,7 @@ class room_checkout(osv.osv):
         #逐个计算费用信息
         for c in config_array:
             consume_minutes= ktv_helper.timedelta_minutes(c["datetime_from"],c["datetime_to"])
-            c['sum_hourly_fee']= c['hourly_fee']*consume_minutes/60 if not is_hourly_fee_p else  c['hourly_fee']*consume_minutes/60*persons_count
+            c['sum_hourly_fee']= c['hourly_fee']*consume_minutes/60
             c['consume_minutes']= consume_minutes
             #以下计算合计费用
             sum_hourly_fee += c['sum_hourly_fee']
@@ -535,7 +540,7 @@ class room_checkout(osv.osv):
         #如果没有钟点费用信息,则设置默认钟点费信息
         if not config_array:
             sum_consume_minutes = ktv_helper.timedelta_minutes(datetime_open,datetime_close)
-            sum_hourly_fee = room.hourly_fee_p*sum_consume_minutes/60*persons_count if is_hourly_fee_p else room.hourly_fee*sum_consume_minutes/60
+            sum_hourly_fee = room.hourly_fee*sum_consume_minutes/60
 
         _logger.debug("sum_consume_minutes = %d;sum_hourly_fee = %d",sum_consume_minutes,sum_hourly_fee)
 
