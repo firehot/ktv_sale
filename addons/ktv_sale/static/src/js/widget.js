@@ -819,6 +819,8 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			this.$('.open_time').html(this.model.get('context_open_time'));
 			this.$('.close_time').html(this.model.get('context_close_time'));
 			this.$('.consume_minutes').html(this.model.get('consume_minutes'));
+			this.$('.present_minutes').html(this.model.get('present_minutes'));
+			this.$('.total_minutes').html(this.model.get('total_minutes'));
 			this.$('.prepay_fee').html(this.model.get('prepay_fee'));
 			this.$('.room_fee').html(this.model.get('room_fee'));
 			this.$('.service_fee_rate').html(this.model.get('service_fee_rate'));
@@ -1276,12 +1278,12 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			var persons_count = parseInt(this.$('#persons_count').val());
 			var fee_type_id = parseInt(this.$("#fee_type_id").val());
 			var price_class_id = parseInt(this.$("#price_class_id").val());
-			var buy_minutes = parseInt(this.$("#buy_minutes").val());
+			var consume_minutes = parseInt(this.$("#consume_minutes").val());
 			var context = {
 				"room_id": this.room.get("id"),
 				"fee_type_id": fee_type_id,
 				"price_class_id": price_class_id,
-				"buy_minutes": buy_minutes,
+				"consume_minutes": consume_minutes,
 				'persons_count': persons_count
 			};
 			if (this.member.get("id")) context.member_id = this.member.get("id");
@@ -1293,7 +1295,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		start: function() {
 			this._super();
 			//设置计费方式为当前包厢默认计费方式
-			this.$("#fee_type_id,#price_class_id,#buy_minutes,#persons_count").change(_.bind(this._onchange_fields, this));
+			this.$("#fee_type_id,#price_class_id,#consume_minutes,#persons_count").change(_.bind(this._onchange_fields, this));
 			this.$("#fee_type_id").val(this.room.get("fee_type_id")[0])
 			this._onchange_fields();
 		}

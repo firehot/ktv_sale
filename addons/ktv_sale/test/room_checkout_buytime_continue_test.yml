@@ -1,0 +1,45 @@
+-
+  先对包厢进行买钟操作
+-
+  !python {model: ktv.room_operate}: |
+    vals = {
+        "room_id" : ref('ktv_room_1'),
+        "consume_minutes" : 240,
+        "price_class_id" : ref('price_class_1'),
+        "guest_name" : "程东辉",
+        "persons_count" : 8,
+    }
+
+    ret = self.pool.get('ktv.room_checkout_buytime').re_calculate_fee(cr,uid,vals)
+    assert ret['total_fee'] > 0
+    ret['osv_name'] = 'ktv.room_checkout_buytime'
+    ret2 = self.process_operate(cr,uid,ret)
+    assert ret2['room_operate']['total_fee'] > 0
+-
+  对已买钟的包厢进行换房操作
+-
+  !python {model: ktv.room_operate}: |
+    room_change_vals = {
+            'room_id' : ref('ktv_room_1'),
+            'changed_room_id' : ref('ktv_room_2'),
+    }
+    ret = self.pool.get('ktv.room_change_checkout_buytime').re_calculate_fee(cr,uid,room_change_vals)
+    #保存换房操作
+    ret['osv_name'] = 'ktv.room_change_checkout_buytime'
+    ret2 = self.process_operate(cr,uid,ret)
+    assert ret2['room_operate']['total_fee'] > 0
+
+-
+  进行续钟操作
+-
+  !python {model: ktv.room_operate}: |
+    vals = {
+    "osv_name" : 'ktv.room_checkout_buytime_continue',
+    "room_id" : ref('ktv_room_2'),
+    "consume_minutes" : 120
+    }
+    ret = self.pool.get('ktv.room_checkout_buytime_continue').re_calculate_fee(cr,uid,vals)
+    #保存续钟信息
+    ret['osv_name']='ktv.room_checkout_buytime_continue'
+    ret2 = self.process_operate(cr,uid,ret)
+    assert ret2['room_operate']['total_fee'] > 0

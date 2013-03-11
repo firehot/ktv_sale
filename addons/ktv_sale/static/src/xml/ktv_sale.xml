@@ -456,13 +456,17 @@
             <caption><h4>当前房费一览表</h4></caption>
             <tr>
                 <th>起止时间:</th>
-                <td colspan='7'>
+                <td colspan='4'>
                     <span class='open_time'></span>
                     ~
                     <span class='close_time'></span>
                 </td>
                 <th>消费时长:</th>
                 <td><span class='consume_minutes'>0</span>分钟</td>
+                <th>赠送时长:</th>
+                <td><span class='present_minutes'>0</span>分钟</td>
+                <th>合计时长:</th>
+                <td><span class='total_minutes'>0</span>分钟</td>
             </tr>
             <tr>
                 <th>预付费</th>
@@ -678,10 +682,10 @@
             </tr>
             <tr>
                 <td><t t-esc="origin_room_fee_info.last_checkout.room_fee"/></td>
-                <td><t t-esc='origin_room_fee_info.last_checkout.sum_hourly_fee'/></td>
+                <td><t t-esc='origin_room_fee_info.last_checkout.hourly_fee'/></td>
                 <td><t t-esc="origin_room_fee_info.last_checkout.changed_room_fee" /></td>
                 <td>
-                    <t t-esc="origin_room_fee_info.last_checkout.changed_room_sum_hourly_fee" />/
+                    <t t-esc="origin_room_fee_info.last_checkout.changed_room_hourly_fee" />/
                     <t t-esc="origin_room_fee_info.last_checkout.changed_room_minutes" />分钟
                 </td>
                 <td>
@@ -695,17 +699,15 @@
                     <t t-esc="origin_room_fee_info.last_checkout.service_fee_rate" />%
                 </td>
                 <td>
-                    <t t-esc="origin_room_fee_info.last_checkout.sum_fee" />
+                    <t t-esc="origin_room_fee_info.last_checkout.total_fee" />
                 </td>
                 <td>
-                    <t t-esc="origin_room_fee_info.last_checkout.discount_fee" />/
-                    <t t-esc="origin_room_fee_info.last_checkout.discount_rate" />%
+                    <t t-esc="origin_room_fee_info.last_checkout.total_discount_fee" />
                 </td>
                 <td>
-                    <t t-esc="origin_room_fee_info.last_checkout.sum_should_fee" />
+                    <t t-esc="origin_room_fee_info.last_checkout.total_after_discount_fee" />
                 </td>
             </tr>
-
            <tr>
                 <th>现金</th>
                 <th colspan="2">会员卡</th>
@@ -717,13 +719,13 @@
             </tr>
 
             <tr>
-                <td><t t-esc="origin_room_fee_info.last_checkout.cash_fee" /></td>
+                <td><t t-esc="origin_room_fee_info.last_checkout.total_after_discount_cash_fee" /></td>
                 <td colspan="2"><t t-esc="origin_room_fee_info.last_checkout.member_card_fee" />/<t t-esc="origin_room_fee_info.last_checkout.member"/></td>
                 <td colspan="3"><t t-esc="origin_room_fee_info.last_checkout.credit_card_fee" />/<t t-esc="origin_room_fee_info.last_checkout.credit_card_no" /></td>
                 <td><t t-esc="origin_room_fee_info.last_checkout.sales_voucher_fee" />/<t t-esc="origin_room_fee_info.last_checkout.sales_vouchers" /></td>
                 <td><t t-esc="origin_room_fee_info.last_checkout.on_credit_fee" /></td>
                 <td><t t-esc="origin_room_fee_info.last_checkout.free_fee" /></td>
-                <td><t t-esc="origin_room_fee_info.last_checkout.sum_should_fee" /></td>
+                <td><t t-esc="origin_room_fee_info.last_checkout.total_after_discount_fee" /></td>
             </tr>
         </table>
         <hr/>
@@ -924,7 +926,7 @@
                         <div class="control-group info pull-left">
                             <label class="control-label" for="buy_minutes">买钟时间:</label>
                             <div class="controls">
-                                <select id="buy_minutes" name="buy_minutes">
+                                <select id="consume_minutes" name="consume_minutes">
                                     <option value="30">30分钟</option>
                                     <option value="60">60分钟</option>
                                     <option value="90">90分钟</option>

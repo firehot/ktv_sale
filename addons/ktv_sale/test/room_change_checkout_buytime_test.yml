@@ -1,0 +1,31 @@
+-
+  应能够正确调用room_change_checkout_buytime#re_calculate_fee
+-
+  !python {model: ktv.room_operate}: |
+    #先进行一次买钟操作
+    buytime_vals = {
+    "osv_name" : 'ktv.room_checkout_buytime',
+    "room_id" : ref('ktv_room_1'),
+    'consume_minutes' : 30,
+    'price_class_id' : ref('price_class_1'),
+    "guest_name" : "程东辉",
+    "persons_count" : 8,
+    }
+    ret = self.pool.get('ktv.room_checkout_buytime').re_calculate_fee(cr,uid,buytime_vals)
+    assert ret['total_fee'] > 0
+    ret = self.process_operate(cr,uid,ret)
+    #进行换房操作
+    room_change_buytime = {
+    "osv_name" : 'ktv.room_change_checkout_buytime',
+    "room_id" : ref('ktv_room_1'),
+    "changed_room_id" : ref('ktv_room_2'),
+    }
+    #重新计算费用
+    ret2 = self.pool.get('ktv.room_change_checkout_buytime').re_calculate_fee(cr,uid,room_change_buytime)
+    assert ret2['total_fee'] != 0
+    #调用process_operate
+    #room_buyout,r1,r2 = self.process_operate(cr,uid,ret2)
+    #ret3 = self.process_operate(cr,uid,ret2)
+    #assert ret3['room_operate']['id']
+
+

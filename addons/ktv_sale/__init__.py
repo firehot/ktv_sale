@@ -31,6 +31,8 @@ import room_opens                   #开房对象
 import room_checkout                #包厢结账
 import room_checkout_buyout         #包厢结账-买断
 import room_checkout_buytime        #包厢结账-买钟
+import room_checkout_buytime_continue        #包厢结账-续钟
+import room_checkout_buytime_refund       #包厢结账-退钟
 import room_change                  #正常开房-换房
 import room_change_checkout_buytime        #换房结账-买钟
 import room_change_checkout_buyout        #换房结账-买断

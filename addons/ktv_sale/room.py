@@ -199,9 +199,11 @@ class room(osv.osv):
             ret = pool.get('ktv.room_operate').calculate_sum_paid_info(cr,uid,operate_id.id,context)
 
         #如果有买断信息则返回最后一次买断设置
-        if ret['buyout_config_id']:
+        buyout_config_id = ret.get('last_buyout_config_id',None)
+        if buyout_config_id:
+            #_logger.debug("buyout_config_id = %s" %  buyout_config_id)
             buyout_config_fields_list = pool.get('ktv.buyout_config').fields_get(cr,uid).keys()
-            buyout_config_dict = pool.get('ktv.buyout_config').read(cr,uid,buyout_config_id[0],buyout_config_fields_list)
+            buyout_config_dict = pool.get('ktv.buyout_config').read(cr,uid,buyout_config_id,buyout_config_fields_list)
             ret['buyout_config_id'] = buyout_config_dict
 
         return ret

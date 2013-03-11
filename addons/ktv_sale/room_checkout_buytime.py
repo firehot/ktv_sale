@@ -14,7 +14,7 @@ def calculate_sum_pay_info(self,cr,uid,ctx_args):
     根据给定的数值,计算买钟费用
     :params context 包含计算上下问信息,required
     :params context[room_id] integer 包厢id,required
-    :params context[buy_minutes] integer 买钟时间 required
+    :params context[consume_minutes] integer 买钟时间 required
     :params context[price_class_id] integer 价格类型 required
     :params context[member_id] integer 会员卡id
     :params context[discount_card_id] integer 打折卡id
@@ -22,27 +22,27 @@ def calculate_sum_pay_info(self,cr,uid,ctx_args):
     """
     #获取当前包厢费用信息
     room_id = ctx_args.get('room_id')
-    buy_minutes = consume_minutes = ctx_args['buy_minutes']
+    consume_minutes = ctx_args['consume_minutes']
 
     sum_should_pay_info = self.get_default_checkout_dict(cr,uid)
     #获取包厢费用信息
     r_id,room_fee,minimum_fee,minimum_fee_p,minimum_persons,is_member_hourly_fee,room_hourly_fee,hourly_discount,hourly_fee_p,hourly_p_discount = self.pool.get('ktv.room').get_current_fee_tuple(cr,uid,room_id,ctx_args)
 
     #买钟优惠
-    promotion_buy_minutes,promotion_present_minutes = (0,0)
+    promotion_consume_minutes,promotion_present_minutes = (0,0)
     #买钟优惠信息
     hourly_fee_promotions = self.pool.get('ktv.hourly_fee_promotion').get_active_configs(cr,uid)
 
     if hourly_fee_promotions:
-        promotion_buy_minutes,promotion_present_minutes = (hourly_fee_promotions[0]['buy_minutes'],hourly_fee_promotions[0]['present_minutes'])
+        promotion_consume_minutes,promotion_present_minutes = (hourly_fee_promotions[0]['buy_minutes'],hourly_fee_promotions[0]['present_minutes'])
 
     #钟点费
-    hourly_fee = room_hourly_fee*buy_minutes/60.0
+    hourly_fee = room_hourly_fee*consume_minutes/60.0
 
     #时长合计 = 买钟时间 + 赠送时间
-    present_minutes = ktv_helper.calculate_present_minutes(buy_minutes,promotion_buy_minutes,promotion_present_minutes)
+    present_minutes = ktv_helper.calculate_present_minutes(consume_minutes,promotion_consume_minutes,promotion_present_minutes)
 
-    sum_minutes = buy_minutes + present_minutes
+    sum_minutes = consume_minutes + present_minutes
     #计算包厢关闭时间
     open_time = datetime.now()
     close_time = open_time + timedelta(minutes = sum_minutes)
@@ -50,8 +50,7 @@ def calculate_sum_pay_info(self,cr,uid,ctx_args):
     sum_should_pay_info.update({
         'open_time' : ktv_helper.strftime(open_time),
         'close_time' : ktv_helper.strftime(close_time),
-        'buy_minutes' : buy_minutes,
-        'consume_minutes' : buy_minutes,
+        'consume_minutes' : consume_minutes,
         'present_minutes' : present_minutes,
         'hourly_fee' : hourly_fee,
         'total_fee' : hourly_fee,
@@ -77,12 +76,7 @@ class room_checkout_buytime(osv.osv):
     _order = "bill_datetime DESC"
 
     _defaults = {
-            'buy_minutes' : 0,
             "fee_type_id" : lambda obj,cr,uid,context: obj.pool.get('ktv.fee_type').get_fee_type_id(cr,uid,fee_type.FEE_TYPE_ONLY_HOURLY_FEE)
-            }
-
-    _columns = {
-            "buy_minutes" : fields.integer("buy_minutes",help="买钟时长"),
             }
 
     def re_calculate_fee(self,cr,uid,context):
@@ -128,7 +122,7 @@ class room_checkout_buytime(osv.osv):
                         room_state  当前操作包厢所在状态
                         cron dict 定时操作对象
         """
-        room_id = buytime_vals.pop("room_id")
+        room_id = buytime_vals.get("room_id")
         cur_rp_id = self.pool.get('ktv.room').find_or_create_room_operate(cr,uid,room_id)
         buytime_vals.update({"room_operate_id" : cur_rp_id})
         room_buytime_id = self.create(cr,uid,buytime_vals)

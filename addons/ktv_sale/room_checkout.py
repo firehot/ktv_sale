@@ -18,16 +18,20 @@ class room_checkout(osv.osv):
 
     _order = "bill_datetime DESC"
 
-    def _compute_consume_minutes(self,cr,uid,ids,name,args,context = None):
+    def _compute_total_minutes(self,cr,uid,ids,name,args,context = None):
         """
-        计算消费时长
+        计算合计消费时长
+        total_minutes = consume_minutes + present_minutes + changed_room_minutes
         """
         ret = {}
         for record in self.browse(cr,uid,ids):
             #close_time可能为空,当时尚未关闭
-            close_time = record.close_time if record.close_time else ktv_helper.utc_now_str()
-            consume_minutes = ktv_helper.str_timedelta_minutes(record.open_time,close_time)
-            ret[record.id]=consume_minutes
+            #close_time = record.close_time if record.close_time else ktv_helper.utc_now_str()
+
+            #consume_minutes = ktv_helper.str_timedelta_minutes(record.open_time,close_time)
+            total_minutes = record.consume_minutes + record.present_minutes + record.changed_room_minutes
+            ret[record.id]= total_minutes or 0
+
         return ret
 
     def _compute_total_fee(self,cr,uid,ids,name,args,context = None):
@@ -78,8 +82,8 @@ class room_checkout(osv.osv):
             "prepay_fee" : fields.float("prepay_fee",digits_compute = dp.get_precision('ktv_fee'),help="预付金额"),
             "room_fee" : fields.float("room_fee", digits_compute= dp.get_precision('ktv_fee'),help="包厢费"),
             "hourly_fee" : fields.float("hourly_fee",digits_compute = dp.get_precision('ktv_fee'),help="合计钟点费,如果是买断时,则是买断费用,如果是买钟点时,则是买钟费用;如果是自助餐(buffet),则是自助餐费用;如果是按位计钟点,则是按位钟点费合计"),
-            #"consume_minutes" : fields.integer('consume_minutes',help="消费时长"),
-            "consume_minutes" : fields.function(_compute_consume_minutes,string="消费时长",type='integer'),
+            "consume_minutes" : fields.integer('consume_minutes',help="消费时长,买钟时是买钟时长"),
+            "total_minutes" : fields.function(_compute_total_minutes,string="合计消费时长",type='integer'),
             "present_minutes" : fields.integer("present_minutes",help="赠送时长"),
 
             #换房费用字段
@@ -165,6 +169,8 @@ class room_checkout(osv.osv):
             "changed_room_fee" : 0,
             "changed_room_hourly_fee" : 0,
             "changed_room_minutes" : 0,
+
+            "total_minutes" : 0,
 
             "guest_damage_fee" : 0,
 
@@ -387,6 +393,7 @@ class room_checkout(osv.osv):
 
     def set_calculate_fields(self,cr,uid,fields_dict):
 
+        fields_dict['total_minutes'] = fields_dict['consume_minutes'] + fields_dict['present_minutes'] + fields_dict['changed_room_minutes']
         fields_dict['total_after_discount_fee'] = fields_dict['total_fee'] - fields_dict['total_discount_fee']
         fields_dict['total_after_discount_cash_fee']= fields_dict['total_after_discount_fee'] -  fields_dict['member_card_fee'] - fields_dict['credit_card_fee'] - fields_dict['sales_voucher_fee'] - fields_dict['free_fee']
         fields_dict['act_pay_cash_fee'] = fields_dict['total_after_discount_cash_fee']

@@ -3,6 +3,7 @@
 import logging
 from osv import osv,fields
 from room import room
+import ktv_helper
 import decimal_precision as dp
 
 _logger = logging.getLogger(__name__)
@@ -50,12 +51,13 @@ class room_operate(osv.osv):
             #依次判断关房操作,也有可能当前包厢尚未关闭,close_time可能为空
             #room_change > room_checkout > room_change_checkout_buytime > room_change_checkout_buyout > room_checkout_buytime
             #TODO 还需要加上 续钟与退钟操作
-            which_room_close_ops = record.room_checkout_ids or record.room_change_ids or record.room_change_checkout_buyout_ids or record.room_checkout_buyout_ids or record.room_change_checkout_buytime_ids or record.room_checkout_buytime_ids
+            which_room_close_ops = record.room_checkout_ids or record.room_change_ids or record.room_change_checkout_buyout_ids or record.room_checkout_buyout_ids or record.room_checkout_buytime_refund_ids or record.room_checkout_buytime_continue_ids or record.room_change_checkout_buytime_ids or record.room_checkout_buytime_ids
             close_time = None
             last_member = None
             last_buyout_config = None
             if which_room_close_ops:
                 close_time = which_room_close_ops[-1].close_time
+
                 #获取最后一次操作的member_id
                 last_member =getattr(which_room_close_ops[-1],'member_id',None)
                 last_buyout_config = getattr(which_room_close_ops[-1],'buyout_config_id',None)
@@ -63,6 +65,7 @@ class room_operate(osv.osv):
             if not last_buyout_config:
                 #最后买断id
                 last_buyout_config = getattr(which_room_open_ops[0],'buyout_config_id',None)
+
             last_buyout_config_id = getattr(last_buyout_config,'id',None)
 
             if not last_member:
@@ -70,17 +73,19 @@ class room_operate(osv.osv):
 
             last_member_id = getattr(last_member,'id',None)
 
-
+            consume_minutes = ktv_helper.str_timedelta_minutes(open_time,close_time if close_time else ktv_helper.utc_now_str())
             #计算consume_minutes
-            consume_minutes = changed_room_minutes = song_ticket_minutes =present_minutes =  0
+            ori_consume_minutes = changed_room_minutes = total_minutes = present_minutes = song_ticket_minutes =  0
+
             total_fee = room_fee = hourly_fee = changed_room_fee = changed_room_hourly_fee = guest_damage_fee = total_discount_fee = total_after_discount_fee = total_after_discount_cash_fee = 0.0
             on_credit_fee = member_card_fee = credit_card_fee = sales_voucher_fee =  free_fee =  0.0
 
-
             for r_ops in (record.room_checkout_ids,record.room_checkout_buyout_ids,record.room_checkout_buytime_ids,record.room_change_checkout_buyout_ids,record.room_change_checkout_buytime_ids):
                 for r_op in r_ops:
-                    consume_minutes += r_op.consume_minutes
+                    #consume_minutes += r_op.consume_minutes
+                    present_minutes += r_op.present_minutes
                     changed_room_minutes += r_op.changed_room_minutes
+                    ori_consume_minutes += r_op.consume_minutes
                     song_ticket_minutes += r_op.song_ticket_minutes
                     room_fee += r_op.room_fee
                     hourly_fee += r_op.hourly_fee
@@ -97,6 +102,7 @@ class room_operate(osv.osv):
                     total_discount_fee += r_op.total_discount_fee
                     total_after_discount_fee += r_op.total_after_discount_fee
                     total_after_discount_cash_fee += r_op.total_after_discount_cash_fee
+                    total_minutes += r_op.total_minutes
 
             ret[record.id] = {
                     'guest_name' : guest_name,
@@ -108,8 +114,10 @@ class room_operate(osv.osv):
                     'open_time' : open_time,
                     'close_time' : close_time,
                     'prepay_fee' : prepay_fee or 0.0,
+                    'ori_consume_minutes' : ori_consume_minutes or 0,
                     'consume_minutes' : consume_minutes or 0,
                     'present_minutes' : present_minutes or 0,
+                    'total_minutes' : total_minutes or 0,
                     'room_fee' : room_fee or 0.0,
                     'hourly_fee' : hourly_fee or 0.0,
                     'changed_room_fee' : changed_room_fee or 0.0,
@@ -128,6 +136,8 @@ class room_operate(osv.osv):
                     'total_after_discount_fee' : total_after_discount_fee or 0.0,
                     'total_after_discount_cash_fee' : total_after_discount_cash_fee or 0.0,
                     }
+
+            _logger.debug("ret = %s" % ret)
             return ret
 
     _columns = {
@@ -140,6 +150,8 @@ class room_operate(osv.osv):
             "room_checkout_buyout_ids" : fields.one2many("ktv.room_checkout_buyout","room_operate_id",help="包厢买断结账信息列表"),
             "room_checkout_buytime_ids" : fields.one2many("ktv.room_checkout_buytime","room_operate_id",help="包厢买钟结账信息列表"),
             "room_change_checkout_buytime_ids" : fields.one2many("ktv.room_change_checkout_buytime","room_operate_id",help="买钟-换房结账信息列表"),
+            "room_checkout_buytime_continue_ids" : fields.one2many("ktv.room_checkout_buytime_continue","room_operate_id",help="续钟列表"),
+            "room_checkout_buytime_refund_ids" : fields.one2many("ktv.room_checkout_buytime_refund","room_operate_id",help="退钟列表"),
             "room_change_checkout_buyout_ids" : fields.one2many("ktv.room_change_checkout_buyout","room_operate_id",help="买断-换房结账信息列表"),
 
             #以下为计算字段列表,FIXME 字段名称与room_checkout中的完全一致
@@ -155,7 +167,9 @@ class room_operate(osv.osv):
             "close_time" : fields.function(_compute_fields,type='datetime',multi="compute_fields",string="关房时间"),
             "prepay_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="预付费",digits_compute = dp.get_precision('ktv_fee')),
             "consume_minutes": fields.function(_compute_fields,type='integer',multi="compute_fields",string="消费时长"),
+            "ori_consume_minutes": fields.function(_compute_fields,type='integer',multi="compute_fields",string="原消费时长(由于存在换房,所以实际消费时间会变化)"),
             "present_minutes": fields.function(_compute_fields,type='integer',multi="compute_fields",string="赠送时长"),
+            "total_minutes" : fields.function(_compute_fields,multi="compute_fields",string="合计消费时长",type='integer'),
             "room_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="包厢费",digits_compute = dp.get_precision('ktv_fee')),
             "hourly_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="钟点费",digits_compute = dp.get_precision('ktv_fee')),
             "changed_room_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="换房包厢费",digits_compute = dp.get_precision('ktv_fee')),
@@ -167,8 +181,8 @@ class room_operate(osv.osv):
             "member_card_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="会员卡支付费用",digits_compute = dp.get_precision('ktv_fee')),
             "credit_card_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="信用卡支付费用",digits_compute = dp.get_precision('ktv_fee')),
             "sales_voucher_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="代金券费用",digits_compute = dp.get_precision('ktv_fee')),
-            #抵扣券明细
-            "all_sales_voucher_ids"
+            #TODO 抵扣券明细
+            #"all_sales_voucher_ids"
             'on_credit_fee': fields.function(_compute_fields,type='float',multi="compute_fields",string="挂账费用",digits_compute = dp.get_precision('ktv_fee')),
             "free_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="免单费用",digits_compute = dp.get_precision('ktv_fee')),
 

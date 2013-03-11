@@ -7,7 +7,7 @@ from datetime import *
 import ktv_helper
 from fee_type import fee_type
 from room import room
-from room_checkout_buyout import calculate_sum_pay_info,room_checkout_buyout
+from room_checkout_buyout import calculate_sum_pay_info
 
 _logger = logging.getLogger(__name__)
 
@@ -68,6 +68,7 @@ class room_change_checkout_buyout(osv.osv):
         clone_dict['buyout_config_id'] = clone_dict['changed_buyout_config_id']
         clone_dict.pop('changed_room_id')
         clone_dict.pop('changed_buyout_config_id')
+
         #计算应支付费用
         sum_should_pay_info = self.calculate_sum_pay_info(cr,uid,clone_dict)
         _logger.debug('sum_should_pay_info = %s' % sum_should_pay_info)
