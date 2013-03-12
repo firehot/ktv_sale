@@ -1091,6 +1091,54 @@
         </div>
     </t>
 
+    <!--包厢操作-续钟-->
+    <t t-name='room-checkout-buytime-continue-template'>
+        <div class='well well-small'>
+            <div class="modal-header">
+                <button type="button" class="close btn-cancel">&#x00D7;</button>
+                <h5>续钟操作</h5>
+            </div>
+            <div class='well well-small'>
+                <form class="form-horizontal" id="room_buyout_form">
+                    <fieldset>
+                        <div class="row">
+                            <div class="control-group pull-left">
+                                <label class="control-label">包厢名称:</label>
+                                <div class="controls">
+                                    <span class="room-name uneditable-input"><t t-esc="room.name"/></span>
+                                </div>
+                            </div>
+                            <div class="control-group info pull-left">
+                                <label class="control-label">销售经理:</label>
+                                <div class="controls">
+                                    <span class="saler-name uneditable-input"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="control-group info pull-left">
+                                <label class="control-label">客人姓名:</label>
+                                <div class="controls">
+                                    <span class="guest-name uneditable-input"><t t-esc="origin_room_fee_info.last_checkout.guest_name"/></span>
+                                </div>
+                            </div>
+                            <div class="control-group info pull-left">
+                                <label class="control-label">续钟时间:</label>
+                                <div class="controls">
+                                    <input  type="text" id="consume_minutes" name='consume_minutes' class="consume_minutes" value="30"></input>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+                </form>
+                <t t-call='room-change-fee-table-template'>
+                    <t t-set="origin_room_fee_info" t-value="origin_room_fee_info"/>
+                </t>
+            </div>
+            <t t-call='room-checkout-buttons'/>
+        </div>
+    </t>
+
     <!--读取会员卡界面-->
     <t t-name="scan-card-template">
         <div class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">

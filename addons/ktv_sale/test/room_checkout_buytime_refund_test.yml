@@ -53,6 +53,6 @@
 
     ret = self.pool.get('ktv.room_checkout_buytime_refund').re_calculate_fee(cr,uid,vals)
     #保存退钟信息
-    #ret['osv_name']='ktv.room_checkout_buytime_refund'
-    #ret2 = self.process_operate(cr,uid,ret)
-    #assert ret2['room_operate']['total_fee'] > 0
+    ret['osv_name']='ktv.room_checkout_buytime_refund'
+    ret2 = self.process_operate(cr,uid,ret)
+    assert ret2['room_operate']['total_fee'] > 0

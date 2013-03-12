@@ -816,6 +816,21 @@ openerp.ktv_sale.model = function(erp_instance) {
     model.RoomChangeCheckoutBuytime = model.BaseRoomOperate.extend({
         "osv_name" : 'ktv.room_change_checkout_buytime'
     });
+	//续钟对象
+	model.RoomCheckoutBuytimeContinue = model.BaseRoomOperate.extend({
+		"osv_name": "ktv.room_checkout_buytime_continue",
+		defults: {
+			'persons_count': 2
+		}
+	});
+	//退钟对象
+	model.RoomCheckoutBuytimeRefund = model.BaseRoomOperate.extend({
+		"osv_name": "ktv.room_checkout_buytime_refund",
+		defults: {
+			'persons_count': 2
+		}
+	});
+
     //换房-正常开房对象
     model.RoomChange = Backbone.Model.extend({
         "osv_name" : "ktv.room_change",
