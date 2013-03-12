@@ -81,7 +81,7 @@
                             <li class="action_room_buytime"><a href="#">买钟</a></li>
                             <li class="action_room_buyout"><a href="#">买断</a></li>
                             <li class="action_room_buytime_continue"><a href="#">续钟</a></li>
-                            <li class="action_room_buytime_back"><a href="#">退钟</a></li>
+                            <li class="action_room_buytime_refund"><a href="#">退钟</a></li>
                             <li class="divider"></li>
                             <li class="action_room_checkout"><a href="#">结账</a></li>
                             <li class="action_room_reopen"><a href="#">结账重开</a></li>
@@ -728,8 +728,6 @@
                 <td><t t-esc="origin_room_fee_info.last_checkout.total_after_discount_fee" /></td>
             </tr>
         </table>
-        <hr/>
-        <t t-call='room-checkout-partial'/>
     </t>
     <!--包厢操作-买断换房-->
     <t t-name='room-change-checkout-buyout-template'>
@@ -789,6 +787,7 @@
                 <t t-call='room-change-fee-table-template'>
                     <t t-set="origin_room_fee_info" t-value="origin_room_fee_info"/>
                 </t>
+                <t t-call='room-checkout-partial'/>
             </div>
             <t t-call='room-checkout-buttons'/>
         </div>
@@ -1086,6 +1085,7 @@
                 <t t-call='room-change-fee-table-template'>
                     <t t-set="origin_room_fee_info" t-value="origin_room_fee_info"/>
                 </t>
+                <t t-call='room-checkout-partial'/>
             </div>
             <t t-call='room-checkout-buttons'/>
         </div>
@@ -1099,7 +1099,7 @@
                 <h5>续钟操作</h5>
             </div>
             <div class='well well-small'>
-                <form class="form-horizontal" id="room_buyout_form">
+                <form class="form-horizontal" onsubmit="return false;" id="room_buytime_continue_form">
                     <fieldset>
                         <div class="row">
                             <div class="control-group pull-left">
@@ -1138,6 +1138,57 @@
             <t t-call='room-checkout-buttons'/>
         </div>
     </t>
+
+    <!--包厢操作-退钟-->
+    <t t-name='room-checkout-buytime-refund-template'>
+        <div class='well well-small'>
+            <div class="modal-header">
+                <button type="button" class="close btn-cancel">&#x00D7;</button>
+                <h5>退钟操作</h5>
+            </div>
+            <div class='well well-small'>
+                <form class="form-horizontal" onsubmit="return false;" id="room_buytime_refund_form">
+                    <fieldset>
+                        <div class="row">
+                            <div class="control-group pull-left">
+                                <label class="control-label">包厢名称:</label>
+                                <div class="controls">
+                                    <span class="room-name uneditable-input"><t t-esc="room.name"/></span>
+                                </div>
+                            </div>
+                            <div class="control-group info pull-left">
+                                <label class="control-label">销售经理:</label>
+                                <div class="controls">
+                                    <span class="saler-name uneditable-input"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="control-group info pull-left">
+                                <label class="control-label">客人姓名:</label>
+                                <div class="controls">
+                                    <span class="guest-name uneditable-input"><t t-esc="origin_room_fee_info.last_checkout.guest_name"/></span>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+                </form>
+                <t t-call='room-change-fee-table-template'>
+                    <t t-set="origin_room_fee_info" t-value="origin_room_fee_info"/>
+                </t>
+                <table class='table'>
+                    <tr>
+                        <th>退钟时长:</th>
+                        <td><span class='consume_minutes'>0.0</span>分钟</td>
+                        <th>退费合计:</th>
+                        <td><span class='total_fee'>0.0</span></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </t>
+
+
 
     <!--读取会员卡界面-->
     <t t-name="scan-card-template">

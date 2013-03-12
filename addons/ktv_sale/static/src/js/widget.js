@@ -179,7 +179,16 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			});
 		},
         //退钟
-		action_room_buytime_refund: function() {},
+		action_room_buytime_refund: function() {
+		    var r = new widget.RoomCheckoutBuytimeRefundWidget(null, {
+				room: this.model
+			});
+			r.ready.then(function() {
+				$('#operate_area').html(r.$el);
+				r.renderElement();
+				r.start();
+			});
+        },
 		//包厢换房-买断
 		action_room_change: function() {
 			console.log("enter into action_room_change");
@@ -1448,7 +1457,41 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		},
 		start: function() {
 			this._super();
-            this.$('#consume_minutes').on('change',this._onchange_consume_minutes,this);
+            this.$('#consume_minutes').on('change',_.bind(this._onchange_consume_minutes,this));
+            this._re_calculate_fee();
+		}
+	});
+
+	//退钟界面
+	widget.RoomCheckoutBuytimeRefundWidget = widget.BaseRoomCheckoutWidget.extend({
+		template_fct: qweb_template("room-checkout-buytime-refund-template"),
+		model: new model.RoomCheckoutBuytimeRefund(),
+		init: function(parent, options) {
+			this._super(parent, options);
+		},
+		renderElement: function() {
+			var self = this;
+			this.$el.html(self.template_fct({
+				"model": self.model.toJSON(),
+				//原包厢对象
+				"room": self.room.toJSON(),
+				//原包厢费用信息
+				"origin_room_fee_info": self.room_fee_info.export_as_json()
+			}));
+			return this;
+		},
+
+		call_server_func: function() {
+			var self = this;
+			var context = this._get_context();
+			return new erp_instance.web.Model('ktv.room_checkout_buytime_refund').get_func('re_calculate_fee')(context);
+		},
+		//获取当前上下文环境
+		_get_context: function() {
+			return {"room_id" : this.room.id};
+		},
+		start: function() {
+			this._super();
             this._re_calculate_fee();
 		}
 	});

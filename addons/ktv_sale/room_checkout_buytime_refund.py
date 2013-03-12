@@ -23,7 +23,7 @@ class room_checkout_buytime_refund(osv.osv):
         重新计算应退费用
         :params context 包含计算上下问信息,required
         :params context[room_id] integer 包厢id,required
-       """
+        """
         #计算以往客户付费合计
         pool = self.pool
         room_id = context.get('room_id')
@@ -38,11 +38,12 @@ class room_checkout_buytime_refund(osv.osv):
         if refund_minutes <= 0:
             return None
 
-
         #计算room_operate.close_time ~ datetime.now()时间内应收费用(折前)
         tmp_dict = {k:v for k,v in context.items() if k not in ('member_id','discount_card_id','discounter_id')}
         tmp_dict['price_class_id'] = getattr(r_op.price_class_id,'id')
         tmp_dict['consume_minutes'] = refund_minutes
         sum_refund_info = self.calculate_sum_pay_info(cr,uid,tmp_dict)
+
+        self.set_calculate_fields(cr,uid,sum_refund_info)
 
         return sum_refund_info
