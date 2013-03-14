@@ -37,7 +37,7 @@ class room_operate(osv.osv):
         changed_room_minutes
         """
         ret = {}
-        for record in self.browse(cr,uid,ids,context):
+        for record in self.browse(cr,uid,ids):
             #依次判断所有开房相关操作:room_opens > room_checkout_buyout > room_checkout_buytime
             which_room_open_ops = record.room_opens_ids or record.room_checkout_buyout_ids or record.room_checkout_buytime_ids
 
@@ -50,23 +50,26 @@ class room_operate(osv.osv):
 
             #依次判断关房操作,也有可能当前包厢尚未关闭,close_time可能为空
             #room_change > room_checkout > room_change_checkout_buytime > room_change_checkout_buyout > room_checkout_buytime
-            #TODO 还需要加上 续钟与退钟操作
             which_room_close_ops = record.room_checkout_ids or record.room_change_ids or record.room_change_checkout_buyout_ids or record.room_checkout_buyout_ids or record.room_checkout_buytime_refund_ids or record.room_checkout_buytime_continue_ids or record.room_change_checkout_buytime_ids or record.room_checkout_buytime_ids
             close_time = None
             last_member = None
             last_buyout_config = None
+            last_cron = None
             if which_room_close_ops:
                 close_time = which_room_close_ops[-1].close_time
 
                 #获取最后一次操作的member_id
                 last_member =getattr(which_room_close_ops[-1],'member_id',None)
                 last_buyout_config = getattr(which_room_close_ops[-1],'buyout_config_id',None)
+                #最后一次cron任务
+                last_cron = getattr(which_room_close_ops[-1],'cron_id',None)
 
             if not last_buyout_config:
                 #最后买断id
                 last_buyout_config = getattr(which_room_open_ops[0],'buyout_config_id',None)
 
             last_buyout_config_id = getattr(last_buyout_config,'id',None)
+            last_cron_id = getattr(last_cron,'id',None)
 
             if not last_member:
                 last_member = which_room_open_ops[0].member_id
@@ -80,7 +83,7 @@ class room_operate(osv.osv):
             total_fee = room_fee = hourly_fee = changed_room_fee = changed_room_hourly_fee = guest_damage_fee = total_discount_fee = total_after_discount_fee = total_after_discount_cash_fee = 0.0
             on_credit_fee = member_card_fee = credit_card_fee = sales_voucher_fee =  free_fee =  0.0
 
-            for r_ops in (record.room_checkout_ids,record.room_checkout_buyout_ids,record.room_checkout_buytime_ids,record.room_change_checkout_buyout_ids,record.room_change_checkout_buytime_ids):
+            for r_ops in (record.room_checkout_ids,record.room_checkout_buyout_ids,record.room_checkout_buytime_ids,record.room_change_checkout_buyout_ids,record.room_change_checkout_buytime_ids,record.room_checkout_buytime_continue_ids):
                 for r_op in r_ops:
                     #consume_minutes += r_op.consume_minutes
                     present_minutes += r_op.present_minutes
@@ -109,6 +112,7 @@ class room_operate(osv.osv):
                     'persons_count' : persons_count or 1,
                     'fee_type_id' : fee_type_id,
                     'price_class_id' : price_class_id,
+                    'last_cron_id' : last_cron_id,
                     'last_member_id' : last_member_id,
                     'last_buyout_config_id' : last_buyout_config_id,
                     'open_time' : open_time,
@@ -161,6 +165,7 @@ class room_operate(osv.osv):
             "price_class_id" : fields.function(_compute_fields,type='many2one',obj="ktv.price_class",multi='compute_fields',string='价格类型(可能为None)'),
             "last_member_id" : fields.function(_compute_fields,type='many2one',obj="ktv.member",multi='compute_fields',string='会员id',help="最近一次使用的会员卡"),
             "last_buyout_config_id" : fields.function(_compute_fields,type='many2one',obj="ktv.buyout_config",multi='compute_fields',string='最近买断id',help="获取当前操作的最后一次买断id"),
+            "last_cron_id" : fields.function(_compute_fields,type='many2one',obj="ir.cron",multi='compute_fields',string='最近cron任务id',help="最近cron任务id,主要是处理到点关房处理,预售时可能为空"),
             "guest_name" : fields.function(_compute_fields,type='string',multi='compute_fields',string='客人姓名'),
             "persons_count": fields.function(_compute_fields,type='integer',multi='compute_fields',string='客人人数'),
             "open_time" : fields.function(_compute_fields,type='datetime',multi="compute_fields",string="开房时间"),
@@ -223,20 +228,44 @@ class room_operate(osv.osv):
         (operate_obj,room_state,cron) = self.pool.get(operate_values['osv_name']).process_operate(cr,uid,opeate_values)
         更新当前包厢状态,添加cron对象,返回处理结果
         """
+        pool = self.pool
+        osv_name = operate_values['osv_name']
         room_id = operate_values['room_id']
-        (operate_obj,room_state,cron) = self.pool.get(operate_values['osv_name']).process_operate(cr,uid,operate_values)
+
+        #将该room_operate的原cron task设置为无效
+        self._disable_last_cron_task(cr,uid,room_id)
+        #调用实际的包厢操作类处理
+        (operate_obj,room_state,cron) = pool.get(osv_name).process_operate(cr,uid,operate_values)
         #更新包厢状态
         if room_state:
-            self.pool.get('ktv.room').write(cr,uid,room_id,{'state' : room_state})
-        #TODO 添加cron对象
-        if cron:
-            self._create_operate_cron(cr,uid,cron)
+            pool.get('ktv.room').write(cr,uid,room_id,{'state' : room_state})
 
-        room_fields = self.pool.get('ktv.room').fields_get(cr,uid).keys()
-        room = self.pool.get('ktv.room').read(cr,uid,room_id,room_fields)
+        # 添加新cron对象
+        if cron:
+            new_cron_id = self._create_operate_cron(cr,uid,cron)
+            #修改当前操作的cron_id
+            pool.get(osv_name).write(cr,uid,operate_obj['id'],{'cron_id' : new_cron_id})
+
+        room_fields = pool.get('ktv.room').fields_get(cr,uid).keys()
+        room = pool.get('ktv.room').read(cr,uid,room_id,room_fields)
         #返回两个对象room和room_operate
         _logger.debug("operate_obj = %s " % operate_obj)
         return {'room' : room,'room_operate' : operate_obj}
+
+    def _disable_last_cron_task(self,cr,uid,room_id):
+        """
+        将该room_operate的最后一次cron_task设置为无效,由于存在换房及退钟、继续钟情况,所以原cron任务有可能失效
+        :param room_id integer
+        :rtype None
+        """
+
+        rop = self.pool.get('ktv.room').browse(cr,uid,room_id).current_room_operate_id
+        last_cron = getattr(rop,'last_cron_id',None)
+        last_cron_id = getattr(last_cron,'id',None)
+        if last_cron_id:
+            _logger.debug('last_cron_id = %d' % last_cron_id)
+            self.pool.get('ir.cron').write(cr,uid,[last_cron_id],{'numbercall' : 0,'active' : False})
+            _logger.debug('end disable last cron task')
 
     def _create_operate_cron(self,cr,uid,cron_vals):
         """

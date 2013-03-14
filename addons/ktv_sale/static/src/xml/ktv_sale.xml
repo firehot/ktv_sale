@@ -1134,6 +1134,7 @@
                 <t t-call='room-change-fee-table-template'>
                     <t t-set="origin_room_fee_info" t-value="origin_room_fee_info"/>
                 </t>
+                <t t-call='room-checkout-partial'/>
             </div>
             <t t-call='room-checkout-buttons'/>
         </div>
@@ -1193,8 +1194,6 @@
             </div>
         </div>
     </t>
-
-
 
     <!--读取会员卡界面-->
     <t t-name="scan-card-template">

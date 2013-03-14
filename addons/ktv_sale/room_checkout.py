@@ -73,6 +73,7 @@ class room_checkout(osv.osv):
             "bill_datetime" : fields.datetime("bill_datetime",required = True,readonly = True,help="结账时间"),
             "price_class_id" : fields.many2one("ktv.price_class","price_class_id",help="价格类型(买断方式下不适用)"),
             "fee_type_id" : fields.many2one("ktv.fee_type","fee_type_id",required = True,help="计费方式"),
+            "cron_id" : fields.many2one("ir.cron","cron_id",help="该预售操作关联的cron task id,非预售时为None"),
             "guest_name" : fields.char("guest_name",size = 20,help="客人姓名"),
             "persons_count" : fields.integer("persons_count",help="客人人数"),
             "open_time" : fields.datetime("open_time",required = True,help="开房时间"),
