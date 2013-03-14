@@ -1011,6 +1011,12 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			this.model.push().pipe(function(result) {
 				self.room.set(result['room']);
 				self.model.set(result['room_operate']);
+                //如果是换房,则还须更新changed_room的状态
+                if(result['changed_room']){
+                    var changed_room = result['changed_room'];
+                    var client_changed_room = erp_instance.ktv_sale.ktv_room_point.get_room(changed_room.id);
+                    client_changed_room.set(changed_room);
+                }
 
 			}).then(success_func, fail_func);
 		},

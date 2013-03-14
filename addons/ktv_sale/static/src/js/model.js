@@ -326,6 +326,11 @@ openerp.ktv_sale.model = function(erp_instance) {
 			});
 			return new Backbone.Collection().add(ret);
 		},
+        //根据room_id得到单个room
+        get_room : function(r_id) {
+			var ret = this.get("display_rooms").get(r_id);
+            return ret;
+        }
 
 	});
 

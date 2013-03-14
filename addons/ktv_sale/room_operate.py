@@ -235,7 +235,7 @@ class room_operate(osv.osv):
         #将该room_operate的原cron task设置为无效
         self._disable_last_cron_task(cr,uid,room_id)
         #调用实际的包厢操作类处理
-        (operate_obj,room_state,cron) = pool.get(osv_name).process_operate(cr,uid,operate_values)
+        operate_obj,room_state,cron = pool.get(osv_name).process_operate(cr,uid,operate_values)
         #更新包厢状态
         if room_state:
             pool.get('ktv.room').write(cr,uid,room_id,{'state' : room_state})
@@ -248,9 +248,17 @@ class room_operate(osv.osv):
 
         room_fields = pool.get('ktv.room').fields_get(cr,uid).keys()
         room = pool.get('ktv.room').read(cr,uid,room_id,room_fields)
-        #返回两个对象room和room_operate
+       #返回两个对象room和room_operate
         _logger.debug("operate_obj = %s " % operate_obj)
-        return {'room' : room,'room_operate' : operate_obj}
+
+        ret =  {'room' : room,'room_operate' : operate_obj}
+        #如果是换房操作,则还需要更新新换包厢的状态
+        changed_room_id = operate_values.get('changed_room_id',None)
+        if changed_room_id:
+            changed_room = pool.get('ktv.room').read(cr,uid,changed_room_id,room_fields)
+            ret['changed_room'] = changed_room
+
+        return ret
 
     def _disable_last_cron_task(self,cr,uid,room_id):
         """
