@@ -1178,12 +1178,18 @@
                 </t>
                 <table class='table'>
                     <tr>
+                        <th>退钟时间:</th>
+                        <td colspan='5'><span class='open_time'></span> ~ <span class='close_time'></span></td>
                         <th>退钟时长:</th>
                         <td><span class='consume_minutes'>0.0</span>分钟</td>
                         <th>退费合计:</th>
                         <td><span class='total_fee'>0.0</span></td>
                     </tr>
                 </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-checkout"><i class='icon-check'></i> 退钟</button>
+                <button class="btn btn-cancel"><i class='icon-arrow-right'></i> 取消</button>
             </div>
         </div>
     </t>

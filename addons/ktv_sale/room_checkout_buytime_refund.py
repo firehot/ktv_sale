@@ -5,6 +5,7 @@ from datetime import *
 from osv import fields, osv
 from fee_type import fee_type
 import ktv_helper
+from room import room
 
 _logger = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ class room_checkout_buytime_refund(osv.osv):
 
         sum_refund_info = self.get_default_checkout_dict(cr,uid)
         #在实际消费时长 < 买钟时长(不包括赠送时长)时，可以退钟
-        #计算退钟时间
+        #计算退钟时间,退钟时长 =
         refund_minutes = ktv_helper.str_timedelta_minutes(ktv_helper.utc_now_str(),r_op.close_time) - r_op.present_minutes
         _logger.debug("refund_minutes = % s" % refund_minutes)
         if refund_minutes <= 0:
@@ -44,6 +45,30 @@ class room_checkout_buytime_refund(osv.osv):
         tmp_dict['consume_minutes'] = refund_minutes
         sum_refund_info = self.calculate_sum_pay_info(cr,uid,tmp_dict)
 
+        #退钟时,close_time = now open_time = close_time - refund_minutes
+        sum_refund_info['open_time'] = ktv_helper.utc_now_str()
+        sum_refund_info['close_time'] = ktv_helper.strftime(datetime.now() + timedelta(minutes = refund_minutes))
+
+
         self.set_calculate_fields(cr,uid,sum_refund_info)
 
         return sum_refund_info
+
+    def process_operate(self,cr,uid,refund_vals):
+        """
+        处理退钟结账事件
+        :params dict refund_vals 退钟信息相关字段
+        :param refund_vals['room_id'] 要退钟的包厢id
+        :return  tuple  room_buytime 处理过后的买钟信息对象
+                        room_state  当前操作包厢所在状态
+                        cron dict 定时操作对象
+        """
+        room_id = refund_vals.get("room_id")
+        cur_rp_id = self.pool.get('ktv.room').find_or_create_room_operate(cr,uid,room_id)
+        refund_vals.update({"room_operate_id" : cur_rp_id})
+        refund_id = self.create(cr,uid,refund_vals)
+        fields = self.fields_get(cr,uid).keys()
+        room_refund = self.read(cr,uid,refund_id,fields)
+        return (room_refund,room.STATE_FREE,None)
+
+

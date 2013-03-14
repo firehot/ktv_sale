@@ -398,6 +398,12 @@ class room_checkout(osv.osv):
         fields_dict['total_after_discount_cash_fee']= fields_dict['total_after_discount_fee'] -  fields_dict['member_card_fee'] - fields_dict['credit_card_fee'] - fields_dict['sales_voucher_fee'] - fields_dict['free_fee']
         fields_dict['act_pay_cash_fee'] = fields_dict['total_after_discount_cash_fee']
         fields_dict['cash_change'] = 0.0
+
+        #将所有float字段进行round
+        for k,v in fields_dict.items():
+            if isinstance(v,float):
+                fields_dict[k] = ktv_helper.float_round(cr,v)
+
         return fields_dict
 
     def _get_sum_hourly_fee(self,cr,uid,room_id,context):
