@@ -64,6 +64,7 @@ class room_operate(osv.osv):
                 #最后一次cron任务
                 last_cron = getattr(which_room_close_ops[-1],'cron_id',None)
 
+
             if not last_buyout_config:
                 #最后买断id
                 last_buyout_config = getattr(which_room_open_ops[0],'buyout_config_id',None)
@@ -77,6 +78,17 @@ class room_operate(osv.osv):
             last_member_id = getattr(last_member,'id',None)
 
             consume_minutes = ktv_helper.str_timedelta_minutes(open_time,close_time if close_time else ktv_helper.utc_now_str())
+            #计算已消费时长和剩余消费时长
+            left_minutes = 0
+            #如果当前时间>close_time 则该包厢已关闭
+            if close_time:
+                if ktv_helper.utc_now_str() > close_time:
+                    left_minutes = 0
+                else:
+                    left_minutes = ktv_helper.str_timedelta_minutes(ktv_helper.utc_now_str(),close_time)
+
+            #如果当前时间<=close_time 则该包厢尚未关闭
+
             #计算consume_minutes
             ori_consume_minutes = changed_room_minutes = total_minutes = present_minutes = song_ticket_minutes =  0
 
@@ -120,6 +132,7 @@ class room_operate(osv.osv):
                     'prepay_fee' : prepay_fee or 0.0,
                     'ori_consume_minutes' : ori_consume_minutes or 0,
                     'consume_minutes' : consume_minutes or 0,
+                    'left_minutes' : left_minutes or 0,
                     'present_minutes' : present_minutes or 0,
                     'total_minutes' : total_minutes or 0,
                     'room_fee' : room_fee or 0.0,
@@ -170,6 +183,7 @@ class room_operate(osv.osv):
             "persons_count": fields.function(_compute_fields,type='integer',multi='compute_fields',string='客人人数'),
             "open_time" : fields.function(_compute_fields,type='datetime',multi="compute_fields",string="开房时间"),
             "close_time" : fields.function(_compute_fields,type='datetime',multi="compute_fields",string="关房时间"),
+            "left_minutes" : fields.function(_compute_fields,type='integer',multi="compute_fields",string="剩余消费时间"),
             "prepay_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="预付费",digits_compute = dp.get_precision('ktv_fee')),
             "consume_minutes": fields.function(_compute_fields,type='integer',multi="compute_fields",string="消费时长"),
             "ori_consume_minutes": fields.function(_compute_fields,type='integer',multi="compute_fields",string="原消费时长(由于存在换房,所以实际消费时间会变化)"),
@@ -209,10 +223,27 @@ class room_operate(osv.osv):
         """
         获取该room_operate中所有已支付费用dict
         """
-        fields = self.fields_get(cr,uid).keys()
-        _logger.debug("fields = %s" % fields)
-        _logger.debug("operate_id = %s" % type(operate_id))
-        return self.read(cr,uid,operate_id,fields,context)
+        pool = self.pool
+        ret = self.read(cr,uid,operate_id,context=context)
+        #使用read方法时,类型为function的one2many字段不返回dict对象,
+        if ret['fee_type_id']:
+            fee_type = pool.get('ktv.fee_type').read(cr,uid,ret['fee_type_id'],['id','name'])
+            ret['fee_type_id'] = (fee_type['id'],fee_type['name'])
+        if ret['price_class_id']:
+            price_class = pool.get('ktv.price_class').read(cr,uid,ret['price_class_id'],['id','name'])
+            ret['price_class_id'] = (price_class['id'],price_class['name'])
+        if ret['last_member_id']:
+            last_member = pool.get('ktv.member').read(cr,uid,ret['last_member_id'],['id','name'])
+            ret['last_member_id'] = (last_member['id'],laster_member['name'])
+
+        if ret['last_buyout_config_id']:
+            last_buyout_config = pool.get('ktv.buyout_config').read(cr,uid,ret['last_buyout_config_id'],['id','name'])
+            ret['last_buyout_config_id'] = (last_buyout_config['id'],last_buyout_config['name'])
+        if ret['last_cron_id']:
+            last_cron = pool.get('ir.cron').read(cr,uid,ret['last_cron_id'],['id','name'])
+            ret['last_cron_id'] = (last_cron['id'],last_cron['name'])
+
+        return ret
 
     def process_operate(self,cr,uid,operate_values):
         """
@@ -246,8 +277,8 @@ class room_operate(osv.osv):
             #修改当前操作的cron_id
             pool.get(osv_name).write(cr,uid,operate_obj['id'],{'cron_id' : new_cron_id})
 
-        room_fields = pool.get('ktv.room').fields_get(cr,uid).keys()
-        room = pool.get('ktv.room').read(cr,uid,room_id,room_fields)
+        #room_fields = pool.get('ktv.room').fields_get(cr,uid).keys()
+        room = pool.get('ktv.room').search_with_fee_info(cr,uid,[('id','=',room_id)])[0]
        #返回两个对象room和room_operate
         _logger.debug("operate_obj = %s " % operate_obj)
 
@@ -255,7 +286,7 @@ class room_operate(osv.osv):
         #如果是换房操作,则还需要更新新换包厢的状态
         changed_room_id = operate_values.get('changed_room_id',None)
         if changed_room_id:
-            changed_room = pool.get('ktv.room').read(cr,uid,changed_room_id,room_fields)
+            changed_room = pool.get('ktv.room').read(cr,uid,changed_room_id)
             ret['changed_room'] = changed_room
 
         return ret

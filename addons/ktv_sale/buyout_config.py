@@ -51,7 +51,7 @@ class buyout_config(osv.osv):
             ]
 
 
-    _columns = { field_name : fields.float(field_name, digits_compute= dp.get_precision('Ktv Room Default Precision'),required = True) for field_name in _fee_fields}
+    _columns = { field_name : fields.float(field_name, digits_compute= dp.get_precision('ktv_fee'),required = True) for field_name in _fee_fields}
     _columns.update({ field_name : fields.boolean(field_name) for field_name in _buyout_enable_fields})
     _columns.update({
             "name" : fields.char("name",size = 64,required = True),

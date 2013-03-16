@@ -30,7 +30,7 @@ class member(osv.osv):
             "email" : fields.char("email",size = 30,help="邮件地址"),
             "company" : fields.char("company",size = 30,help="工作单位"),
             "address" : fields.char("address",size = 60,help="地址"),
-            "balance" : fields.float("balance", digits_compute= dp.get_precision('Ktv Room Default Precision'),readonly = True,help = "卡余额"),
+            "balance" : fields.float("balance", digits_compute= dp.get_precision('ktv_fee'),readonly = True,help = "卡余额"),
             "active" : fields.boolean("active"),
             }
     _defaults = {

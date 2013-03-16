@@ -198,12 +198,22 @@ class room(osv.osv):
         else:
             ret = pool.get('ktv.room_operate').calculate_sum_paid_info(cr,uid,operate_id.id,context)
 
-        #如果有买断信息则返回最后一次买断设置
-        buyout_config_id = ret.get('last_buyout_config_id',None)
-        if buyout_config_id:
-            #_logger.debug("buyout_config_id = %s" %  buyout_config_id)
-            buyout_config_fields_list = pool.get('ktv.buyout_config').fields_get(cr,uid).keys()
-            buyout_config_dict = pool.get('ktv.buyout_config').read(cr,uid,buyout_config_id,buyout_config_fields_list)
-            ret['buyout_config_id'] = buyout_config_dict
+        return ret
+
+    def search_with_fee_info(self,cr,uid,args = [],context = None):
+        """
+        获取包厢数据,包括当包厢消费数据(room_operate#calculate_sum_paid_info)
+        :rtype list 返回包厢数组
+        """
+        ids = self.search(cr,uid,args = args,context = context)
+        ret = []
+        for room_id in ids:
+            room = self.read(cr,uid,room_id)
+            sum_paid_info = self.get_presale_last_checkout_dict(cr,uid,room_id)
+            if sum_paid_info:
+                room['sum_paid_info'] = sum_paid_info
+            ret.append(room)
 
         return ret
+
+

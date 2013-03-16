@@ -63,14 +63,13 @@
     <t t-name="room-template">
         <table class="table well">
             <tr>
-                <td></td>
-                <td>
+                <td colspan='3' style='text-align : center;width : 120px;'>
                     <div class="btn-group">
                         <button class="btn dropdown-toggle" data-toggle="dropdown">
-                            <t t-esc="name"/>
+                            <t t-esc="room.name"/>
                             <span class="caret"></span>
                         </button>
-                        <ul class="dropdown-menu room-action-menu">
+                        <ul class="dropdown-menu room-action-menu" style='text-align : left;'>
                             <li class="action_room_scheduled"><a  href="#">预定</a></li>
                             <li class="action_room_scheduled_cancel"><a href="#">取消预定</a></li>
                             <li class="divider"></li>
@@ -88,26 +87,35 @@
                         </ul>
                     </div>
                 </td>
-                <td></td>
             </tr>
-            <!--
             <tr>
-                <td><span class="label label-info"><t t-esc="room_type_id[1]"/></span></td>
-                <td>&#160;</td>
-                <td><span class="label label-important"><t t-esc="state_description"/></span></td>
-            </tr>
-            -->
-            <tr>
-                <td colspan="3">
-                    <span class="label label-warning"><t t-esc="state_description"/></span>
+                <td colspan='3'>
+                    <t t-esc="room.room_type_id[1]" />
+                    <t t-if="room.sum_paid_info">
+                        (<t t-esc="room.sum_paid_info.persons_count" />)
+                    </t>
+                    <t t-if="!room.sum_paid_info">
+                        (<t t-esc="room.minimum_persons" />)
+                    </t>
                 </td>
             </tr>
             <tr>
-                <td colspan="3">&#160;</td>
+                <t t-if="room.sum_paid_info">
+                    <td><t t-esc = "room.sum_paid_info.context_open_only_time" /></td>
+                    <td><t t-esc = "room.sum_paid_info.context_close_only_time" /></td>
+                    <td><t t-esc = "room.sum_paid_info.left_minutes" /></td>
+                </t>
+                <t t-if="!room.sum_paid_info">
+                    <td colspan='3'>&#160;</td>
+                </t>
+            </tr>
+            <tr>
+                <td>&#160;</td>
+                <td>&#160;</td>
+                <td>&#160;</td>
             </tr>
         </table>
     </t>
-
 <!--包厢状态-->
     <!--#空闲、使用、预订、锁定、已结帐、买断、故障、呼叫?、提醒?、带客、清洁、调试 -->
     <!--'free', 'in_use', 'scheduled', 'locked', 'checkout', 'buyout', 'malfunction', 'visit', 'clean', 'debug' -->
@@ -661,12 +669,12 @@
             <tr>
                 <th>起止时间:</th>
                 <td colspan='7'>
-                    <t t-esc="origin_room_fee_info.last_checkout.context_open_time" />
+                    <t t-esc="sum_paid_info.context_open_time" />
                     ~
-                    <t t-esc="origin_room_fee_info.last_checkout.context_close_time" />
+                    <t t-esc="sum_paid_info.context_close_time" />
                 </td>
                 <th>消费时长:</th>
-                <td><t t-esc="origin_room_fee_info.last_checkout.consume_minutes" />分钟</td>
+                <td><t t-esc="sum_paid_info.consume_minutes" />分钟</td>
             </tr>
             <tr>
                 <th>包厢费</th>
@@ -681,34 +689,34 @@
                 <th>应收合计</th>
             </tr>
             <tr>
-                <td><t t-esc="origin_room_fee_info.last_checkout.room_fee"/></td>
-                <td><t t-esc='origin_room_fee_info.last_checkout.hourly_fee'/></td>
-                <td><t t-esc="origin_room_fee_info.last_checkout.changed_room_fee" /></td>
+                <td><t t-esc="sum_paid_info.room_fee"/></td>
+                <td><t t-esc='sum_paid_info.hourly_fee'/></td>
+                <td><t t-esc="sum_paid_info.changed_room_fee" /></td>
                 <td>
-                    <t t-esc="origin_room_fee_info.last_checkout.changed_room_hourly_fee" />/
-                    <t t-esc="origin_room_fee_info.last_checkout.changed_room_minutes" />分钟
+                    <t t-esc="sum_paid_info.changed_room_hourly_fee" />/
+                    <t t-esc="sum_paid_info.changed_room_minutes" />分钟
                 </td>
                 <td>
-                    <t t-esc="origin_room_fee_info.last_checkout.merged_room_hourly_fee" />
+                    <t t-esc="sum_paid_info.merged_room_hourly_fee" />
                 </td>
                 <td>
-                    <t t-esc="origin_room_fee_info.last_checkout.merged_room_hourly_fee" />
+                    <t t-esc="sum_paid_info.merged_room_hourly_fee" />
                 </td>
                 <td>
-                    <t t-esc="origin_room_fee_info.last_checkout.service_fee" />/
-                    <t t-esc="origin_room_fee_info.last_checkout.service_fee_rate" />%
+                    <t t-esc="sum_paid_info.service_fee" />/
+                    <t t-esc="sum_paid_info.service_fee_rate" />%
                 </td>
                 <td>
-                    <t t-esc="origin_room_fee_info.last_checkout.total_fee" />
+                    <t t-esc="sum_paid_info.total_fee" />
                 </td>
                 <td>
-                    <t t-esc="origin_room_fee_info.last_checkout.total_discount_fee" />
+                    <t t-esc="sum_paid_info.total_discount_fee" />
                 </td>
                 <td>
-                    <t t-esc="origin_room_fee_info.last_checkout.total_after_discount_fee" />
+                    <t t-esc="sum_paid_info.total_after_discount_fee" />
                 </td>
             </tr>
-           <tr>
+            <tr>
                 <th>现金</th>
                 <th colspan="2">会员卡</th>
                 <th colspan="3">信用卡</th>
@@ -719,13 +727,13 @@
             </tr>
 
             <tr>
-                <td><t t-esc="origin_room_fee_info.last_checkout.total_after_discount_cash_fee" /></td>
-                <td colspan="2"><t t-esc="origin_room_fee_info.last_checkout.member_card_fee" />/<t t-esc="origin_room_fee_info.last_checkout.member"/></td>
-                <td colspan="3"><t t-esc="origin_room_fee_info.last_checkout.credit_card_fee" />/<t t-esc="origin_room_fee_info.last_checkout.credit_card_no" /></td>
-                <td><t t-esc="origin_room_fee_info.last_checkout.sales_voucher_fee" />/<t t-esc="origin_room_fee_info.last_checkout.sales_vouchers" /></td>
-                <td><t t-esc="origin_room_fee_info.last_checkout.on_credit_fee" /></td>
-                <td><t t-esc="origin_room_fee_info.last_checkout.free_fee" /></td>
-                <td><t t-esc="origin_room_fee_info.last_checkout.total_after_discount_fee" /></td>
+                <td><t t-esc="sum_paid_info.total_after_discount_cash_fee" /></td>
+                <td colspan="2"><t t-esc="sum_paid_info.member_card_fee" />/<t t-esc="sum_paid_info.member"/></td>
+                <td colspan="3"><t t-esc="sum_paid_info.credit_card_fee" />/<t t-esc="sum_paid_info.credit_card_no" /></td>
+                <td><t t-esc="sum_paid_info.sales_voucher_fee" />/<t t-esc="sum_paid_info.sales_vouchers" /></td>
+                <td><t t-esc="sum_paid_info.on_credit_fee" /></td>
+                <td><t t-esc="sum_paid_info.free_fee" /></td>
+                <td><t t-esc="sum_paid_info.total_after_discount_fee" /></td>
             </tr>
         </table>
     </t>
@@ -749,7 +757,7 @@
                             <div class="control-group info pull-left">
                                 <label class="control-label" for="buyout_config_id">原买断:</label>
                                 <div class="controls">
-                                    <span class="origin-buyout-config-name uneditable-input"><t t-esc="origin_room_fee_info.last_checkout.buyout_config_id.name"/></span>
+                                    <span class="origin-buyout-config-name uneditable-input"><t t-esc="origin_room.sum_paid_info.last_buyout_config_id[1]"/></span>
                                 </div>
                             </div>
                         </div>
@@ -757,13 +765,13 @@
                             <div class="control-group info pull-left">
                                 <label class="control-label">客人姓名:</label>
                                 <div class="controls">
-                                    <span class="origin-guest-name uneditable-input"><t t-esc="origin_room_fee_info.last_checkout.guest_name"/></span>
+                                    <span class="origin-guest-name uneditable-input"><t t-esc="origin_room.sum_paid_info.guest_name"/></span>
                                 </div>
                             </div>
                             <div class="control-group info pull-left">
                                 <label class="control-label">客人人数:</label>
                                 <div class="controls">
-                                    <span class="origin-persons-count uneditable-input"><t t-esc="origin_room_fee_info.last_checkout.persons_count"/></span>
+                                    <span class="origin-persons-count uneditable-input"><t t-esc="origin_room.sum_paid_info.persons_count"/></span>
                                 </div>
                             </div>
                         </div>
@@ -785,7 +793,7 @@
                     </fieldset>
                 </form>
                 <t t-call='room-change-fee-table-template'>
-                    <t t-set="origin_room_fee_info" t-value="origin_room_fee_info"/>
+                    <t t-set="sum_paid_info" t-value="origin_room.sum_paid_info"/>
                 </t>
                 <t t-call='room-checkout-partial'/>
             </div>
@@ -898,16 +906,6 @@
                 <fieldset>
                     <div class="row">
                         <div class="control-group info pull-left">
-                            <label class="control-label" for="fee_type_id">计费方式:</label>
-                            <div class="controls">
-                                <select id="fee_type_id" name="fee_type_id">
-                                    <t t-foreach="fee_types" t-as="f">
-                                        <option t-att-value="f.id"><t t-esc="f.name"/></option>
-                                    </t>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="control-group info pull-left">
                             <label class="control-label" for="price_class_id">价格类型:</label>
                             <div class="controls">
                                 <select id="price_class_id" name="price_class_id">
@@ -917,11 +915,6 @@
                                 </select>
                             </div>
                         </div>
-                    </div>
-                </fieldset>
-
-                <fieldset>
-                    <div class="row">
                         <div class="control-group info pull-left">
                             <label class="control-label" for="buy_minutes">买钟时间:</label>
                             <div class="controls">
@@ -949,14 +942,18 @@
                                 </select>
                             </div>
                         </div>
+
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <div class="row">
                         <div class="control-group pull-left">
                             <label class="control-label" for="present_minutes">赠送时长:</label>
                             <div class="controls">
                                 <input name="present_minutes" id="present_minutes" type='text' disabled = "true" />&#x00A0;<span>分钟</span>
                             </div>
                         </div>
-                    </div>
-                    <div class="row">
                         <div class="control-group info pull-left">
                             <label class="control-label" for="close_time">到钟时间:</label>
                             <div class="controls">
@@ -1070,20 +1067,29 @@
                             <div class="control-group info pull-left">
                                 <label class="control-label">客人姓名:</label>
                                 <div class="controls">
-                                    <span class="origin-guest-name uneditable-input"><t t-esc="origin_room_fee_info.last_checkout.guest_name"/></span>
+                                    <span class="origin-guest-name uneditable-input"><t t-esc="origin_room.sum_paid_info.guest_name"/></span>
                                 </div>
                             </div>
                             <div class="control-group info pull-left">
                                 <label class="control-label">客人人数:</label>
                                 <div class="controls">
-                                    <span class="origin-persons-count uneditable-input"><t t-esc="origin_room_fee_info.last_checkout.persons_count"/></span>
+                                    <span class="origin-persons-count uneditable-input"><t t-esc="origin_room.sum_paid_info.persons_count"/></span>
                                 </div>
                             </div>
+                        </div>
+                        <div class="row">
+                            <div class="control-group info pull-left">
+                                <label class="control-label">价格类型:</label>
+                                <div class="controls">
+                                    <span class="uneditable-input"><t t-esc="origin_room.sum_paid_info.price_class_id[1]"/></span>
+                                </div>
+                            </div>
+
                         </div>
                     </fieldset>
                 </form>
                 <t t-call='room-change-fee-table-template'>
-                    <t t-set="origin_room_fee_info" t-value="origin_room_fee_info"/>
+                    <t t-set="sum_paid_info" t-value="origin_room.sum_paid_info"/>
                 </t>
                 <t t-call='room-checkout-partial'/>
             </div>
@@ -1119,7 +1125,7 @@
                             <div class="control-group info pull-left">
                                 <label class="control-label">客人姓名:</label>
                                 <div class="controls">
-                                    <span class="guest-name uneditable-input"><t t-esc="origin_room_fee_info.last_checkout.guest_name"/></span>
+                                    <span class="guest-name uneditable-input"><t t-esc="room.sum_paid_info.guest_name"/></span>
                                 </div>
                             </div>
                             <div class="control-group info pull-left">
@@ -1132,7 +1138,7 @@
                     </fieldset>
                 </form>
                 <t t-call='room-change-fee-table-template'>
-                    <t t-set="origin_room_fee_info" t-value="origin_room_fee_info"/>
+                    <t t-set="sum_paid_info" t-value="room.sum_paid_info" />
                 </t>
                 <t t-call='room-checkout-partial'/>
             </div>
@@ -1168,14 +1174,14 @@
                             <div class="control-group info pull-left">
                                 <label class="control-label">客人姓名:</label>
                                 <div class="controls">
-                                    <span class="guest-name uneditable-input"><t t-esc="origin_room_fee_info.last_checkout.guest_name"/></span>
+                                    <span class="guest-name uneditable-input"><t t-esc="room.sum_paid_info.guest_name"/></span>
                                 </div>
                             </div>
                         </div>
                     </fieldset>
                 </form>
                 <t t-call='room-change-fee-table-template'>
-                    <t t-set="origin_room_fee_info" t-value="origin_room_fee_info"/>
+                    <t t-set="sum_paid_info" t-value="room.sum_paid_info"/>
                 </t>
                 <table class='table'>
                     <tr>
@@ -1314,7 +1320,12 @@
                     <tr class="hourly_fee_lines" t-att-data-price-class-id="l.price_class_id" t-att-data-member-class-id="l.member_class_id">
                         <td><t t-esc="l.time_range"/></td>
                         <td><t t-esc="l.hourly_fee_discount"/></td>
-                        <td><t t-esc="l.hourly_fee"/>[<t t-esc="l.price_class_name" />]</td>
+                        <td>
+                            <t t-esc="l.hourly_fee"/>
+                            <t t-if="l.price_class_id > 0">
+                                [<t t-esc="l.price_class_name" />]
+                            </t>
+                        </td>
                     </tr>
                 </t>
                 <tr class="member_hourly_fee_lines">

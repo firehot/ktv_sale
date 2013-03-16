@@ -34,7 +34,7 @@ class buffet_config(osv.osv):
             "special_day_child_buyout_fee",
             ]
 
-    _columns = { field_name : fields.float(field_name, digits_compute= dp.get_precision('Ktv Room Default Precision'),required = True) for field_name in _child_fee_fields}
+    _columns = { field_name : fields.float(field_name, digits_compute= dp.get_precision('ktv_fee'),required = True) for field_name in _child_fee_fields}
 
     _defaults = { field_name : 0 for field_name in _child_fee_fields}
 

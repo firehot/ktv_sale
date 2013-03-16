@@ -208,22 +208,35 @@ openerp.ktv_sale.model = function(erp_instance) {
 	//扩展Room定义
 	model.Room.states = ("free in_use scheduled locked checkout buyout buytime malfunction visit clean debug").split(/\s/);
 	_.extend(model.Room.prototype, {
+		initialize: function(attrs, options) {
+			Backbone.Model.prototype.set.apply(this, arguments);
+
+		},
+        //获取包厢费用信息
+        get_room_fee_info : function(){
+            return new model.RoomFeeInfo({room : this});
+        },
 		get_state_desc: function() {
 			return erp_instance.ktv_sale.helper.get_room_state_desc(this.get('state'));
-		},
-		//获取room_fee_info对象
-		get_room_fee_info: function() {
-			var room_fee_info = new model.RoomFeeInfo({
-				"room": this
-			});
-			return room_fee_info;
 		},
 		//导出到json
 		export_as_json: function() {
 			var ret = this.toJSON();
 			ret.state_description = this.get_state_desc();
-			//包厢费用信息
-			if (this.get("room_fee_info")) ret.room_fee_info = this.get("room_fee_info").export_as_json();
+			//sum_paid_info 发生变化时,需要处理相关计算字段
+			if (ret.sum_paid_info) {
+				sum_paid_info = ret.sum_paid_info;
+				open_time = sum_paid_info.open_time;
+				close_time = sum_paid_info.close_time;
+
+				sum_paid_info.context_open_time = erp_instance.web.str_to_datetime(open_time).toString('yyyy-MM-dd HH:mm');
+				sum_paid_info.context_close_time = erp_instance.web.str_to_datetime(close_time).toString('yyyy-MM-dd HH:mm');
+
+				//界面上有时只显示时间
+				sum_paid_info.context_open_only_time = erp_instance.web.str_to_datetime(open_time).toString('HH:mm');
+				sum_paid_info.context_close_only_time = erp_instance.web.str_to_datetime(close_time).toString('HH:mm');
+			}
+
 			return ret;
 		}
 	});
@@ -255,7 +268,7 @@ openerp.ktv_sale.model = function(erp_instance) {
 				room_status: {}
 			});
 			this.get('display_rooms').bind('change', this._update_room_status, this);
-			this.get('display_rooms').bind('reset', this._update_room_status, this);
+			//this.get('display_rooms').bind('reset', this._update_room_status, this);
 			this.ready = $.Deferred();
 			this._refresh_app_data();
 			this.timer = $.timer(_.bind(this._refresh_app_data, this), 60000, true);
@@ -264,9 +277,9 @@ openerp.ktv_sale.model = function(erp_instance) {
 		_refresh_app_data: function() {
 			var self = this;
 			console.debug("refresh_app_data at:" + Date.today());
-			$.when(this._get_company(), model.Room.fetch().pipe(function(result) {
+			$.when(this._get_company(), new erp_instance.web.Model('ktv.room').get_func('search_with_fee_info')([]).pipe(function(result) {
 				self.get("all_rooms").reset(result);
-				self.get("display_rooms").reset(result);
+				self.get("display_rooms").update(result);
 				//设置当前选中包厢
 				var display_rooms = self.get("display_rooms");
 				if (display_rooms.length > 0) {
@@ -326,11 +339,11 @@ openerp.ktv_sale.model = function(erp_instance) {
 			});
 			return new Backbone.Collection().add(ret);
 		},
-        //根据room_id得到单个room
-        get_room : function(r_id) {
+		//根据room_id得到单个room
+		get_room: function(r_id) {
 			var ret = this.get("display_rooms").get(r_id);
-            return ret;
-        }
+			return ret;
+		}
 
 	});
 
@@ -342,8 +355,6 @@ openerp.ktv_sale.model = function(erp_instance) {
 		initialize: function(attributes) {
 			Backbone.Model.prototype.initialize.apply(this, arguments);
 			this.set({
-				//最后一次结账信息
-				"last_checkout": new Backbone.Model(),
 				//时段低消设置
 				"minimum_fee_config_lines": new Backbone.Collection(),
 				//设置包厢时段钟点费
@@ -463,18 +474,6 @@ openerp.ktv_sale.model = function(erp_instance) {
 				});
 			});
 			ret.hourly_fee_promotion_lines = hourly_fee_promotion_lines;
-			//最终结账信息
-			//将时间转换为本地时区时间
-			var b_last_checkout = this.get('last_checkout');
-			if (b_last_checkout.get('id')) {
-				var open_time = b_last_checkout.get('open_time');
-				var close_time = b_last_checkout.get('close_time');
-
-				ret.last_checkout = b_last_checkout.toJSON();
-				ret.last_checkout.context_open_time = erp_instance.web.str_to_datetime(open_time).toString('yyyy-MM-dd HH:mm');
-				ret.last_checkout.context_close_time = erp_instance.web.str_to_datetime(close_time).toString('yyyy-MM-dd HH:mm');
-			}
-
 			return ret;
 		},
 		//导出钟点费设置
@@ -484,6 +483,7 @@ openerp.ktv_sale.model = function(erp_instance) {
 				id: - 1,
 				member_class_id: - 1,
 				price_class_id: - 1,
+				price_class_name: "",
 				base_hourly_fee: this.get(which_fee),
 				"time_range": "00:00 ~ 24:00",
 				hourly_fee_discount: "不打折",
@@ -511,15 +511,6 @@ openerp.ktv_sale.model = function(erp_instance) {
 			var the_room = this.get("room");
 			this.set({
 				"room_type_id": the_room.get("room_type_id")[0]
-			});
-		},
-		_get_last_checkout: function() {
-			var self = this;
-			var the_room = this.get("room");
-			return new erp_instance.web.Model('ktv.room').get_func('get_presale_last_checkout_dict')(the_room.get("id")).pipe(function(result) {
-				if (result && result.id) {
-					self.get("last_checkout").set(result);
-				}
 			});
 		},
 		//包厢类别id发生变化
@@ -581,7 +572,7 @@ openerp.ktv_sale.model = function(erp_instance) {
 					minimum_persons: minimum_persons
 				});
 			}).then(function() {
-				return $.when(self._get_last_checkout(), self._set_fee_type(), self._set_minimum_fee(), self._set_hourly_fee_discount(), self._set_buyout_config(), self._set_buffet_config(), self._set_hourly_fee_promotion()).then(function() {
+				return $.when(self._set_fee_type(), self._set_minimum_fee(), self._set_hourly_fee_discount(), self._set_buyout_config(), self._set_buffet_config(), self._set_hourly_fee_promotion()).then(function() {
 					self.ready.resolve();
 				});
 			});
@@ -688,19 +679,19 @@ openerp.ktv_sale.model = function(erp_instance) {
 		//服a务器端的OSV_NAME
 		"osv_name": "",
 		defaults: {
-            "guest_name" : null,
+			"guest_name": null,
 			"persons_count": 4,
-            "room_fee" : 0.0,
-            "service_fee_rate" : 0.0,
-            "service_fee" : 0.0,
-            "hourly_fee" : 0.0,
-            "changed_room_fee" : 0.0,
-            "changed_room_hourly_fee" : 0.0,
-            "changed_room_minutes" : 0.0,
-            "total_fee" : 0.0,
-            "total_discount_fee" : 0.0,
-            "total_after_discount_fee" : 0.0,
-            "total_after_discount_cash_fee" : 0.0,
+			"room_fee": 0.0,
+			"service_fee_rate": 0.0,
+			"service_fee": 0.0,
+			"hourly_fee": 0.0,
+			"changed_room_fee": 0.0,
+			"changed_room_hourly_fee": 0.0,
+			"changed_room_minutes": 0.0,
+			"total_fee": 0.0,
+			"total_discount_fee": 0.0,
+			"total_after_discount_fee": 0.0,
+			"total_after_discount_cash_fee": 0.0,
 			"member_card_fee": 0.0,
 			"credit_card_fee": 0.0,
 			"sales_voucher_fee": 0.0,
@@ -708,7 +699,7 @@ openerp.ktv_sale.model = function(erp_instance) {
 			"on_credit_fee": 0.0,
 			"act_pay_cash_fee": 0.0,
 			"cash_change_fee": 0.0,
-            "discount_rate" : 0.0
+			"discount_rate": 0.0
 		},
 
 		initialize: function(attrs) {
@@ -717,7 +708,7 @@ openerp.ktv_sale.model = function(erp_instance) {
 			console.debug("in parent class initialize");
 			var events = "change:free_fee change:on_credit_fee change:sales_voucher_fee change:member_card_fee change:credit_card_fee";
 			this.on(events, this._re_calculate_cash_fee, this);
-            this.on("change:act_pay_cash_fee",this._calculate_change_fee,this);
+			this.on("change:act_pay_cash_fee", this._calculate_change_fee, this);
 		},
 		//重新计算应付现金
 		_re_calculate_cash_fee: function() {
@@ -817,10 +808,10 @@ openerp.ktv_sale.model = function(erp_instance) {
 			'persons_count': 2
 		}
 	});
-    //换房-买钟对象
-    model.RoomChangeCheckoutBuytime = model.BaseRoomOperate.extend({
-        "osv_name" : 'ktv.room_change_checkout_buytime'
-    });
+	//换房-买钟对象
+	model.RoomChangeCheckoutBuytime = model.BaseRoomOperate.extend({
+		"osv_name": 'ktv.room_change_checkout_buytime'
+	});
 	//续钟对象
 	model.RoomCheckoutBuytimeContinue = model.BaseRoomOperate.extend({
 		"osv_name": "ktv.room_checkout_buytime_continue",
@@ -836,13 +827,13 @@ openerp.ktv_sale.model = function(erp_instance) {
 		}
 	});
 
-    //换房-正常开房对象
-    model.RoomChange = Backbone.Model.extend({
-        "osv_name" : "ktv.room_change",
-        initialize : function(attrs){
+	//换房-正常开房对象
+	model.RoomChange = Backbone.Model.extend({
+		"osv_name": "ktv.room_change",
+		initialize: function(attrs) {
 			Backbone.Model.prototype.initialize.apply(this, arguments);
-            this.on("change:open_time change:close_time",this._set_context_datetime,this);
-        },
+			this.on("change:open_time change:close_time", this._set_context_datetime, this);
+		},
 		_set_context_datetime: function() {
 			if (this.get("open_time")) this.set({
 				context_open_time: erp_instance.web.str_to_datetime(this.get('open_time')).toString('yyyy-MM-dd HH:mm')
@@ -853,17 +844,17 @@ openerp.ktv_sale.model = function(erp_instance) {
 		},
 		//将数据上传至服务器
 		push: function() {
-            json_obj = this.toJSON();
-            json_obj.osv_name = "ktv.room_change";
+			json_obj = this.toJSON();
+			json_obj.osv_name = "ktv.room_change";
 			return new erp_instance.web.Model('ktv.room_operate').get_func('process_operate')(json_obj);
 		},
 
-    });
+	});
 
-    //结账-正常开房
-    model.RoomCheckout =  model.BaseRoomOperate.extend({
-        "osv_name" : 'ktv.room_checkout'
-    });
+	//结账-正常开房
+	model.RoomCheckout = model.BaseRoomOperate.extend({
+		"osv_name": 'ktv.room_checkout'
+	});
 
 };
 

@@ -41,7 +41,7 @@ class minimum_fee_config(osv.osv):
             "special_day_room_fee",
             "special_day_minimum_fee_p",
             ]
-    _columns = { field_name : fields.float(field_name, digits_compute= dp.get_precision('Ktv Room Default Precision'),required = True) for field_name in _fee_fields}
+    _columns = { field_name : fields.float(field_name, digits_compute= dp.get_precision('ktv_fee'),required = True) for field_name in _fee_fields}
     _columns.update({
             #包厢类别
             "room_type_id" : fields.many2one("ktv.room_type","room_type_id",required = True),

@@ -126,8 +126,8 @@ class room_checkout_buytime(osv.osv):
         cur_rp_id = self.pool.get('ktv.room').find_or_create_room_operate(cr,uid,room_id)
         buytime_vals.update({"room_operate_id" : cur_rp_id})
         room_buytime_id = self.create(cr,uid,buytime_vals)
-        fields = self.fields_get(cr,uid).keys()
-        room_buytime = self.read(cr,uid,room_buytime_id,fields)
+        #fields = self.fields_get(cr,uid).keys()
+        room_buytime = self.read(cr,uid,room_buytime_id)
         return (room_buytime,room.STATE_BUYTIME,self._build_cron(room_id,room_buytime))
 
     def _build_cron(self,room_id,buytime_vals):

@@ -120,6 +120,12 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			this._super(parent);
 			this.model = options.model;
 		},
+		renderElement: function() {
+			this.$el.empty();
+			this.$el.html(this.template_fct({
+                room : this.model.export_as_json()
+            }));
+		},
 		start: function() {
 			this.model.on('change', this.renderElement, this);
 			this.model.on('change', this._set_room_action_list, this);
@@ -236,10 +242,6 @@ openerp.ktv_sale.widget = function(erp_instance) {
 				"current_room": this.model
 			});
 		},
-		renderElement: function() {
-			this.$el.empty();
-			this.$el.html(this.template_fct(this.model.export_as_json()));
-		},
 		//设置当前包厢可用的action
 		_set_room_action_list: function() {
 			var actions_list = erp_instance.ktv_sale.helper.get_room_actions_list(this.model.get('state'));
@@ -264,15 +266,16 @@ openerp.ktv_sale.widget = function(erp_instance) {
 	widget.RoomListWidget = erp_instance.web.Widget.extend({
 		init: function(parent, options) {
 			this._super(parent);
-			erp_instance.ktv_sale.ktv_room_point.get('display_rooms').bind('reset', this.renderElement, this);
+			//erp_instance.ktv_sale.ktv_room_point.get('display_rooms').bind('reset', this.renderElement, this);
 		},
 		renderElement: function() {
+            var self = this;
 			this.$el.empty();
 			erp_instance.ktv_sale.ktv_room_point.get('display_rooms').each(_.bind(function(r) {
 				var r_widget = new widget.RoomWidget(null, {
 					model: r
 				});
-				r_widget.appendTo(this.$el);
+                r_widget.appendTo(self.$el);
 			},
 			this), this);
 			return this;
@@ -458,7 +461,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		renderElement: function() {
 			var self = this;
 			var the_room = erp_instance.ktv_sale.ktv_room_point.get("current_room");
-			var the_room_fee_info = the_room.get_room_fee_info();
+			var the_room_fee_info = new model.RoomFeeInfo({room : the_room});
 			the_room_fee_info.ready.then(function() {
 				self.$el.html(self.template_fct({
 					"room_info": the_room.export_as_json(),
@@ -1117,7 +1120,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			var self = this;
 			this.$el.html(self.template_fct({
 				"model": self.model.toJSON(),
-				"room": self.room.toJSON(),
+				"room": self.room.export_as_json(),
 				"room_fee_info": self.room_fee_info.export_as_json(),
 				"rooms": erp_instance.ktv_sale.ktv_room_point.get_rooms_by_state('free').toJSON()
 			}));
@@ -1177,9 +1180,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 				//包厢换房-买断对象
 				"model": self.model.toJSON(),
 				//原包厢对象
-				"origin_room": self.room.toJSON(),
-				//原包厢费用信息
-				"origin_room_fee_info": self.room_fee_info.export_as_json(),
+				"origin_room": self.room.export_as_json(),
 				//当前空闲包厢
 				"free_rooms": erp_instance.ktv_sale.ktv_room_point.get_rooms_by_state('free').toJSON()
 			}));
@@ -1271,7 +1272,8 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			var self = this;
 			this.$el.html(self.template_fct({
 				"model": self.model.toJSON(),
-				"room": self.room.toJSON()
+				"room": self.room.toJSON(),
+                "price_classes" : erp_instance.ktv_sale.ktv_room_point.get('price_classes').toJSON()
 			}));
 			return this;
 		},
@@ -1288,12 +1290,10 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		//获取当前上下文环境
 		_get_context: function() {
 			var persons_count = parseInt(this.$('#persons_count').val());
-			var fee_type_id = parseInt(this.$("#fee_type_id").val());
 			var price_class_id = parseInt(this.$("#price_class_id").val());
 			var consume_minutes = parseInt(this.$("#consume_minutes").val());
 			var context = {
 				"room_id": this.room.get("id"),
-				"fee_type_id": fee_type_id,
 				"price_class_id": price_class_id,
 				"consume_minutes": consume_minutes,
 				'persons_count': persons_count
@@ -1307,8 +1307,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		start: function() {
 			this._super();
 			//设置计费方式为当前包厢默认计费方式
-			this.$("#fee_type_id,#price_class_id,#consume_minutes,#persons_count").change(_.bind(this._onchange_fields, this));
-			this.$("#fee_type_id").val(this.room.get("fee_type_id")[0])
+			this.$("#price_class_id,#consume_minutes,#persons_count").change(_.bind(this._onchange_fields, this));
 			this._onchange_fields();
 		}
 	});
@@ -1376,8 +1375,6 @@ openerp.ktv_sale.widget = function(erp_instance) {
 				"model": self.model.toJSON(),
 				//原包厢对象
 				"origin_room": self.room.toJSON(),
-				//原包厢费用信息
-				"origin_room_fee_info": self.room_fee_info.export_as_json(),
 				//当前空闲包厢
 				"free_rooms": erp_instance.ktv_sale.ktv_room_point.get_rooms_by_state('free').toJSON()
 			}));
@@ -1431,11 +1428,9 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		renderElement: function() {
 			var self = this;
 			this.$el.html(self.template_fct({
-				"model": self.model.toJSON(),
+				model: self.model.toJSON(),
 				//原包厢对象
-				"room": self.room.toJSON(),
-				//原包厢费用信息
-				"origin_room_fee_info": self.room_fee_info.export_as_json()
+				room: self.room.export_as_json()
 			}));
 			return this;
 		},
@@ -1478,11 +1473,9 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		renderElement: function() {
 			var self = this;
 			this.$el.html(self.template_fct({
-				"model": self.model.toJSON(),
+				model: self.model.toJSON(),
 				//原包厢对象
-				"room": self.room.toJSON(),
-				//原包厢费用信息
-				"origin_room_fee_info": self.room_fee_info.export_as_json()
+				room: self.room.export_as_json()
 			}));
 			return this;
 		},

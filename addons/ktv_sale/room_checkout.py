@@ -7,6 +7,7 @@ from osv import fields, osv
 import decimal_precision as dp
 import ktv_helper
 from room import room
+from tools.translate import _
 
 _logger = logging.getLogger(__name__)
 
@@ -373,14 +374,16 @@ class room_checkout(osv.osv):
         '''
         自客户端传入的数据创建包厢结账单据
         '''
-        room_id = room_checkout_vals.pop("room_id")
+        room_id = room_checkout_vals.get("room_id")
         cur_rp_id = self.pool.get('ktv.room').find_or_create_room_operate(cr,uid,room_id)
         room_checkout_vals.update({"room_operate_id" : cur_rp_id})
         id = self.create(cr,uid,room_checkout_vals)
+        #更新Room状态
+        self.pool.get('ktv.room').write(cr,uid,room_id,{'state' : room.STATE_FREE,'current_room_operate_id' : None})
         room_checkout_vals['id'] = id
-        fields = self.fields_get(cr,uid).keys()
-        room_checkout = self.read(cr,uid,id,fields)
-        return (room_checkout,room.STATE_FREE,None)
+        #fields = self.fields_get(cr,uid).keys()
+        room_checkout = self.read(cr,uid,id)
+        return (room_checkout,None,None)
 
     def get_default_checkout_dict(self,cr,uid):
         """

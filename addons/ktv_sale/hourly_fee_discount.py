@@ -42,7 +42,7 @@ class hourly_fee_discount(osv.osv):
             "special_day_hourly_discount",
             ]
 
-    _columns = { field_name : fields.float(field_name, digits_compute= dp.get_precision('Ktv Room Default Precision'),required = True) for field_name in _fee_fields}
+    _columns = { field_name : fields.float(field_name, digits_compute= dp.get_precision('ktv_fee'),required = True) for field_name in _fee_fields}
     _columns.update({
             #价格类型
             "price_class_id" : fields.many2one("ktv.price_class","price_class_id",required = True),
@@ -53,7 +53,7 @@ class hourly_fee_discount(osv.osv):
             #打折消费时间结束值
             "time_to": fields.float("time_to",required = True),
             #打折参考的基准价格,默认等于该包厢类别room_type的钟点费,用户可以修改
-            "base_hourly_fee" : fields.float("base_hourly_fee", digits_compute= dp.get_precision('Ktv Room Default Precision')),
+            "base_hourly_fee" : fields.float("base_hourly_fee", digits_compute= dp.get_precision('ktv_fee')),
             })
 
     _defaults = { field_name : 0 for field_name in _fee_fields}
