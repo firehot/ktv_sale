@@ -61,15 +61,15 @@
     </t>
     <!--包厢widget-->
     <t t-name="room-template">
-        <table class="table well">
+        <table class="table well room-widget">
             <tr>
-                <td colspan='3' style='text-align : center;width : 120px;'>
+                <td colspan='3' class='room-widget-header'>
                     <div class="btn-group">
                         <button class="btn dropdown-toggle" data-toggle="dropdown">
                             <t t-esc="room.name"/>
                             <span class="caret"></span>
                         </button>
-                        <ul class="dropdown-menu room-action-menu" style='text-align : left;'>
+                        <ul class="dropdown-menu room-action-menu">
                             <li class="action_room_scheduled"><a  href="#">预定</a></li>
                             <li class="action_room_scheduled_cancel"><a href="#">取消预定</a></li>
                             <li class="divider"></li>

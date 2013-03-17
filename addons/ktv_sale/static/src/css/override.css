@@ -43,3 +43,34 @@ html {font-size : 14px;}
     margin-top:10px;
     font-style:italic;
 }
+
+/*定义包厢显示*/
+table.room-widget {
+    table-layout : fixed;
+    width : 130px;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    border-radius: 6px;
+    -webkit-box-shadow: 0 1px 1px #ccc;
+    -moz-box-shadow: 0 1px 1px #ccc;
+    box-shadow: 0 1px 1px #ccc;
+}
+.room-widget .room-widget-header{
+    text-align : center;
+}
+.room-widget .room-widget-header ul{
+    text-align : left;
+}
+
+/*set room state clolor*/
+#room_list .room-widget,button.btn-room-state-filter {color : #FFF;}
+#room_list li.free .room-widget,button.btn-room-state-filter[data-room-state=in_fee] {color : #000;}
+#room_list li.scheduled .room-widget,button.btn-room-state-filter[data-room-state=scheduled]  {background : #6666FF;}
+#room_list li.in_use .room-widget,button.btn-room-state-filter[data-room-state=in_use] {background : #CF0D47;}
+#room_list li.checkout .room-widget,button.btn-room-state-filter[data-room-state=checkout]  {background : #0DDB3D;}
+#room_list li.buyout .room-widget,button.btn-room-state-filter[data-room-state=buyout]  {background : #0D89DB;}
+#room_list li.buytime .room-widget,button.btn-room-state-filter[data-room-state=buytime]  {background : #CFDC0D;}
+#room_list li.visit .room-widget,button.btn-room-state-filter[data-room-state=visit]  {background : #F9AF09;}
+#room_list li.clean .room-widget,button.btn-room-state-filter[data-room-state=clean]  {background : #0AA87E;}
+#room_list li.lock .room-widget,button.btn-room-state-filter[data-room-state=lock]  {background : #4625DC;}
+#room_list li.malfunction .room-widget,button.btn-room-state-filter[data-room-state=malfunction]  {background : #060315;}

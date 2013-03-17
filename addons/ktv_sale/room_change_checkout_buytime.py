@@ -60,7 +60,7 @@ class room_change_checkout_buytime(osv.osv):
         #原买钟时长
         ori_consume_minutes = r_op.ori_consume_minutes
         #当前实际消费时长
-        consume_minutes = r_op.consume_minutes
+        consume_minutes = r_op.consume_minutes - r_op.left_minutes
 
         #计算新包厢应付买钟费用
         clone_dict = {k : v for k,v in context.items()}
@@ -80,7 +80,7 @@ class room_change_checkout_buytime(osv.osv):
         present_minutes = sum_paid_info['present_minutes']
         sum_should_pay_info['consume_minutes'] = 0
         sum_should_pay_info['changed_room_minutes'] = changed_room_minutes
-        sum_should_pay_info['close_time'] = ktv_helper.strftime(datetime.now() + timedelta(minutes = changed_room_minutes + present_minutes))
+        sum_should_pay_info['close_time'] = ktv_helper.strftime(datetime.now() + timedelta(minutes = sum_paid_info['left_minutes']))
 
         #计算应补差额
         total_fee = sum_should_pay_info['hourly_fee'] - sum_paid_info['hourly_fee'] - sum_paid_info['changed_room_fee'] - sum_paid_info['prepay_fee']

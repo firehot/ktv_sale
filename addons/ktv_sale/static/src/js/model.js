@@ -212,10 +212,12 @@ openerp.ktv_sale.model = function(erp_instance) {
 			Backbone.Model.prototype.set.apply(this, arguments);
 
 		},
-        //获取包厢费用信息
-        get_room_fee_info : function(){
-            return new model.RoomFeeInfo({room : this});
-        },
+		//获取包厢费用信息
+		get_room_fee_info: function() {
+			return new model.RoomFeeInfo({
+				room: this
+			});
+		},
 		get_state_desc: function() {
 			return erp_instance.ktv_sale.helper.get_room_state_desc(this.get('state'));
 		},
@@ -248,8 +250,6 @@ openerp.ktv_sale.model = function(erp_instance) {
 			this.set({
 				//公司信息
 				company: new Backbone.Model(),
-				//全部包厢
-				all_rooms: new model.RoomCollection(),
 				//当前显示的包厢列表
 				display_rooms: new model.RoomCollection(),
 				//房间类型room_type
@@ -267,19 +267,22 @@ openerp.ktv_sale.model = function(erp_instance) {
 				//房态统计
 				room_status: {}
 			});
-			this.get('display_rooms').bind('change', this._update_room_status, this);
-			//this.get('display_rooms').bind('reset', this._update_room_status, this);
+			this.get('display_rooms').bind('reset', this._update_room_status, this);
 			this.ready = $.Deferred();
 			this._refresh_app_data();
 			this.timer = $.timer(_.bind(this._refresh_app_data, this), 60000, true);
 		},
-		//刷新app-data
-		_refresh_app_data: function() {
-			var self = this;
-			console.debug("refresh_app_data at:" + Date.today());
-			$.when(this._get_company(), new erp_instance.web.Model('ktv.room').get_func('search_with_fee_info')([]).pipe(function(result) {
-				self.get("all_rooms").reset(result);
-				self.get("display_rooms").update(result);
+		//自服务器端获取包厢及其当前费用信息
+		//criti
+		pull_rooms_with_fee_info: function(critial) {
+			return new erp_instance.web.Model('ktv.room').get_func('search_with_fee_info')(critial);
+
+		},
+        //刷新包厢数据
+        reset_display_rooms : function(critial){
+            var self = this;
+            return self.pull_rooms_with_fee_info(critial).pipe(function(result) {
+				self.get("display_rooms").reset(result);
 				//设置当前选中包厢
 				var display_rooms = self.get("display_rooms");
 				if (display_rooms.length > 0) {
@@ -291,9 +294,15 @@ openerp.ktv_sale.model = function(erp_instance) {
 					else self.set({
 						"current_room": display_rooms.at(0)
 					});
-
 				}
-			}), model.RoomArea.fetch().pipe(function(result) {
+                return result;
+			});
+        },
+		//刷新app-data
+		_refresh_app_data: function() {
+			var self = this;
+			console.debug("refresh_app_data at:" + Date.today());
+			$.when(this._get_company(), this.reset_display_rooms([]), model.RoomArea.fetch().pipe(function(result) {
 				self.get('room_areas').reset(result);
 			}), model.RoomType.fetch().pipe(function(result) {
 				self.get('room_types').reset(result);
@@ -332,18 +341,28 @@ openerp.ktv_sale.model = function(erp_instance) {
 		},
 		//根据包厢状态返回包厢数组
 		get_rooms_by_state: function(r_state) {
-			var ret = this.get("all_rooms");
-			if (r_state) ret = this.get("all_rooms").filter(function(r) {
-				if (_.isArray(r_state)) return _.contains(r_state, r.get("state"));
-				else return r.get("state") == r_state;
-			});
-			return new Backbone.Collection().add(ret);
+            search = [['state','=',r_state]];
+            return this.pull_rooms_with_fee_info(search);
 		},
 		//根据room_id得到单个room
+        //返回$.Deferred
+        //可使用pipe进行后续操作
 		get_room: function(r_id) {
-			var ret = this.get("display_rooms").get(r_id);
-			return ret;
-		}
+            search = [['id','=',r_id]];
+            return this.pull_rooms_with_fee_info(search).pipe(function(result){
+                return new model.Room(result[0]);
+            });
+		},
+        //从服务器端更新单个room信息
+        fetch_room : function(r_id) {
+            var self = this;
+            return this.get_room(r_id).pipe(function(b_room){
+                //需要先清空原包厢数据,然后重新设置新数据
+                var old_room = self.get('display_rooms').get(r_id);
+                old_room.clear({silent : true});
+                old_room.set(b_room.export_as_json());
+            });
+        }
 
 	});
 
