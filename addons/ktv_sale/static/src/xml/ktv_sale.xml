@@ -110,9 +110,9 @@
                 </t>
             </tr>
             <tr>
-                <td>&#160;</td>
-                <td>&#160;</td>
-                <td>&#160;</td>
+                <td><i class='icon-user'></i></td>
+                <td><i class='icon-time'></i></td>
+                <td><i class='icon-bell'></i></td>
             </tr>
         </table>
     </t>
@@ -154,10 +154,6 @@
                     预定
                     <span class="badge room-count-scheduled"></span>
                 </button>
-                <button class='btn btn-room-state-filter' data-room-state="locked">
-                    锁定
-                    <span class="badge room-count-locked"></span>
-                </button>
                 <button class='btn btn-room-state-filter' data-room-state="checkout">
                     已结账
                     <span class="badge room-count-checkout"></span>
@@ -170,15 +166,21 @@
                     买钟
                     <span class="badge room-count-buytime"></span>
                 </button>
-                <button class='btn btn-room-state-filter' data-room-state="malfunction">
-                    故障
-                    <span class="badge room-count-malfunction"></span>
-                </button>
                 <button class='btn btn-room-state-filter' data-room-state="visit">
                     带客
                     <span class="badge room-count-visit"></span>
                 </button>
-                <button class='btn btn-room-state-filter' data-room-state="clean">
+
+                <button class='btn btn-room-state-filter' data-room-state="locked">
+                    锁定
+                    <span class="badge room-count-locked"></span>
+                </button>
+
+                <button class='btn btn-room-state-filter' data-room-state="malfunction">
+                    故障
+                    <span class="badge room-count-malfunction"></span>
+                </button>
+               <button class='btn btn-room-state-filter' data-room-state="clean">
                     清洁
                     <span class="badge room-count-clean"></span>
                 </button>

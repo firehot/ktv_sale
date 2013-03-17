@@ -140,9 +140,11 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			var win = new widget.RoomScheduledWidget(null, {
 				room: this.model,
 			});
-			$('#operate_area').html(win.$el);
-			win.renderElement();
-			win.start();
+			win.ready.then(function() {
+				$('#operate_area').html(win.$el);
+				win.renderElement();
+				win.start();
+			});
 		},
 		//开房
 		action_room_opens: function() {
