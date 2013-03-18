@@ -74,6 +74,6 @@ openerp.ktv_sale.helper = function(erp_instance) {
             var actions_array = actions_string.split(",");
             return actions_array;
         }
-	}
+    }
 };
 

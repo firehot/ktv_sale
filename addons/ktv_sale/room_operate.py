@@ -78,6 +78,8 @@ class room_operate(osv.osv):
             last_member_id = getattr(last_member,'id',None)
 
             consume_minutes = ktv_helper.str_timedelta_minutes(open_time,close_time if close_time else ktv_helper.utc_now_str())
+            #到钟报警
+            alert = False
             #计算已消费时长和剩余消费时长
             left_minutes = 0
             #如果当前时间>close_time 则该包厢已关闭
@@ -86,6 +88,8 @@ class room_operate(osv.osv):
                     left_minutes = 0
                 else:
                     left_minutes = ktv_helper.str_timedelta_minutes(ktv_helper.utc_now_str(),close_time)
+                    if left_minutes <= 5:
+                        alert = True
 
             #如果当前时间<=close_time 则该包厢尚未关闭
 
@@ -133,6 +137,7 @@ class room_operate(osv.osv):
                     'ori_consume_minutes' : ori_consume_minutes or 0,
                     'consume_minutes' : consume_minutes or 0,
                     'left_minutes' : left_minutes or 0,
+                    'alert' : alert,
                     'present_minutes' : present_minutes or 0,
                     'total_minutes' : total_minutes or 0,
                     'room_fee' : room_fee or 0.0,
@@ -184,6 +189,7 @@ class room_operate(osv.osv):
             "open_time" : fields.function(_compute_fields,type='datetime',multi="compute_fields",string="开房时间"),
             "close_time" : fields.function(_compute_fields,type='datetime',multi="compute_fields",string="关房时间"),
             "left_minutes" : fields.function(_compute_fields,type='integer',multi="compute_fields",string="剩余消费时间"),
+            "alert" : fields.function(_compute_fields,type='boolean',multi="compute_fields",string="到钟时间剩余5分钟时报警"),
             "prepay_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="预付费",digits_compute = dp.get_precision('ktv_fee')),
             "consume_minutes": fields.function(_compute_fields,type='integer',multi="compute_fields",string="消费时长"),
             "ori_consume_minutes": fields.function(_compute_fields,type='integer',multi="compute_fields",string="原消费时长(由于存在换房,所以实际消费时间会变化)"),
@@ -233,8 +239,8 @@ class room_operate(osv.osv):
             price_class = pool.get('ktv.price_class').read(cr,uid,ret['price_class_id'],['id','name'])
             ret['price_class_id'] = (price_class['id'],price_class['name'])
         if ret['last_member_id']:
-            last_member = pool.get('ktv.member').read(cr,uid,ret['last_member_id'],['id','name'])
-            ret['last_member_id'] = (last_member['id'],laster_member['name'])
+            last_member = pool.get('ktv.member').read(cr,uid,ret['last_member_id'],['id','member_card_no'])
+            ret['last_member_id'] = (last_member['id'],last_member['member_card_no'])
 
         if ret['last_buyout_config_id']:
             last_buyout_config = pool.get('ktv.buyout_config').read(cr,uid,ret['last_buyout_config_id'],['id','name'])

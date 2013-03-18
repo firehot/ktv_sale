@@ -102,17 +102,36 @@
             <tr>
                 <t t-if="room.sum_paid_info">
                     <td><t t-esc = "room.sum_paid_info.context_open_only_time" /></td>
-                    <td><t t-esc = "room.sum_paid_info.context_close_only_time" /></td>
-                    <td><t t-esc = "room.sum_paid_info.left_minutes" /></td>
+
+                    <t t-if="room.sum_paid_info.left_minutes > 0">
+                        <td><t t-esc = "room.sum_paid_info.context_close_only_time" /></td>
+                        <td><t t-esc = "room.sum_paid_info.left_minutes" /></td>
+                    </t>
                 </t>
                 <t t-if="!room.sum_paid_info">
                     <td colspan='3'>&#160;</td>
                 </t>
             </tr>
             <tr>
-                <td><i class='icon-user'></i></td>
-                <td><i class='icon-time'></i></td>
-                <td><i class='icon-bell'></i></td>
+                <td>
+                    &#160;
+                    <!--显示会员标志-->
+                    <t t-if="room.sum_paid_info and room.sum_paid_info.last_member_id" >
+                        <i class='icon-user'></i>
+                    </t>
+                </td>
+                <td>
+                    <!--买断-->
+                    <t t-if="room.sum_paid_info and room.sum_paid_info.last_buyout_config_id" >
+                        <i class='icon-flag'></i>
+                    </t>
+                </td>
+                <td>
+
+                    <t t-if="room.sum_paid_info and room.sum_paid_info.alert" >
+                        <i class='icon-bell'></i>
+                    </t>
+                </td>
             </tr>
         </table>
     </t>
@@ -180,7 +199,7 @@
                     故障
                     <span class="badge room-count-malfunction"></span>
                 </button>
-               <button class='btn btn-room-state-filter' data-room-state="clean">
+                <button class='btn btn-room-state-filter' data-room-state="clean">
                     清洁
                     <span class="badge room-count-clean"></span>
                 </button>
@@ -207,7 +226,15 @@
                     <button class='btn btn-room-type-filter' t-att-data-room-type-id="room_type.id"><t t-esc="room_type.name" /></button>
                 </t>
             </div>
+
+            <!--图标说明-->
+            <div class='pull-right'>
+                <span class="label"><i class='icon-user'></i>会员消费</span>
+                <span class="label"><i class='icon-flag'></i>买断</span>
+                <span class="label"><i class='icon-bell'></i>到钟提醒</span>
+            </div>
         </div>
+
     </t>
 
     <!--包厢预定-->

@@ -18,16 +18,16 @@
  保存会员信息_1
 -
   !record {model: ktv.member,id: member_card_1}:
-    member_no: "12345677899"
+    member_no: "1234567789"
     name: "程东辉"
     member_class_id: member_class_jin
-    member_card_no: "1234343034343"
+    member_card_no: "123456789"
     card_password: "12312312"
 -
   保存discount_card
 -
   !record {model: ktv.discount_card,id : discount_card_1}:
-    card_no: "3432432423423"
+    card_no: "123456789"
     discount_card_type_id: discount_card_type_1
 
 

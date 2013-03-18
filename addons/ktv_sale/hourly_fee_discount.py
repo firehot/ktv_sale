@@ -49,9 +49,9 @@ class hourly_fee_discount(osv.osv):
             #包厢类别
             "room_type_id" : fields.many2one("ktv.room_type","room_type_id",required = True),
             #打折时间限制
-            "time_from": fields.float("time_from",required = True ),
+            "time_from": fields.float("time_from",required = True,digits = 2 ),
             #打折消费时间结束值
-            "time_to": fields.float("time_to",required = True),
+            "time_to": fields.float("time_to",required = True,digits = 2),
             #打折参考的基准价格,默认等于该包厢类别room_type的钟点费,用户可以修改
             "base_hourly_fee" : fields.float("base_hourly_fee", digits_compute= dp.get_precision('ktv_fee')),
             })
