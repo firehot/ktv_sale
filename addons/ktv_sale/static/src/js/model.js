@@ -505,7 +505,7 @@ openerp.ktv_sale.model = function(erp_instance) {
 				price_class_name: "",
 				base_hourly_fee: this.get(which_fee),
 				"time_range": "00:00 ~ 24:00",
-				hourly_fee_discount: "不打折",
+				hourly_discount: "不打折",
 				hourly_fee: this.get("hourly_fee")
 			});
 			else {
@@ -519,7 +519,7 @@ openerp.ktv_sale.model = function(erp_instance) {
 						base_hourly_fee: l.get("base_hourly_fee"),
                         time_range: erp_instance.web.float_time_to_str(l.get("time_from")) + "~" + erp_instance.web.float_time_to_str(l.get("time_to")),
 						//"time_range": l.get("time_from") + "~" + l.get("time_to"),
-						hourly_fee_discount: l.get("hourly_fee_discount"),
+						hourly_discount: l.get("hourly_discount"),
 						hourly_fee: l.get("hourly_fee")
 					});
 				});

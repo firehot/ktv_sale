@@ -74,3 +74,10 @@ table.room-widget {
 #room_list li.clean .room-widget,button.btn-room-state-filter[data-room-state=clean]  {background : #0AA87E;}
 #room_list li.lock .room-widget,button.btn-room-state-filter[data-room-state=lock]  {background : #4625DC;}
 #room_list li.malfunction .room-widget,button.btn-room-state-filter[data-room-state=malfunction]  {background : #060315;}
+
+/*说明图标样式*/
+#icon-descripe .label{
+    -webkit-border-radius : 0;
+    moz-border-radius : 0;
+    border-radius : 0;
+}

@@ -49,11 +49,12 @@ class hourly_fee_discount(osv.osv):
             #包厢类别
             "room_type_id" : fields.many2one("ktv.room_type","room_type_id",required = True),
             #打折时间限制
-            "time_from": fields.float("time_from",required = True,digits = 2 ),
+            "time_from": fields.float("time_from",required = True ),
             #打折消费时间结束值
-            "time_to": fields.float("time_to",required = True,digits = 2),
+            "time_to": fields.float("time_to",required = True),
             #打折参考的基准价格,默认等于该包厢类别room_type的钟点费,用户可以修改
             "base_hourly_fee" : fields.float("base_hourly_fee", digits_compute= dp.get_precision('ktv_fee')),
+            "active" : fields.boolean('active'),
             })
 
     _defaults = { field_name : 0 for field_name in _fee_fields}
@@ -61,6 +62,7 @@ class hourly_fee_discount(osv.osv):
     _defaults.update({
         #打折参考的基准价格,默认等于该包厢类别room_type的钟点费,用户可以修改
         "base_hourly_fee" : 0,
+        "active" : True,
         })
 
     #包厢类别发生变化,基准价格同样改变
@@ -151,12 +153,18 @@ class hourly_fee_discount(osv.osv):
                     hourly_fee = getattr(c,"special_day_hourly_fee")
                     hourly_discount = getattr(c,"special_day_hourly_discount")
 
+
+                member_class = getattr(c,'member_class_id',None)
                 ret.append({
                     "id" : c.id,
                     "price_class_id" : c.price_class_id.id,
+                    "price_class_name" : c.price_class_id.name,
                     "room_type_id" : c.room_type_id.id,
+                    "member_class_id" : member_class.id if member_class else -1,
+                    "member_class_name" : member_class.name if member_class else "",
                     "time_from" : c.time_from,
                     "time_to" : c.time_to,
+                    "base_hourly_fee" : c.base_hourly_fee,
                     "hourly_fee" : hourly_fee,
                     "hourly_discount" : hourly_discount,
                     })

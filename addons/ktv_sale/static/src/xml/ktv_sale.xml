@@ -228,10 +228,10 @@
             </div>
 
             <!--图标说明-->
-            <div class='pull-right'>
-                <span class="label"><i class='icon-user'></i>会员消费</span>
-                <span class="label"><i class='icon-flag'></i>买断</span>
-                <span class="label"><i class='icon-bell'></i>到钟提醒</span>
+            <div class='pull-right' id='icon-descripe'>
+                <span class='label'><i class='icon-user'></i>&#160;会员消费</span>
+                <span class="label"><i class='icon-flag'></i>&#160;买断</span>
+                <span class="label"><i class='icon-bell'></i>&#160;到钟提醒</span>
             </div>
         </div>
 
@@ -1348,7 +1348,7 @@
                 <t t-foreach="room_fee_info.all_hourly_fee_lines" t-as="l">
                     <tr class="hourly_fee_lines" t-att-data-price-class-id="l.price_class_id" t-att-data-member-class-id="l.member_class_id">
                         <td><t t-esc="l.time_range"/></td>
-                        <td><t t-esc="l.hourly_fee_discount"/></td>
+                        <td><t t-esc="l.hourly_discount"/></td>
                         <td>
                             <t t-esc="l.hourly_fee"/>
                             <t t-if="l.price_class_id > 0">
@@ -1369,7 +1369,7 @@
                 <t t-foreach="room_fee_info.all_member_hourly_fee_lines" t-as="l">
                     <tr class="member_hourly_fee_lines" t-att-data-price-class-id="l.price_class_id" t-att-data-member-class-id="l.member_class_id">
                         <td><t t-esc="l.member_class_name"/>-<t t-esc="l.time_range"/></td>
-                        <td><t t-esc="l.hourly_fee_discount"/></td>
+                        <td><t t-esc="l.hourly_discount"/></td>
                         <td><t t-esc="l.hourly_fee"/>[<t t-esc="l.price_class_name" />]</td>
                     </tr>
                 </t>
@@ -1385,7 +1385,7 @@
                 <t t-foreach="room_fee_info.all_hourly_fee_p_lines" t-as="l">
                     <tr class="hourly_fee_p_lines" t-att-data-price-class-id="l.price_class_id" t-att-data-member-class-id="l.member_class_id">
                         <td><t t-esc="l.time_range"/></td>
-                        <td><t t-esc="l.hourly_fee_discount"/></td>
+                        <td><t t-esc="l.hourly_discount"/></td>
                         <td><t t-esc="l.hourly_fee"/>[<t t-esc="l.price_class_name" />]</td>
                     </tr>
                 </t>
