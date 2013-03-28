@@ -161,8 +161,8 @@ class room(osv.osv):
         hourly_fee_p_discount_configs =  self.pool.get('ktv.hourly_fee_p_discount').get_active_configs(cr,uid,room.room_type_id.id,context)
         if hourly_fee_p_discount_configs:
             ret.update({
-                "hourly_fee_p" : hourly_fee_discount_configs[0]['hourly_fee'],
-                "hourly_p_discount" : hourly_fee_discount_configs[0]['hourly_discount']
+                "hourly_fee_p" : hourly_fee_p_discount_configs[0]['hourly_fee'],
+                "hourly_p_discount" : hourly_fee_p_discount_configs[0]['hourly_discount']
                 })
         #会员钟点费优惠
         if member_class_id:

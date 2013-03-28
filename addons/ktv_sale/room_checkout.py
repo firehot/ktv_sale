@@ -156,10 +156,12 @@ class room_checkout(osv.osv):
             "total_after_discount_fee" : fields.function(_compute_total_fee,multi = "total_fee",string="合计应付费用(折后费用)",digits_compute = dp.get_precision('ktv_fee')),
             "total_after_discount_cash_fee" : fields.function(_compute_total_fee,multi="total_fee",string="合计应收现金房费(折后费用)",digits_compute = dp.get_precision('ktv_fee')),
             "cash_change" : fields.function(_compute_total_fee,multi="total_fee",string="现金找零",digits_compute = dp.get_precision('ktv_fee')),
+            "active" : fields.boolean('active'),
             }
 
     _defaults = {
             #正常开房时,关房时间是当前时间
+            "active" : True,
             "bill_datetime" : fields.datetime.now,
             "persons_count" : 0,
             "prepay_fee" : 0,
@@ -512,8 +514,8 @@ class room_checkout(osv.osv):
                     "hourly_discount" : 100,
                     })
                 config_array.append({
-                    "datetime_from" : datetime_max,
-                    "datetime_to" : config_datetime_close,
+                    "datetime_from" : config_datetime_max,
+                    "datetime_to" : datetime_close,
                     "hourly_fee" : room.hourly_fee,
                     "hourly_discount" : 100,
                     })
@@ -562,5 +564,10 @@ class room_checkout(osv.osv):
         _logger.debug("sum_consume_minutes = %d;sum_hourly_fee = %d",sum_consume_minutes,sum_hourly_fee)
 
         return (sum_consume_minutes,ktv_helper.float_round(cr,sum_hourly_fee))
+
+    def get_hourly_fee_array(self,cr,uid,context):
+        """
+        计算当前包厢钟点费用信息,按照时段钟点费的设置,消费可能分为几段时间进行计算,因各个时间段的钟点费用不同
+        """
 
 room_checkout.re_calculate_fee = room_checkout._calculate_sum_should_pay_info

@@ -217,10 +217,12 @@ class room_operate(osv.osv):
             "total_discount_fee" : fields.function(_compute_fields,multi = "compute_fields",string="合计折扣费用",digits_compute = dp.get_precision('ktv_fee')),
             "total_after_discount_fee" : fields.function(_compute_fields,multi = "compute_fields",string="合计应付费用(折后费用)",digits_compute = dp.get_precision('ktv_fee')),
             "total_after_discount_cash_fee" : fields.function(_compute_fields,multi="compute_fields",string="合计应收现金房费(折后费用)",digits_compute = dp.get_precision('ktv_fee')),
+            "active" : fields.boolean("active"),
             }
 
     _defaults = {
             'operate_date' : fields.datetime.now,
+            'active' : True,
             'bill_no': lambda obj, cr, uid, context: obj.pool.get('ir.sequence').get(cr, uid, 'ktv.room_operate'),
             'credit_card_fee' : 0.0,
             }
