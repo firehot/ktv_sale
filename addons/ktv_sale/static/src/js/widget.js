@@ -1026,6 +1026,8 @@ openerp.ktv_sale.widget = function(erp_instance) {
 					'alert_class': "alert-success",
 					'info': "结账成功,请打印结账单!"
 				});
+        //触发保存成功事件
+        self.trigger('on_save_success');
 				self.close();
 			}
 			var fail_func = function() {
@@ -1349,6 +1351,10 @@ openerp.ktv_sale.widget = function(erp_instance) {
 	widget.RoomCheckoutWidget = widget.BaseRoomCheckoutWidget.extend({
 		template_fct: qweb_template("room-checkout-template"),
 		model: new model.RoomCheckout(),
+    events: {
+			"on_save_success": this.print
+		},
+
 		init: function(parent, options) {
 			this._super(parent, options);
 		},
@@ -1392,6 +1398,21 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			this.$("#fee_type_id,#price_class_id").change(_.bind(this._onchange_fields, this));
 			this.$("#fee_type_id").val(this.room.get("fee_type_id")[0])
 			this._onchange_fields();
+		},
+    //重写打印事件
+		print: function() {
+			var self = this;
+      //获取钟点费计费信息
+			new erp_instance.web.Model('ktv.room_checkout').get_func('get_all_hourly_fee_array')(self._get_context()).pipe(function(hourly_fee_lines){
+				var template_var = {
+					"room": self.room.export_as_json(),
+          "room_opens_lines" : hourly_fee_lines[0],
+          "room_change_lines" : hourly_fee_lines[1]
+				};
+				var print_doc = $(qweb_template("room-checkout-print-template")(template_var));
+				//处理可见元素
+				var print_doc = print_doc.jqprint();
+      });
 		}
 	});
 

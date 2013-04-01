@@ -386,7 +386,6 @@ class room_checkout(osv.osv):
         #更新Room状态
         self.pool.get('ktv.room').write(cr,uid,room_id,{'state' : room.STATE_FREE,'current_room_operate_id' : None})
         room_checkout_vals['id'] = id
-        #fields = self.fields_get(cr,uid).keys()
         room_checkout = self.read(cr,uid,id)
         return (room_checkout,None,None)
 
@@ -603,7 +602,7 @@ class room_checkout(osv.osv):
       :params context[fee_type_id] integer 计费方式id required
       :params context[price_class_id] integer 价格类型 required
       :params context[member_id] integer 会员卡id
-      :return 分时段的费用信息 array
+      :return 分时段的费用信息 tuple 
       """
       pool = self.pool
       room_id = context['room_id']

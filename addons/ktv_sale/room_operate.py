@@ -242,7 +242,7 @@ class room_operate(osv.osv):
             ret['price_class_id'] = (price_class['id'],price_class['name'])
         if ret['last_member_id']:
             last_member = pool.get('ktv.member').read(cr,uid,ret['last_member_id'],['id','member_card_no'])
-            ret['last_member_id'] = (last_member['id'],last_member['member_card_no'])
+            ret['last_member_id'] = (last_member['id'],last_member['member_card_no'],last_member['name'],last_member['balance'])
 
         if ret['last_buyout_config_id']:
             last_buyout_config = pool.get('ktv.buyout_config').read(cr,uid,ret['last_buyout_config_id'],['id','name'])

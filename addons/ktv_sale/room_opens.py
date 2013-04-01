@@ -32,7 +32,7 @@ class room_opens(osv.osv):
 
     _defaults = {
             "persons_count" : 2,
-            "open_time" : fields.datetime.now()
+            "open_time" : fields.datetime.now
             }
 
     def process_operate(self,cr,uid,opens_vals):
