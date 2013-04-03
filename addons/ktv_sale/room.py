@@ -193,7 +193,7 @@ class room(osv.osv):
         the_room = self.browse(cr,uid,room_id,context)
         operate_id = the_room.current_room_operate_id
         ret = {}
-        if not operate_id and not the_room.state in [room.STATE_BUYTIME,room.STATE_BUYOUT]:
+        if not operate_id : #and not the_room.state in [room.STATE_BUYTIME,room.STATE_BUYOUT]:
             return None
         else:
             ret = pool.get('ktv.room_operate').calculate_sum_paid_info(cr,uid,operate_id.id,context)

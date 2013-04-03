@@ -1395,11 +1395,14 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			var self = this;
       console.log("enter print events");
       //获取钟点费计费信息
-			new erp_instance.web.Model('ktv.room_checkout').get_func('get_all_hourly_fee_array')(self._get_context()).pipe(function(hourly_fee_lines){
+      var room_hourly_fee_line_ids = self.model.get('room_hourly_fee_line_ids');
+      //需要先缓存sum_paid_info,因包厢结账后,sum_paid_info将不存在
+      var sum_paid_info = self.room.export_as_json().sum_paid_info;
+			new erp_instance.web.Model('ktv.room_hourly_fee_line').get_func('read')(room_hourly_fee_line_ids,[]).pipe(function(hourly_fee_lines){
 				var template_var = {
 					"room": self.room.export_as_json(),
-          "room_opens_lines" : hourly_fee_lines[0],
-          "room_change_lines" : hourly_fee_lines[1]
+          "sum_paid_info" : sum_paid_info,
+          "room_hourly_fee_lines" : hourly_fee_lines
 				};
 				var print_doc = $(qweb_template("room-checkout-print-template")(template_var));
 				//处理可见元素

@@ -270,6 +270,11 @@ class room_checkout(osv.osv):
 
         room_opens = r_op.room_opens_ids and r_op.room_opens_ids[0]
         room_changes = r_op.room_change_ids
+        #如果没有开房信息,或包厢已结账room_checkout,则返回None
+        if r_op.room_checkout_ids or not room_opens:
+          _logger.debug("Not Found room_opens or room_checkout")
+          raise osv.except_osv(_("错误"), _('包厢操作数据错误,该包厢已结账或找不到开房信息.'))
+
 
         #计算room_opens的room_fee和hourly_fee
         origin_room = room_opens.room_id
@@ -368,11 +373,55 @@ class room_checkout(osv.osv):
         cur_rp_id = self.pool.get('ktv.room').find_or_create_room_operate(cr,uid,room_id)
         room_checkout_vals.update({"room_operate_id" : cur_rp_id})
         id = self.create(cr,uid,room_checkout_vals)
+        #保存钟点费明细
+        #ctx['room_id'] integer required 当前结账包厢id
+        #ctx[fee_type_id] integer 计费方式id required
+        #ctx[price_class_id] integer 价格类型 required
+        #ctx[member_id] integer 会员卡id
+ 
+        ctx_lines = {
+            'room_id' : room_checkout_vals['room_id'],
+            'fee_type_id' : room_checkout_vals['fee_type_id'],
+            'price_class_id' : room_checkout_vals['price_class_id'],
+            'member_id' : room_checkout_vals.get('member_id',None),
+            }
+        line_ids = self._create_hourly_fee_lines(cr,uid,id,ctx_lines)
         #更新Room状态
         self.pool.get('ktv.room').write(cr,uid,room_id,{'state' : room.STATE_FREE,'current_room_operate_id' : None})
         room_checkout_vals['id'] = id
         room_checkout = self.read(cr,uid,id)
         return (room_checkout,None,None)
+
+    def _create_hourly_fee_lines(self,cr,uid,room_checkout_id,ctx):
+      '''
+      保存钟点费明细信息
+      :param room_checkout_id integer 主表id
+      :param ctx['room_id'] integer required 当前结账包厢id
+      :param ctx[fee_type_id] integer 计费方式id required
+      :param ctx[price_class_id] integer 价格类型 required
+      :param ctx[member_id] integer 会员卡id
+      :return ids list  创建的明细id list
+      '''
+      room_opens_lines,room_change_lines = self.get_all_hourly_fee_array(cr,uid,ctx)
+      ret_ids = []
+      for lines in (room_opens_lines,room_change_lines):
+        for c in lines:
+          _logger.debug("hourly lines = %s",repr(c))
+          attrs={
+            'room_checkout_id'  :   room_checkout_id,
+            'hourly_fee'        :   c['hourly_fee'],
+            'consume_minutes'   :   c['consume_minutes'],
+            'hourly_discount'   :   c['hourly_discount'],
+            'sum_hourly_fee'    :   c['sum_hourly_fee'],
+            'time_from'         :   c['datetime_from'],
+            'time_to'           :   c['datetime_to'],
+            }
+          pool = self.pool
+          id = pool.get('ktv.room_hourly_fee_line').create(cr,uid,attrs)
+          ret_ids.append(id)
+
+      return ret_ids
+
 
     def get_default_checkout_dict(self,cr,uid):
         """
@@ -536,17 +585,21 @@ class room_checkout(osv.osv):
         #逐个计算费用信息
         for c in config_array:
             consume_minutes= ktv_helper.timedelta_minutes(c["datetime_from"],c["datetime_to"])
-            c['sum_hourly_fee']= c['hourly_fee']*consume_minutes/60
+            c['sum_hourly_fee']= ktv_helper.float_round(cr,c['hourly_fee']*consume_minutes/60)
             c['consume_minutes']= consume_minutes
-            c['time_from'] = c['datetime_from'].strftime('%H:%M');del c['datetime_from']
-            c['time_to'] = c['datetime_to'].strftime('%H:%M');del c['datetime_to']
+            c['time_from'] = c['datetime_from'].strftime('%H:%M')
+            c['time_to'] = c['datetime_to'].strftime('%H:%M')
 
         #如果没有钟点费用信息,则设置默认钟点费信息
         if not config_array:
             tmp_dict = dict()
             consume_minutes= ktv_helper.timedelta_minutes(datetime_open,datetime_close)
-            tmp_dict['sum_hourly_fee']= room.hourly_fee*consume_minutes/60
+            tmp_dict['sum_hourly_fee']= ktv_helper.float_round(cr,room.hourly_fee*consume_minutes/60)
+            tmp_dict['hourly_fee']= room.hourly_fee
+            tmp_dict['hourly_discount']= 100 #不打折
             tmp_dict['consume_minutes']= consume_minutes
+            tmp_dict['datetime_from'] = datetime_open
+            tmp_dict['datetime_to'] = datetime_close
             tmp_dict['time_from'] = datetime_open.strftime('%H:%M')
             tmp_dict['time_to'] = datetime_close.strftime('%H:%M')
             config_array.append(tmp_dict)
@@ -578,10 +631,6 @@ class room_checkout(osv.osv):
 
       room_opens = r_op.room_opens_ids and r_op.room_opens_ids[0]
       room_changes = r_op.room_change_ids
-      #如果没有开房信息,或包厢已结账room_checkout,则返回None
-      if r_op.room_checkout_ids or not room_opens:
-        _logger.debug("Not Found room_opens or room_checkout")
-        raise osv.except_osv(_("错误"), _('包厢操作数据错误,该包厢已结账或找不到开房信息.'))
 
       #计算room_opens的room_fee和hourly_fee
       origin_room = room_opens.room_id

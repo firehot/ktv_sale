@@ -14,7 +14,6 @@ class room_hourly_fee_line(osv.osv):
 
   _columns = {
       "room_checkout_id" : fields.many2one("ktv.room_checkout","room_checkout_id",required = True,help="包厢结账主表"),
-      "room_id" : fields.many2one("ktv.room","room_id",required = True,help="包厢id"),
       "hourly_fee" : fields.float("hourly_fee",digits_compute = dp.get_precision('ktv_fee'),help="钟点费"),
       "consume_minutes" : fields.integer("consume_minutes",help="消费时长(分钟)"),
       "hourly_discount" : fields.float("hourly_fee_discount",digits_compute = dp.get_precision('ktv_fee'),help="钟点费折扣"),
