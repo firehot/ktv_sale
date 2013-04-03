@@ -771,10 +771,6 @@ openerp.ktv_sale.widget = function(erp_instance) {
 	widget.BaseRoomCheckoutWidget = erp_instance.web.Widget.extend({
 		//当前model
 		model: new Backbone.Model(),
-		//定义时间
-		events: {
-			"re_calculate_fee": this.on_re_calculate_fee
-		},
 		init: function(parent, options) {
 			this._super(parent, options);
 			this.room = options.room;
@@ -796,6 +792,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			//model发生变化时,重新显示计费信息
 			this.model.on('change', this._refresh_fee_table, this);
 			//this.on('re_calculate_fee', this, this._refresh_fee_table);
+      this.on('re_calculate_fee',this,this.on_re_calculate_fee);
 			//抵用券发生变化时,计算抵用券费用
 			this.sales_voucher_collection.bind('change', this._re_calculate_sales_voucher_fee, this);
 
@@ -819,7 +816,6 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		call_server_func: function() {
 			return $.Deferred().done().promise();
 		},
-
 		//重新计算费用
 		_re_calculate_fee: function() {
 			var self = this;
@@ -832,6 +828,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		//re_calculate_fee callback
 		//子类可添加callback函数
 		on_re_calculate_fee: function() {
+      console.debug("on re_calcualte_fee");
 			this._re_calculate_sales_voucher_fee();
 			this._autoset_pay_type_member_card_fee();
 		},
@@ -1026,9 +1023,6 @@ openerp.ktv_sale.widget = function(erp_instance) {
 					'alert_class': "alert-success",
 					'info': "结账成功,请打印结账单!"
 				});
-        //触发保存成功事件
-        self.trigger('on_save_success');
-				self.close();
 			}
 			var fail_func = function() {
 				erp_instance.ktv_sale.ktv_room_point.app.alert({
@@ -1045,8 +1039,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 					var changed_room_id = result['changed_room'].id;
 					erp_instance.ktv_sale.ktv_room_point.fetch_room(changed_room_id);
 				}
-
-			}).then(success_func, fail_func);
+			}).then(success_func, fail_func).then(function(){self.trigger('save_success');},function(){self.trigger('save_fail');});
 		},
 		//会员卡款金额变化的处理
 		_onchange_member_card_fee: function() {
@@ -1351,9 +1344,6 @@ openerp.ktv_sale.widget = function(erp_instance) {
 	widget.RoomCheckoutWidget = widget.BaseRoomCheckoutWidget.extend({
 		template_fct: qweb_template("room-checkout-template"),
 		model: new model.RoomCheckout(),
-    events: {
-			"on_save_success": this.print
-		},
 
 		init: function(parent, options) {
 			this._super(parent, options);
@@ -1397,11 +1387,13 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			//设置计费方式为当前包厢默认计费方式
 			this.$("#fee_type_id,#price_class_id").change(_.bind(this._onchange_fields, this));
 			this.$("#fee_type_id").val(this.room.get("fee_type_id")[0])
+      this.on('save_success',this,this.print);
 			this._onchange_fields();
 		},
     //重写打印事件
 		print: function() {
 			var self = this;
+      console.log("enter print events");
       //获取钟点费计费信息
 			new erp_instance.web.Model('ktv.room_checkout').get_func('get_all_hourly_fee_array')(self._get_context()).pipe(function(hourly_fee_lines){
 				var template_var = {

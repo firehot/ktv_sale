@@ -29,6 +29,7 @@ import room_operate                 #包厢操作对象
 import room_scheduled               #包厢预定对象
 import room_opens                   #开房对象
 import room_checkout                #包厢结账
+import room_hourly_fee_line         #钟点费信息
 import room_checkout_buyout         #包厢结账-买断
 import room_checkout_buytime        #包厢结账-买钟
 import room_checkout_buytime_continue        #包厢结账-续钟
