@@ -1397,18 +1397,24 @@ openerp.ktv_sale.widget = function(erp_instance) {
       //获取钟点费计费信息
       var room_hourly_fee_line_ids = self.model.get('room_hourly_fee_line_ids');
       //需要先缓存sum_paid_info,因包厢结账后,sum_paid_info将不存在
-      var sum_paid_info = self.room.export_as_json().sum_paid_info;
-			new erp_instance.web.Model('ktv.room_hourly_fee_line').get_func('read')(room_hourly_fee_line_ids,[]).pipe(function(hourly_fee_lines){
-				var template_var = {
+      var sum_paid_info,hourly_fee_lines;
+			$.when(
+        new erp_instance.web.Model('ktv.room_operate').get_func('calculate_sum_paid_info')(self.model.get('room_operate_id')[0])
+        .pipe(function(s_info){sum_paid_info = s_info;}),
+        new erp_instance.web.Model('ktv.room_hourly_fee_line').get_func('read')(room_hourly_fee_line_ids,[])
+        .pipe(function(h_lines){hourly_fee_lines = h_lines;}))
+        .then(function(){
+          var template_var = {
 					"room": self.room.export_as_json(),
+          "room_checkout" : self.model.toJSON(),
           "sum_paid_info" : sum_paid_info,
           "room_hourly_fee_lines" : hourly_fee_lines
 				};
 				var print_doc = $(qweb_template("room-checkout-print-template")(template_var));
 				//处理可见元素
 				var print_doc = print_doc.jqprint();
-      });
-		}
+        });
+    }
 	});
 
 	//包厢换房-买钟界面

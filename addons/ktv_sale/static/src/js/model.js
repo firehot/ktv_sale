@@ -769,10 +769,35 @@ openerp.ktv_sale.model = function(erp_instance) {
 				context_close_time: erp_instance.web.str_to_datetime(this.get('close_time')).toString('yyyy-MM-dd HH:mm')
 			});
 		},
+    //获取支付方式
+    get_pay_type_describe : function(){
+      var pay_type_array = [];
+      if(this.get('act_pay_cash_fee') > 0)
+        pay_type_array.push("现金");
 
+      if(this.get('member_card_fee') > 0)
+        pay_type_array.push("会员卡");
+
+      if(this.get('credit_card_fee') > 0)
+        pay_type_array.push("信用卡");
+      if(this.get('sales_voucher_fee') > 0)
+        pay_type_array.push("抵用券");
+      if(this.get('free_fee') > 0)
+        pay_type_array.push("免单");
+      if(this.get('on_creidt_fee') > 0)
+        pay_type_array.push("挂账");
+
+      if(this.get('song_ticket_minutes') > 0)
+        pay_type_array.push("欢唱券");
+
+      return pay_type_array.join('+')
+ 
+    },
 		//导出当前model为json
 		export_as_json: function() {
 			var json = this.toJSON();
+      var pay_type_describe = this.get_pay_type_describe();
+      json.pay_type_describe = pay_type_describe;
 			return json;
 		}
 	});

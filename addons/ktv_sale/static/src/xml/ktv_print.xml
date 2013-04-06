@@ -109,9 +109,7 @@
         <tr>
           <td>消费时长:</td>
           <td><t t-esc="sum_paid_info.total_minutes"/></td>
-
           <td></td>
-          <td>计费方式:</td>
           <t t-if="sum_paid_info.last_member_id">
             <td>会员姓名:</td>
             <td><t t-esc="sum_paid_info.last_member_id[2]"/></td>
@@ -123,8 +121,7 @@
             <td>会员卡号:</td>
             <td><t t-esc="sum_paid_info.last_member_id[1]"/></td>
             <td></td>
-            <td>计费方式:</td>
-            <td>卡预额:</td>
+            <td>卡余额:</td>
             <td><t t-esc="sum_paid_info.last_member_id[3]"/></td>
           </t>
         </tr>
@@ -164,8 +161,14 @@
           <td><t t-esc="sum_paid_info.total_after_discount_fee" /></td>
         </tr>
         <tr>
+          <td>支付方式:</td>
+          <td colspan="4"><t t-esc="room_checkout.pay_type_describe" /></td>
+        </tr>
+
+
+        <tr>
           <td>找零金额:</td>
-          <td colspan="4"></td>
+          <td colspan="4"><t t-esc="room_checkout.cash_change" /></td>
         </tr>
 
         <tr>
