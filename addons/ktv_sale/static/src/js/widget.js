@@ -1400,9 +1400,19 @@ openerp.ktv_sale.widget = function(erp_instance) {
       var sum_paid_info,hourly_fee_lines;
 			$.when(
         new erp_instance.web.Model('ktv.room_operate').get_func('calculate_sum_paid_info')(self.model.get('room_operate_id')[0])
-        .pipe(function(s_info){sum_paid_info = s_info;}),
+        .pipe(function(s_info){
+          sum_paid_info = s_info;
+          sum_paid_info.context_open_time = erp_instance.web.str_to_datetime(s_info.open_time).toString('yyyy-MM-dd HH:mm');
+        }),
         new erp_instance.web.Model('ktv.room_hourly_fee_line').get_func('read')(room_hourly_fee_line_ids,[])
-        .pipe(function(h_lines){hourly_fee_lines = h_lines;}))
+        .pipe(function(h_lines){
+          hourly_fee_lines = h_lines;
+          //计算本地时间
+          _.each(hourly_fee_lines,function(l){
+            l.context_time_from = erp_instance.web.str_to_datetime(l.time_from).toString('HH:mm');
+            l.context_time_to = erp_instance.web.str_to_datetime(l.time_to).toString('HH:mm');
+          });
+        }))
         .then(function(){
           var template_var = {
 					"room": self.room.export_as_json(),
@@ -1413,7 +1423,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 				var print_doc = $(qweb_template("room-checkout-print-template")(template_var));
 				//处理可见元素
 				var print_doc = print_doc.jqprint();
-        });
+        }).then(function(){self.close();});
     }
 	});
 

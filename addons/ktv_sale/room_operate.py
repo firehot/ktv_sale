@@ -56,24 +56,24 @@ class room_operate(osv.osv):
             last_buyout_config = None
             last_cron = None
             if which_room_close_ops:
-                close_time = which_room_close_ops[-1].close_time
+              close_time = which_room_close_ops[-1].close_time
 
-                #获取最后一次操作的member_id
-                last_member =getattr(which_room_close_ops[-1],'member_id',None)
-                last_buyout_config = getattr(which_room_close_ops[-1],'buyout_config_id',None)
-                #最后一次cron任务
-                last_cron = getattr(which_room_close_ops[-1],'cron_id',None)
-
+              #获取最后一次操作的member_id
+              last_member =getattr(which_room_close_ops[-1],'member_id',None)
+              last_buyout_config = getattr(which_room_close_ops[-1],'buyout_config_id',None)
+              #最后一次cron任务
+              last_cron = getattr(which_room_close_ops[-1],'cron_id',None)
 
             if not last_buyout_config:
-                #最后买断id
-                last_buyout_config = getattr(which_room_open_ops[0],'buyout_config_id',None)
+              #最后买断id
+              last_buyout_config = getattr(which_room_open_ops[0],'buyout_config_id',None)
+
 
             last_buyout_config_id = getattr(last_buyout_config,'id',None)
             last_cron_id = getattr(last_cron,'id',None)
 
             if not last_member:
-                last_member = which_room_open_ops[0].member_id
+              last_member = which_room_open_ops[0].member_id
 
             last_member_id = getattr(last_member,'id',None)
 

@@ -484,7 +484,7 @@ class room_checkout(osv.osv):
             hourly_discount_configs = self.pool.get('ktv.member_hourly_fee_discount')\
                 .get_active_conifg(cr,uid,room_type_id,domain)
 
-        hourly_discount_configs = self.pool.get("ktv.hourly_fee_p_discount").get_active_configs(cr,uid,room_type_id,domain)
+        hourly_discount_configs = self.pool.get("ktv.hourly_fee_discount").get_active_configs(cr,uid,room_type_id,domain)
 
         #形成config_array数组
         def construct_config_array(c):
@@ -520,16 +520,14 @@ class room_checkout(osv.osv):
             config_datetime_min = config_array[0]['datetime_from']
             config_datetime_max = config_array[-1]['datetime_to']
 
+            _logger.debug('config_datetime_min = %s' % config_datetime_min)
+            _logger.debug('config_datetime_max = %s' % config_datetime_max)
+            _logger.debug('datetime_open = %s' % datetime_open)
+            _logger.debug('datetime_close = %s' % datetime_close)
+
             #情况1:消费时间不在设置时间区间内,按照正常费用设置
             if datetime_close <= config_datetime_min or datetime_open >= config_datetime_max:
                 config_array = []
-                config_array.append({
-                    "datetime_from" : datetime_open,
-                    "datetime_to" : datetime_close,
-                    "hourly_fee" :  room.hourly_fee,
-                    "hourly_discount" : 100,
-                    })
-
             #情况2: 消费时段包含在设置时段内
             #更新第一个的datetime_from 更新最后一个的datetime_to
             if datetime_open >= config_datetime_min and datetime_close <= config_datetime_max:

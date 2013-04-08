@@ -137,7 +137,7 @@
         </tr>
         <t t-foreach="room_hourly_fee_lines" t-as="l">
           <tr>
-            <td><t t-esc="l.time_from"/>~<t t-esc="l.time_to" /></td>
+            <td><t t-esc="l.context_time_from"/>~<t t-esc="l.context_time_to" /></td>
             <td><t t-esc="l.hourly_discount"/></td>
             <td><t t-esc="l.hourly_fee"/></td>
             <td><t t-esc="l.sum_hourly_fee"/></td>
