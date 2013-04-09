@@ -103,7 +103,7 @@
 
         <tr>
           <td>账 单 号:</td>
-          <td colspan="4"><t t-esc="room.current_room_operate_id[1]"/></td>
+          <td colspan="4"><t t-esc="sum_paid_info.bill_no1]"/></td>
         </tr>
 
         <tr>
@@ -177,6 +177,76 @@
         </tr>
         <tr>
           <td colspan="5">谢谢光临!</td>
+        </tr>
+      </table>
+    </div>
+  </t>
+  <!--正常开房换房条-->
+  <t t-name="room-change-print-template">
+    <div class='room-opens-bill' style='text-align : center;'>
+      <h4><t t-esc="company.name"/>换房条</h4>
+      <table style='width : 100%;'>
+        <tr>
+          <td>账 单 号:</td>
+          <td colspan="2"><t t-esc="room_change.room_operate_id[1]"/></td>
+        </tr>
+        <tr>
+          <td>开房时间:</td>
+          <td colspan="2"><t t-esc="sum_paid_info.context_open_time"/></td>
+        </tr>
+        <tr>
+          <td>计费方式:</td>
+          <td colspan="2"><t t-esc="sum_paid_info.fee_type_id[1]"/></td>
+        </tr>
+ 
+        <tr>
+          <td>原包厢:</td>
+          <td colspan="2"><t t-esc="origin_room.name"/></td>
+        </tr>
+        <tr>
+          <td>原包厢类型:</td>
+          <td colspan="2"><t t-esc="origin_room.room_type_id[1]"/></td>
+        </tr>
+        <tr>
+          <td>原钟点费:</td>
+          <td colspan="2"><t t-esc="origin_room.hourly_fee"/></td>
+        </tr>
+        <tr>
+          <td>消费时长:</td>
+          <td colspan="2"><t t-esc="sum_paid_info.consume_minutes"/></td>
+        </tr>
+         <tr>
+          <td>新包厢:</td>
+          <td colspan="2"><t t-esc="changed_room.name"/></td>
+        </tr>
+        <tr>
+          <td>新包厢类型:</td>
+          <td colspan="2"><t t-esc="changed_room.room_type_id[1]"/></td>
+        </tr>
+        <tr>
+          <td>新钟点费:</td>
+          <td colspan="2"><t t-esc="changed_room.hourly_fee"/></td>
+        </tr>
+         <tr>
+          <td>换房时间:</td>
+          <td colspan="2"><t t-esc="room_change.context_open_time"/></td>
+        </tr>
+ 
+        <tr>
+          <td>打单人:</td>
+          <td colspan="2"><t t-esc="username"/></td>
+        </tr>
+        <tr>
+          <td>打单时间:</td>
+          <td colspan="2"><t t-esc="room_change.context_open_time"/></td>
+        </tr>
+        <tr>
+          <td>客人签名:</td>
+          <td style='border-bottom : 2px solid #000;'>&#160;</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td colspan="3">请确认房号及所有设备完整,谢谢!</td>
         </tr>
       </table>
     </div>

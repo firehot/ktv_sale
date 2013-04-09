@@ -1416,7 +1416,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
         .then(function(){
           var template_var = {
 					"room": self.room.export_as_json(),
-          "room_checkout" : self.model.toJSON(),
+          "room_checkout" : self.model.export_as_json(),
           "sum_paid_info" : sum_paid_info,
           "room_hourly_fee_lines" : hourly_fee_lines
 				};
@@ -1646,8 +1646,6 @@ openerp.ktv_sale.widget = function(erp_instance) {
 					'alert_class': "alert-success",
 					'info': "保存换房信息成功,打印换房条!"
 				});
-				self.close();
-				self.print();
 			};
 			var fail_func = function() {
 				erp_instance.ktv_sale.ktv_room_point.app.alert({
@@ -1658,28 +1656,56 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			};
 			this.model.push().pipe(function(result) {
 				self.model.set(result['room_operate']);
-                erp_instance.ktv_sale.ktv_room_point.fetch_room(result['room'].id);
+        erp_instance.ktv_sale.ktv_room_point.fetch_room(result['room'].id);
 				//如果是换房,则还须更新changed_room的状态
 				if (result['changed_room']) {
 					var changed_room_id = result['changed_room'].id;
 					erp_instance.ktv_sale.ktv_room_point.fetch_room(changed_room_id);
 				}
-			}).then(success_func, fail_func);
+			}).then(success_func, fail_func).then(_.bind(self.print,self)).then(_.bind(self.close,self));
 		},
 		//打印换房条
 		print: function() {
 			var self = this;
-			var room_fee_info = this.room.get_room_fee_info();
-			room_fee_info.ready.then(function() {
-				var template_var = {
-					"room": self.room.export_as_json(),
-					'room_fee_info': room_fee_info.export_as_json(),
-					'room_opens': self.model.toJSON()
+      //需要获取以下信息
+      //原包厢信息 原包厢费用信息
+      //新包厢信息 新包厢费用信息
+      //原消费信息 sum_paid_info
+      var origin_room = self.room;
+			var origin_room_fee_info = self.room.get_room_fee_info();
+
+      var changed_room,changed_room_fee_info,sum_paid_info;
+      var get_sum_paid = function(){
+        return new erp_instance.web.Model('ktv.room_operate').get_func('calculate_sum_paid_info')(self.model.get('room_operate_id')[0])
+        .pipe(function(s_info){
+          sum_paid_info = s_info;
+          sum_paid_info.context_open_time = erp_instance.web.str_to_datetime(s_info.open_time).toString('yyyy-MM-dd HH:mm');
+          return sum_paid_info;
+        });
+      };
+      var get_changed_room_info = function(){
+        return erp_instance.ktv_sale.ktv_room_point.get_room(self.model.get('changed_room_id')[0]).pipe(function(b_room) {
+          changed_room = b_room;
+          return b_room;
+        }).pipe(function(b_room){
+          changed_room_fee_info = b_room.get_room_fee_info();
+          return changed_room_fee_info;
+        });
+      };
+     
+      $.when(origin_room_fee_info.ready,get_changed_room_info(),get_sum_paid()).then(function(){
+        var template_var = {
+					"origin_room": origin_room.export_as_json(),
+					'origin_room_fee_info': origin_room_fee_info.export_as_json(),
+					'room_change': self.model.toJSON(),
+          'changed_room' : changed_room.export_as_json(),
+          'changed_room_fee_info' : changed_room_fee_info.export_as_json(),
+          'sum_paid_info' : sum_paid_info
 				};
-				var print_doc = $(qweb_template("room-opens-bill-print-template")(template_var));
+				var print_doc = $(qweb_template("room-change-print-template")(template_var));
 				//处理可见元素
 				var print_doc = print_doc.jqprint();
-			});
+      });
 		}
 	});
 

@@ -56,7 +56,7 @@ class room_operate(osv.osv):
             last_buyout_config = None
             last_cron = None
             if which_room_close_ops:
-              close_time = which_room_close_ops[-1].close_time
+              close_time = which_room_close_ops[0].close_time
 
               #获取最后一次操作的member_id
               last_member =getattr(which_room_close_ops[-1],'member_id',None)
@@ -121,7 +121,7 @@ class room_operate(osv.osv):
                     total_discount_fee += r_op.total_discount_fee
                     total_after_discount_fee += r_op.total_after_discount_fee
                     total_after_discount_cash_fee += r_op.total_after_discount_cash_fee
-                    total_minutes += r_op.total_minutes
+                    total_minutes += r_op.consume_minutes  + r_op.changed_room_minutes
 
             ret[record.id] = {
                     'guest_name' : guest_name,

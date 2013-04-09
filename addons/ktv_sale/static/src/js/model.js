@@ -348,22 +348,21 @@ openerp.ktv_sale.model = function(erp_instance) {
         //返回$.Deferred
         //可使用pipe进行后续操作
 		get_room: function(r_id) {
-            search = [['id','=',r_id]];
-            return this.pull_rooms_with_fee_info(search).pipe(function(result){
-                return new model.Room(result[0]);
-            });
+      search = [['id','=',r_id]];
+      return this.pull_rooms_with_fee_info(search).pipe(function(result){
+        return new model.Room(result[0]);
+      });
 		},
         //从服务器端更新单个room信息
-        fetch_room : function(r_id) {
-            var self = this;
-            return this.get_room(r_id).pipe(function(b_room){
-                //需要先清空原包厢数据,然后重新设置新数据
-                var old_room = self.get('display_rooms').get(r_id);
-                old_room.clear({silent : true});
-                old_room.set(b_room.export_as_json());
-            });
-        }
-
+    fetch_room : function(r_id) {
+      var self = this;
+      return this.get_room(r_id).pipe(function(b_room){
+        //需要先清空原包厢数据,然后重新设置新数据
+        var old_room = self.get('display_rooms').get(r_id);
+        old_room.clear({silent : true});
+        old_room.set(b_room.export_as_json());
+      });
+    }
 	});
 
 	//RoomFeeInfo对象,定义包厢所有相关费用信息
@@ -517,7 +516,7 @@ openerp.ktv_sale.model = function(erp_instance) {
 						price_class_id: l.get("price_class_id"),
 						price_class_name: l.get("price_class_name"),
 						base_hourly_fee: l.get("base_hourly_fee"),
-                        time_range: erp_instance.web.float_time_to_str(l.get("time_from")) + "~" + erp_instance.web.float_time_to_str(l.get("time_to")),
+            time_range: erp_instance.web.float_time_to_str(l.get("time_from")) + "~" + erp_instance.web.float_time_to_str(l.get("time_to")),
 						//"time_range": l.get("time_from") + "~" + l.get("time_to"),
 						hourly_discount: l.get("hourly_discount"),
 						hourly_fee: l.get("hourly_fee")
@@ -889,11 +888,12 @@ openerp.ktv_sale.model = function(erp_instance) {
 		},
 		//将数据上传至服务器
 		push: function() {
-			json_obj = this.toJSON();
+			var json_obj = this.toJSON();
 			json_obj.osv_name = "ktv.room_change";
+      json_obj.changed_room_id = parseInt(json_obj.changed_room_id);
+      json_obj.room_id = parseInt(json_obj.room_id);
 			return new erp_instance.web.Model('ktv.room_operate').get_func('process_operate')(json_obj);
-		},
-
+		}
 	});
 
 	//结账-正常开房

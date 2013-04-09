@@ -310,7 +310,7 @@ class room_checkout(osv.osv):
             'room_id' : context['room_id'],
             'price_class_id' : context['price_class_id'],
             'fee_type_id' : context['fee_type_id'],
-            'guest_name' : r_op.guest_name,
+            'guest_name' : getattr(r_op,'guest_name',None),
             'persons_count' : r_op.persons_count,
             'open_time' : room_opens.open_time,
             'close_time' : close_time,
