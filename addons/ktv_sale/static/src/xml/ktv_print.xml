@@ -103,7 +103,7 @@
 
         <tr>
           <td>账 单 号:</td>
-          <td colspan="4"><t t-esc="sum_paid_info.bill_no1]"/></td>
+          <td colspan="4"><t t-esc="sum_paid_info.bill_no"/></td>
         </tr>
 
         <tr>

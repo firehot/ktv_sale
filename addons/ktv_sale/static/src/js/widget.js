@@ -1655,7 +1655,10 @@ openerp.ktv_sale.widget = function(erp_instance) {
 
 			};
 			this.model.push().pipe(function(result) {
-				self.model.set(result['room_operate']);
+				self.model.set(result['room_operate'],{silent : true});
+        self.model.set({
+          'changed_room_id' : result['room_operate'].changed_room_id[0],
+        });
         erp_instance.ktv_sale.ktv_room_point.fetch_room(result['room'].id);
 				//如果是换房,则还须更新changed_room的状态
 				if (result['changed_room']) {
@@ -1684,7 +1687,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
         });
       };
       var get_changed_room_info = function(){
-        return erp_instance.ktv_sale.ktv_room_point.get_room(self.model.get('changed_room_id')[0]).pipe(function(b_room) {
+        return erp_instance.ktv_sale.ktv_room_point.get_room(self.model.get('changed_room_id')).pipe(function(b_room) {
           changed_room = b_room;
           return b_room;
         }).pipe(function(b_room){
