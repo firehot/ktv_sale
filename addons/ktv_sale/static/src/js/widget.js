@@ -1174,6 +1174,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			this._super();
 			//买断变化事件
 			this.$('#buyout_config_id').change(_.bind(this._onchange_buyout_config_id, this));
+      this.on('save_success',this,this.print);
 			//如果当前无可用买断,则确定按钮不可用
 			if (this.room_fee_info.get_active_buyout_config_lines().length == 0) {
 				erp_instance.ktv_sale.ktv_room_point.app.alert({
@@ -1183,7 +1184,31 @@ openerp.ktv_sale.widget = function(erp_instance) {
 				this.close();
 			}
 			else this._onchange_buyout_config_id();
-		}
+		},
+    //打印结账单
+    print : function(){
+      //需要处理以下数据
+      //room 当前包厢
+      //sum_paid_info 当前结账信息
+      //room_checkout_buyout 买断结账对象
+      var self = this;
+      var sum_paid_info;
+      new erp_instance.web.Model('ktv.room_operate').get_func('calculate_sum_paid_info')(self.model.get('room_operate_id')[0])
+      .pipe(function(s_info){
+        sum_paid_info = s_info;
+        sum_paid_info.context_open_time = erp_instance.web.str_to_datetime(s_info.open_time).toString('yyyy-MM-dd HH:mm');
+      }).then(function(){
+        var template_var = {
+          "room": self.room.export_as_json(),
+          "sum_paid_info" : sum_paid_info,
+          'room_checkout_buyout': self.model.export_as_json()
+        };
+        var print_doc = $(qweb_template("room-checkout-buyout-print-template")(template_var));
+        //处理可见元素
+        var print_doc = print_doc.jqprint();
+      }).then(function(){self.close();});
+
+    }
 	});
 	//包厢换房-买断界面
 	widget.RoomChangeCheckoutBuyoutWidget = widget.BaseRoomCheckoutWidget.extend({
@@ -1360,7 +1385,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
         var print_doc = $(qweb_template("room-checkout-buytime-print-template")(template_var));
         //处理可见元素
         var print_doc = print_doc.jqprint();
-      });
+      }).then(function(){self.close();});
     }
 	});
 
@@ -1457,26 +1482,25 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		model: new model.RoomChangeCheckoutBuytime(),
 		init: function(parent, options) {
 			this._super(parent, options);
-            var self = this;
-            this.ready_init = $.Deferred();
-			self.ready.then(function(){
-                erp_instance.ktv_sale.ktv_room_point.get_rooms_by_state('free').pipe(function(result) {
-                    self.free_rooms = result;
-                    self.ready_init.resolve();
-                });
-            });
-
+      var self = this;
+      this.ready_init = $.Deferred();
+      self.ready.then(function(){
+        erp_instance.ktv_sale.ktv_room_point.get_rooms_by_state('free').pipe(function(result) {
+          self.free_rooms = result;
+          self.ready_init.resolve();
+        });
+      });
 		},
-		renderElement: function() {
-			var self = this;
-            self.$el.html(self.template_fct({
-                "model": self.model.toJSON(),
-                //原包厢对象
-                "origin_room": self.room.toJSON(),
-                //当前空闲包厢
-                "free_rooms": self.free_rooms
-            }));
-			return this;
+    renderElement: function() {
+      var self = this;
+      self.$el.html(self.template_fct({
+        "model": self.model.toJSON(),
+        //原包厢对象
+        "origin_room": self.room.toJSON(),
+        //当前空闲包厢
+        "free_rooms": self.free_rooms
+      }));
+      return this;
 		},
 
 		//选择包厢发生变化
@@ -1511,10 +1535,62 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		},
 		start: function() {
 			this._super();
-            this._onchange_room_id();
+      this._onchange_room_id();
+      this.on('save_success',this,this.print);
 			this.$el.on('change', '#changed_room_id', _.bind(this._onchange_room_id, this));
-		}
-	});
+		},
+    //打印买钟换房条
+    print : function(){
+      //需要提取以下数据
+      //room_change_checkout_buytime 买钟换房信息
+      //origin_room 原包厢
+      //changed_room 新包厢信息
+      //p_checkout  上条最近结账信息
+
+      var self = this;
+      var origin_room = self.room;
+
+      //新包厢信息 上次预售结账信息 本次结账信息
+      var changed_room,p_checkout,l_checkout;
+      var get_last_two_checkout = function(){
+        return new erp_instance.web.Model('ktv.room_operate').get_func('last_two_presale_checkout')(self.model.get('room_operate_id')[0])
+        .pipe(function(ret){
+          p_checkout =  ret[0];
+          l_checkout = ret[1]
+          p_checkout.context_open_time = erp_instance.web.str_to_datetime(p_checkout.open_time).toString('yyyy-MM-dd HH:mm');
+          p_checkout.context_close_time = erp_instance.web.str_to_datetime(p_checkout.close_time).toString('yyyy-MM-dd HH:mm');
+          p_checkout.context_open_only_time = erp_instance.web.str_to_datetime(p_checkout.open_time).toString('HH:mm');
+          p_checkout.context_close_only_time = erp_instance.web.str_to_datetime(p_checkout.close_time).toString('HH:mm');
+ 
+          l_checkout.context_open_time = erp_instance.web.str_to_datetime(l_checkout.open_time).toString('yyyy-MM-dd HH:mm');
+          l_checkout.context_close_time = erp_instance.web.str_to_datetime(l_checkout.close_time).toString('yyyy-MM-dd HH:mm');
+          l_checkout.context_open_only_time = erp_instance.web.str_to_datetime(l_checkout.open_time).toString('HH:mm');
+          l_checkout.context_close_only_time = erp_instance.web.str_to_datetime(l_checkout.close_time).toString('HH:mm');
+ 
+          return ret;
+        });
+      };
+      var get_changed_room = function(){
+        //self.get('changed_room_id')在正确保存后,changed_room_id变为[id,name]
+        return erp_instance.ktv_sale.ktv_room_point.get_room(self.model.get('changed_room_id')[0]).pipe(function(b_room) {
+          changed_room = b_room;
+          return b_room;
+        });
+      };
+      $.when(get_last_two_checkout(),get_changed_room()).then(function(){
+        var template_var = {
+					"origin_room": origin_room.export_as_json(),
+          'changed_room' : changed_room.export_as_json(),
+					'room_change_checkout_buytime': self.model.export_as_json(),
+          'p_checkout' : p_checkout,
+          'l_checkout' : l_checkout
+				};
+				var print_doc = $(qweb_template("room-change-checkout-buytime-print-template")(template_var));
+				//处理可见元素
+				var print_doc = print_doc.jqprint();
+      }).then(function(){self.close();});
+    }
+  });
 
 	//续钟界面
 	widget.RoomCheckoutBuytimeContinueWidget = widget.BaseRoomCheckoutWidget.extend({

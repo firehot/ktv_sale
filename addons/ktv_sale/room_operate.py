@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
-
-import logging
-from osv import osv,fields
+# -*- coding: utf-8 -*- 
+import logging 
+from osv import osv,fields 
 from room import room
 import ktv_helper
 import decimal_precision as dp
@@ -38,7 +37,7 @@ class room_operate(osv.osv):
         """
         ret = {}
         for record in self.browse(cr,uid,ids):
-            #依次判断所有开房相关操作:room_opens > room_checkout_buyout > room_checkout_buytime
+          #依次判断所有开房相关操作:room_opens > room_checkout_buyout > room_checkout_buytime
             which_room_open_ops = record.room_opens_ids or record.room_checkout_buyout_ids or record.room_checkout_buytime_ids
 
             fee_type_id = which_room_open_ops[0].fee_type_id.id
@@ -84,12 +83,12 @@ class room_operate(osv.osv):
             left_minutes = 0
             #如果当前时间>close_time 则该包厢已关闭
             if close_time:
-                if ktv_helper.utc_now_str() > close_time:
-                    left_minutes = 0
-                else:
-                    left_minutes = ktv_helper.str_timedelta_minutes(ktv_helper.utc_now_str(),close_time)
-                    if left_minutes <= 5:
-                        alert = True
+              if ktv_helper.utc_now_str() > close_time:
+                left_minutes = 0
+              else:
+                left_minutes = ktv_helper.str_timedelta_minutes(ktv_helper.utc_now_str(),close_time)
+                if left_minutes <= 5:
+                  alert = True
 
             #如果当前时间<=close_time 则该包厢尚未关闭
 
@@ -100,8 +99,8 @@ class room_operate(osv.osv):
             on_credit_fee = member_card_fee = credit_card_fee = sales_voucher_fee =  free_fee =  0.0
 
             for r_ops in (record.room_checkout_ids,record.room_checkout_buyout_ids,record.room_checkout_buytime_ids,record.room_change_checkout_buyout_ids,record.room_change_checkout_buytime_ids,record.room_checkout_buytime_continue_ids):
-                for r_op in r_ops:
-                    #consume_minutes += r_op.consume_minutes
+              for r_op in r_ops:
+                #consume_minutes += r_op.consume_minutes
                     present_minutes += r_op.present_minutes
                     changed_room_minutes += r_op.changed_room_minutes
                     ori_consume_minutes += r_op.consume_minutes
@@ -124,108 +123,108 @@ class room_operate(osv.osv):
                     total_minutes += r_op.consume_minutes  + r_op.changed_room_minutes
 
             ret[record.id] = {
-                    'guest_name' : guest_name,
-                    'persons_count' : persons_count or 1,
-                    'fee_type_id' : fee_type_id,
-                    'price_class_id' : price_class_id,
-                    'last_cron_id' : last_cron_id,
-                    'last_member_id' : last_member_id,
-                    'last_buyout_config_id' : last_buyout_config_id,
-                    'open_time' : open_time,
-                    'close_time' : close_time,
-                    'prepay_fee' : prepay_fee or 0.0,
-                    'ori_consume_minutes' : ori_consume_minutes or 0,
-                    'consume_minutes' : consume_minutes or 0,
-                    'left_minutes' : left_minutes or 0,
-                    'alert' : alert,
-                    'present_minutes' : present_minutes or 0,
-                    'total_minutes' : total_minutes or 0,
-                    'room_fee' : room_fee or 0.0,
-                    'hourly_fee' : hourly_fee or 0.0,
-                    'changed_room_fee' : changed_room_fee or 0.0,
-                    'changed_room_hourly_fee' : changed_room_hourly_fee or 0.0,
-                    'changed_room_minutes' : changed_room_minutes or 0,
-                    'guest_damage_fee' : guest_damage_fee or 0.0,
-                    'member_card_fee' : member_card_fee or 0.0,
-                    'credit_card_fee' : credit_card_fee or 0.0,
-                    'sales_voucher_fee' : sales_voucher_fee or 0.0,
-                    'on_credit_fee' : on_credit_fee or 0.0,
-                    'free_fee' : free_fee or 0.0,
+                'guest_name' : guest_name,
+                'persons_count' : persons_count or 1,
+                'fee_type_id' : fee_type_id,
+                'price_class_id' : price_class_id,
+                'last_cron_id' : last_cron_id,
+                'last_member_id' : last_member_id,
+                'last_buyout_config_id' : last_buyout_config_id,
+                'open_time' : open_time,
+                'close_time' : close_time,
+                'prepay_fee' : prepay_fee or 0.0,
+                'ori_consume_minutes' : ori_consume_minutes or 0,
+                'consume_minutes' : consume_minutes or 0,
+                'left_minutes' : left_minutes or 0,
+                'alert' : alert,
+                'present_minutes' : present_minutes or 0,
+                'total_minutes' : total_minutes or 0,
+                'room_fee' : room_fee or 0.0,
+                'hourly_fee' : hourly_fee or 0.0,
+                'changed_room_fee' : changed_room_fee or 0.0,
+                'changed_room_hourly_fee' : changed_room_hourly_fee or 0.0,
+                'changed_room_minutes' : changed_room_minutes or 0,
+                'guest_damage_fee' : guest_damage_fee or 0.0,
+                'member_card_fee' : member_card_fee or 0.0,
+                'credit_card_fee' : credit_card_fee or 0.0,
+                'sales_voucher_fee' : sales_voucher_fee or 0.0,
+                'on_credit_fee' : on_credit_fee or 0.0,
+                'free_fee' : free_fee or 0.0,
 
-                    'song_ticket_minutes' : song_ticket_minutes or 0,
-                    'total_fee' : total_fee or 0.0,
-                    'total_discount_fee' : total_discount_fee or 0.0,
-                    'total_after_discount_fee' : total_after_discount_fee or 0.0,
-                    'total_after_discount_cash_fee' : total_after_discount_cash_fee or 0.0,
-                    }
+                'song_ticket_minutes' : song_ticket_minutes or 0,
+                'total_fee' : total_fee or 0.0,
+                'total_discount_fee' : total_discount_fee or 0.0,
+                'total_after_discount_fee' : total_after_discount_fee or 0.0,
+                'total_after_discount_cash_fee' : total_after_discount_cash_fee or 0.0,
+                }
 
             _logger.debug("ret = %s" % ret)
             return ret
 
     _columns = {
-            "operate_date" : fields.datetime('operate_datetime',required = True),
-            "bill_no" : fields.char("bill_no",size = 64,required = True,help = "账单号"),
-            "room_scheduled_ids" : fields.one2many("ktv.room_scheduled","room_operate_id",help="预定信息列表"),
-            "room_opens_ids" : fields.one2many("ktv.room_opens","room_operate_id",help="开房信息列表"),
-            "room_change_ids" : fields.one2many("ktv.room_change","room_operate_id",help="换房信息列表"),
-            "room_checkout_ids" : fields.one2many("ktv.room_checkout","room_operate_id",help="包厢结账信息列表"),
-            "room_checkout_buyout_ids" : fields.one2many("ktv.room_checkout_buyout","room_operate_id",help="包厢买断结账信息列表"),
-            "room_checkout_buytime_ids" : fields.one2many("ktv.room_checkout_buytime","room_operate_id",help="包厢买钟结账信息列表"),
-            "room_change_checkout_buytime_ids" : fields.one2many("ktv.room_change_checkout_buytime","room_operate_id",help="买钟-换房结账信息列表"),
-            "room_checkout_buytime_continue_ids" : fields.one2many("ktv.room_checkout_buytime_continue","room_operate_id",help="续钟列表"),
-            "room_checkout_buytime_refund_ids" : fields.one2many("ktv.room_checkout_buytime_refund","room_operate_id",help="退钟列表"),
-            "room_change_checkout_buyout_ids" : fields.one2many("ktv.room_change_checkout_buyout","room_operate_id",help="买断-换房结账信息列表"),
+        "operate_date" : fields.datetime('operate_datetime',required = True),
+        "bill_no" : fields.char("bill_no",size = 64,required = True,help = "账单号"),
+        "room_scheduled_ids" : fields.one2many("ktv.room_scheduled","room_operate_id",help="预定信息列表"),
+        "room_opens_ids" : fields.one2many("ktv.room_opens","room_operate_id",help="开房信息列表"),
+        "room_change_ids" : fields.one2many("ktv.room_change","room_operate_id",help="换房信息列表"),
+        "room_checkout_ids" : fields.one2many("ktv.room_checkout","room_operate_id",help="包厢结账信息列表"),
+        "room_checkout_buyout_ids" : fields.one2many("ktv.room_checkout_buyout","room_operate_id",help="包厢买断结账信息列表"),
+        "room_checkout_buytime_ids" : fields.one2many("ktv.room_checkout_buytime","room_operate_id",help="包厢买钟结账信息列表"),
+        "room_change_checkout_buytime_ids" : fields.one2many("ktv.room_change_checkout_buytime","room_operate_id",help="买钟-换房结账信息列表"),
+        "room_checkout_buytime_continue_ids" : fields.one2many("ktv.room_checkout_buytime_continue","room_operate_id",help="续钟列表"),
+        "room_checkout_buytime_refund_ids" : fields.one2many("ktv.room_checkout_buytime_refund","room_operate_id",help="退钟列表"),
+        "room_change_checkout_buyout_ids" : fields.one2many("ktv.room_change_checkout_buyout","room_operate_id",help="买断-换房结账信息列表"),
 
-            #以下为计算字段列表,FIXME 字段名称与room_checkout中的完全一致
-            #基础信息
+        #以下为计算字段列表,FIXME 字段名称与room_checkout中的完全一致
+        #基础信息
 
-            "fee_type_id" : fields.function(_compute_fields,type='many2one',obj="ktv.fee_type",multi='compute_fields',string='计费方式'),
-            "price_class_id" : fields.function(_compute_fields,type='many2one',obj="ktv.price_class",multi='compute_fields',string='价格类型(可能为None)'),
-            "last_member_id" : fields.function(_compute_fields,type='many2one',obj="ktv.member",multi='compute_fields',string='会员id',help="最近一次使用的会员卡"),
-            "last_buyout_config_id" : fields.function(_compute_fields,type='many2one',obj="ktv.buyout_config",multi='compute_fields',string='最近买断id',help="获取当前操作的最后一次买断id"),
-            "last_cron_id" : fields.function(_compute_fields,type='many2one',obj="ir.cron",multi='compute_fields',string='最近cron任务id',help="最近cron任务id,主要是处理到点关房处理,预售时可能为空"),
-            "guest_name" : fields.function(_compute_fields,type='string',multi='compute_fields',string='客人姓名'),
-            "persons_count": fields.function(_compute_fields,type='integer',multi='compute_fields',string='客人人数'),
-            "open_time" : fields.function(_compute_fields,type='datetime',multi="compute_fields",string="开房时间"),
-            "close_time" : fields.function(_compute_fields,type='datetime',multi="compute_fields",string="关房时间"),
-            "left_minutes" : fields.function(_compute_fields,type='integer',multi="compute_fields",string="剩余消费时间"),
-            "alert" : fields.function(_compute_fields,type='boolean',multi="compute_fields",string="到钟时间剩余5分钟时报警"),
-            "prepay_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="预付费",digits_compute = dp.get_precision('ktv_fee')),
-            "consume_minutes": fields.function(_compute_fields,type='integer',multi="compute_fields",string="消费时长"),
-            "ori_consume_minutes": fields.function(_compute_fields,type='integer',multi="compute_fields",string="原消费时长(由于存在换房,所以实际消费时间会变化)"),
-            "present_minutes": fields.function(_compute_fields,type='integer',multi="compute_fields",string="赠送时长"),
-            "total_minutes" : fields.function(_compute_fields,multi="compute_fields",string="合计消费时长",type='integer'),
-            "room_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="包厢费",digits_compute = dp.get_precision('ktv_fee')),
-            "hourly_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="钟点费",digits_compute = dp.get_precision('ktv_fee')),
-            "changed_room_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="换房包厢费",digits_compute = dp.get_precision('ktv_fee')),
-            "changed_room_hourly_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="换房钟点费",digits_compute = dp.get_precision('ktv_fee')),
-            "changed_room_minutes": fields.function(_compute_fields,type='integer',multi="compute_fields",string="换房时长"),
-            "guest_damage_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="客损费用",digits_compute = dp.get_precision('ktv_fee')),
+        "fee_type_id" : fields.function(_compute_fields,type='many2one',obj="ktv.fee_type",multi='compute_fields',string='计费方式'),
+        "price_class_id" : fields.function(_compute_fields,type='many2one',obj="ktv.price_class",multi='compute_fields',string='价格类型(可能为None)'),
+        "last_member_id" : fields.function(_compute_fields,type='many2one',obj="ktv.member",multi='compute_fields',string='会员id',help="最近一次使用的会员卡"),
+        "last_buyout_config_id" : fields.function(_compute_fields,type='many2one',obj="ktv.buyout_config",multi='compute_fields',string='最近买断id',help="获取当前操作的最后一次买断id"),
+        "last_cron_id" : fields.function(_compute_fields,type='many2one',obj="ir.cron",multi='compute_fields',string='最近cron任务id',help="最近cron任务id,主要是处理到点关房处理,预售时可能为空"),
+        "guest_name" : fields.function(_compute_fields,type='string',multi='compute_fields',string='客人姓名'),
+        "persons_count": fields.function(_compute_fields,type='integer',multi='compute_fields',string='客人人数'),
+        "open_time" : fields.function(_compute_fields,type='datetime',multi="compute_fields",string="开房时间"),
+        "close_time" : fields.function(_compute_fields,type='datetime',multi="compute_fields",string="关房时间"),
+        "left_minutes" : fields.function(_compute_fields,type='integer',multi="compute_fields",string="剩余消费时间"),
+        "alert" : fields.function(_compute_fields,type='boolean',multi="compute_fields",string="到钟时间剩余5分钟时报警"),
+        "prepay_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="预付费",digits_compute = dp.get_precision('ktv_fee')),
+        "consume_minutes": fields.function(_compute_fields,type='integer',multi="compute_fields",string="消费时长"),
+        "ori_consume_minutes": fields.function(_compute_fields,type='integer',multi="compute_fields",string="原消费时长(由于存在换房,所以实际消费时间会变化)"),
+        "present_minutes": fields.function(_compute_fields,type='integer',multi="compute_fields",string="赠送时长"),
+        "total_minutes" : fields.function(_compute_fields,multi="compute_fields",string="合计消费时长",type='integer'),
+        "room_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="包厢费",digits_compute = dp.get_precision('ktv_fee')),
+        "hourly_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="钟点费",digits_compute = dp.get_precision('ktv_fee')),
+        "changed_room_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="换房包厢费",digits_compute = dp.get_precision('ktv_fee')),
+        "changed_room_hourly_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="换房钟点费",digits_compute = dp.get_precision('ktv_fee')),
+        "changed_room_minutes": fields.function(_compute_fields,type='integer',multi="compute_fields",string="换房时长"),
+        "guest_damage_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="客损费用",digits_compute = dp.get_precision('ktv_fee')),
 
-            #不同支付方式的费用
-            "member_card_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="会员卡支付费用",digits_compute = dp.get_precision('ktv_fee')),
-            "credit_card_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="信用卡支付费用",digits_compute = dp.get_precision('ktv_fee')),
-            "sales_voucher_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="代金券费用",digits_compute = dp.get_precision('ktv_fee')),
-            #TODO 抵扣券明细
-            #"all_sales_voucher_ids"
-            'on_credit_fee': fields.function(_compute_fields,type='float',multi="compute_fields",string="挂账费用",digits_compute = dp.get_precision('ktv_fee')),
-            "free_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="免单费用",digits_compute = dp.get_precision('ktv_fee')),
+        #不同支付方式的费用
+        "member_card_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="会员卡支付费用",digits_compute = dp.get_precision('ktv_fee')),
+        "credit_card_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="信用卡支付费用",digits_compute = dp.get_precision('ktv_fee')),
+        "sales_voucher_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="代金券费用",digits_compute = dp.get_precision('ktv_fee')),
+        #TODO 抵扣券明细
+        #"all_sales_voucher_ids"
+        'on_credit_fee': fields.function(_compute_fields,type='float',multi="compute_fields",string="挂账费用",digits_compute = dp.get_precision('ktv_fee')),
+        "free_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="免单费用",digits_compute = dp.get_precision('ktv_fee')),
 
-            #欢唱券
-            "song_ticket_minutes": fields.function(_compute_fields,type='integer',multi="compute_fields",string="欢唱券抵扣分钟"),
-            "total_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="折前应收费用",digits_compute = dp.get_precision('ktv_fee')),
-            "total_discount_fee" : fields.function(_compute_fields,multi = "compute_fields",string="合计折扣费用",digits_compute = dp.get_precision('ktv_fee')),
-            "total_after_discount_fee" : fields.function(_compute_fields,multi = "compute_fields",string="合计应付费用(折后费用)",digits_compute = dp.get_precision('ktv_fee')),
-            "total_after_discount_cash_fee" : fields.function(_compute_fields,multi="compute_fields",string="合计应收现金房费(折后费用)",digits_compute = dp.get_precision('ktv_fee')),
-            "active" : fields.boolean("active"),
-            }
+        #欢唱券
+        "song_ticket_minutes": fields.function(_compute_fields,type='integer',multi="compute_fields",string="欢唱券抵扣分钟"),
+        "total_fee": fields.function(_compute_fields,type='float',multi="compute_fields",string="折前应收费用",digits_compute = dp.get_precision('ktv_fee')),
+        "total_discount_fee" : fields.function(_compute_fields,multi = "compute_fields",string="合计折扣费用",digits_compute = dp.get_precision('ktv_fee')),
+        "total_after_discount_fee" : fields.function(_compute_fields,multi = "compute_fields",string="合计应付费用(折后费用)",digits_compute = dp.get_precision('ktv_fee')),
+        "total_after_discount_cash_fee" : fields.function(_compute_fields,multi="compute_fields",string="合计应收现金房费(折后费用)",digits_compute = dp.get_precision('ktv_fee')),
+        "active" : fields.boolean("active"),
+      }
 
     _defaults = {
-            'operate_date' : fields.datetime.now,
-            'active' : True,
-            'bill_no': lambda obj, cr, uid, context: obj.pool.get('ir.sequence').get(cr, uid, 'ktv.room_operate'),
-            'credit_card_fee' : 0.0,
-            }
+        'operate_date' : fields.datetime.now,
+        'active' : True,
+        'bill_no': lambda obj, cr, uid, context: obj.pool.get('ir.sequence').get(cr, uid, 'ktv.room_operate'),
+        'credit_card_fee' : 0.0,
+        }
 
     def calculate_sum_paid_info(self,cr,uid,operate_id,context=None):
         """
@@ -235,21 +234,21 @@ class room_operate(osv.osv):
         ret = self.read(cr,uid,operate_id,context=context)
         #使用read方法时,类型为function的one2many字段不返回dict对象,
         if ret['fee_type_id']:
-            fee_type = pool.get('ktv.fee_type').read(cr,uid,ret['fee_type_id'],['id','name'])
-            ret['fee_type_id'] = (fee_type['id'],fee_type['name'])
+          fee_type = pool.get('ktv.fee_type').read(cr,uid,ret['fee_type_id'],['id','name'])
+          ret['fee_type_id'] = (fee_type['id'],fee_type['name'])
         if ret['price_class_id']:
-            price_class = pool.get('ktv.price_class').read(cr,uid,ret['price_class_id'],['id','name'])
-            ret['price_class_id'] = (price_class['id'],price_class['name'])
+          price_class = pool.get('ktv.price_class').read(cr,uid,ret['price_class_id'],['id','name'])
+          ret['price_class_id'] = (price_class['id'],price_class['name'])
         if ret['last_member_id']:
-            last_member = pool.get('ktv.member').read(cr,uid,ret['last_member_id'],['id','member_card_no'])
-            ret['last_member_id'] = (last_member['id'],last_member['member_card_no'],last_member['name'],last_member['balance'])
+          last_member = pool.get('ktv.member').read(cr,uid,ret['last_member_id'],['id','member_card_no'])
+          ret['last_member_id'] = (last_member['id'],last_member['member_card_no'],last_member['name'],last_member['balance'])
 
         if ret['last_buyout_config_id']:
-            last_buyout_config = pool.get('ktv.buyout_config').read(cr,uid,ret['last_buyout_config_id'],['id','name'])
-            ret['last_buyout_config_id'] = (last_buyout_config['id'],last_buyout_config['name'])
+          last_buyout_config = pool.get('ktv.buyout_config').read(cr,uid,ret['last_buyout_config_id'],['id','name'])
+          ret['last_buyout_config_id'] = (last_buyout_config['id'],last_buyout_config['name'])
         if ret['last_cron_id']:
-            last_cron = pool.get('ir.cron').read(cr,uid,ret['last_cron_id'],['id','name'])
-            ret['last_cron_id'] = (last_cron['id'],last_cron['name'])
+          last_cron = pool.get('ir.cron').read(cr,uid,ret['last_cron_id'],['id','name'])
+          ret['last_cron_id'] = (last_cron['id'],last_cron['name'])
 
         return ret
 
@@ -277,13 +276,13 @@ class room_operate(osv.osv):
         operate_obj,room_state,cron = pool.get(osv_name).process_operate(cr,uid,operate_values)
         #更新包厢状态
         if room_state:
-            pool.get('ktv.room').write(cr,uid,room_id,{'state' : room_state})
+          pool.get('ktv.room').write(cr,uid,room_id,{'state' : room_state})
 
         # 添加新cron对象
         if cron:
-            new_cron_id = self._create_operate_cron(cr,uid,cron)
-            #修改当前操作的cron_id
-            pool.get(osv_name).write(cr,uid,operate_obj['id'],{'cron_id' : new_cron_id})
+          new_cron_id = self._create_operate_cron(cr,uid,cron)
+          #修改当前操作的cron_id
+          pool.get(osv_name).write(cr,uid,operate_obj['id'],{'cron_id' : new_cron_id})
 
         #room_fields = pool.get('ktv.room').fields_get(cr,uid).keys()
         room = pool.get('ktv.room').search_with_fee_info(cr,uid,[('id','=',room_id)])[0]
@@ -294,8 +293,8 @@ class room_operate(osv.osv):
         #如果是换房操作,则还需要更新新换包厢的状态
         changed_room_id = operate_values.get('changed_room_id',None)
         if changed_room_id:
-            changed_room = pool.get('ktv.room').read(cr,uid,changed_room_id)
-            ret['changed_room'] = changed_room
+          changed_room = pool.get('ktv.room').read(cr,uid,changed_room_id)
+          ret['changed_room'] = changed_room
 
         return ret
 
@@ -310,9 +309,9 @@ class room_operate(osv.osv):
         last_cron = getattr(rop,'last_cron_id',None)
         last_cron_id = getattr(last_cron,'id',None)
         if last_cron_id:
-            _logger.debug('last_cron_id = %d' % last_cron_id)
-            self.pool.get('ir.cron').write(cr,uid,[last_cron_id],{'numbercall' : 0,'active' : False})
-            _logger.debug('end disable last cron task')
+          _logger.debug('last_cron_id = %d' % last_cron_id)
+          self.pool.get('ir.cron').write(cr,uid,[last_cron_id],{'numbercall' : 0,'active' : False})
+          _logger.debug('end disable last cron task')
 
     def _create_operate_cron(self,cr,uid,cron_vals):
         """
@@ -329,3 +328,35 @@ class room_operate(osv.osv):
         """
         operate_id = self.browse(cr,uid,op_id)
         return (operate_id.room_opens_ids and operate_id.room_opens_ids[0] or None,operate_id.room_change_ids and operate_id.room_change_ids[0] or None )
+
+    def last_two_presale_checkout(self,cr,uid,op_id):
+      """
+      获取最后2次预售结账信息
+      :param op_id room_operate主键
+      :rtype tuple  前一次结账信息,最后一次结账信息
+      """
+      operate = self.browse(cr,uid,op_id)
+      #预售换房结账信息
+      room_change_checkout_ids = operate.room_change_checkout_buyout_ids or operate.room_change_checkout_buytime_ids#
+      #预售结账信息
+      room_presale_checkout_ids = operate.room_checkout_buyout_ids or operate.room_checkout_buytime_ids
+
+      pool = self.pool
+
+      p = l = None
+      #所有的包厢结账ids是按照 bill_date 的 DESC顺序排列的
+      if len(room_change_checkout_ids) >= 2:
+        p = room_change_checkout_ids[1];l = room_change_checkout_ids[0]
+      elif room_change_checkout_ids:
+        p = room_presale_checkout_ids[0];l = room_change_checkout_ids[0]
+      else:
+        p = l = room_presale_checkout_ids[0]
+      
+      ret_p = pool.get(getattr(p,'_name')).read(cr,uid,p.id)
+      ret_p['osv_name'] = getattr(p,'_name')
+      ret_l = pool.get(getattr(l,'_name')).read(cr,uid,l.id)
+      ret_l['osv_name'] = getattr(l,'_name')
+      ret = (ret_p,ret_l)
+      return ret
+
+# vim:et:ts=4:sw=4:

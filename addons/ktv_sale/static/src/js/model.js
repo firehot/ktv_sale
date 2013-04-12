@@ -762,10 +762,12 @@ openerp.ktv_sale.model = function(erp_instance) {
 		},
 		_set_context_datetime: function() {
 			if (this.get("open_time")) this.set({
-				context_open_time: erp_instance.web.str_to_datetime(this.get('open_time')).toString('yyyy-MM-dd HH:mm')
+				context_open_time: erp_instance.web.str_to_datetime(this.get('open_time')).toString('yyyy-MM-dd HH:mm'),
+				context_open_only_time: erp_instance.web.str_to_datetime(this.get('open_time')).toString('HH:mm')
 			});
 			if (this.get("close_time")) this.set({
-				context_close_time: erp_instance.web.str_to_datetime(this.get('close_time')).toString('yyyy-MM-dd HH:mm')
+				context_close_time: erp_instance.web.str_to_datetime(this.get('close_time')).toString('yyyy-MM-dd HH:mm'),
+				context_close_only_time: erp_instance.web.str_to_datetime(this.get('close_time')).toString('HH:mm')
 			});
 		},
     //获取支付方式
