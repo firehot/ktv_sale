@@ -1336,8 +1336,32 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			this._super();
 			//设置计费方式为当前包厢默认计费方式
 			this.$("#price_class_id,#consume_minutes,#persons_count").change(_.bind(this._onchange_fields, this));
+      this.on('save_success',this,this.print);
 			this._onchange_fields();
-		}
+		},
+    //打印买钟结账单
+    print : function(){
+      //需要提取以下数据
+      //room 当前包厢
+      //sum_paid_info 结账信息
+      //room_checkout_buytime 当前买钟结账信息
+      var self = this;
+      var sum_paid_info;
+      new erp_instance.web.Model('ktv.room_operate').get_func('calculate_sum_paid_info')(self.model.get('room_operate_id')[0])
+      .pipe(function(s_info){
+        sum_paid_info = s_info;
+        sum_paid_info.context_open_time = erp_instance.web.str_to_datetime(s_info.open_time).toString('yyyy-MM-dd HH:mm');
+      }).then(function(){
+        var template_var = {
+          "room": self.room.export_as_json(),
+          "sum_paid_info" : sum_paid_info,
+          'room_checkout_buytime': self.model.export_as_json()
+        };
+        var print_doc = $(qweb_template("room-checkout-buytime-print-template")(template_var));
+        //处理可见元素
+        var print_doc = print_doc.jqprint();
+      });
+    }
 	});
 
 	//包厢结账-正常开房

@@ -52,6 +52,8 @@ def calculate_sum_pay_info(self,cr,uid,ctx_args):
         'close_time' : ktv_helper.strftime(close_time),
         'consume_minutes' : consume_minutes,
         'present_minutes' : present_minutes,
+        #包厢钟点费
+        'room_hourly_fee' : room_hourly_fee,
         'hourly_fee' : hourly_fee,
         'total_fee' : hourly_fee,
         })
@@ -75,8 +77,13 @@ class room_checkout_buytime(osv.osv):
 
     _order = "bill_datetime DESC"
 
+    _columns = {
+        "room_hourly_fee" : fields.float("room_hourly_fee",digits_compute = dp.get_precision('ktv_fee'),help="包厢当前钟点费"),
+        }
+
     _defaults = {
-            "fee_type_id" : lambda obj,cr,uid,context: obj.pool.get('ktv.fee_type').get_fee_type_id(cr,uid,fee_type.FEE_TYPE_ONLY_HOURLY_FEE)
+        "room_hourly_fee" : 0.0, 
+        "fee_type_id" : lambda obj,cr,uid,context: obj.pool.get('ktv.fee_type').get_fee_type_id(cr,uid,fee_type.FEE_TYPE_ONLY_HOURLY_FEE)
             }
 
     def re_calculate_fee(self,cr,uid,context):
