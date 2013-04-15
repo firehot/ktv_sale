@@ -278,11 +278,11 @@ openerp.ktv_sale.model = function(erp_instance) {
 			return new erp_instance.web.Model('ktv.room').get_func('search_with_fee_info')(critial);
 
 		},
-        //刷新包厢数据
-        reset_display_rooms : function(critial){
-            var self = this;
-            return self.pull_rooms_with_fee_info(critial).pipe(function(result) {
-				self.get("display_rooms").reset(result);
+    //刷新包厢数据
+    reset_display_rooms : function(critial){
+      var self = this;
+      return self.pull_rooms_with_fee_info(critial).pipe(function(result) {
+        self.get("display_rooms").reset(result);
 				//设置当前选中包厢
 				var display_rooms = self.get("display_rooms");
 				if (display_rooms.length > 0) {
@@ -294,10 +294,10 @@ openerp.ktv_sale.model = function(erp_instance) {
 					else self.set({
 						"current_room": display_rooms.at(0)
 					});
-				}
-                return result;
-			});
-        },
+        }
+        return result;
+      });
+    },
 		//刷新app-data
 		_refresh_app_data: function() {
 			var self = this;
@@ -341,19 +341,50 @@ openerp.ktv_sale.model = function(erp_instance) {
 		},
 		//根据包厢状态返回包厢数组
 		get_rooms_by_state: function(r_state) {
-            search = [['state','=',r_state]];
-            return this.pull_rooms_with_fee_info(search);
+      search = [['state','=',r_state]];
+      return this.pull_rooms_with_fee_info(search);
 		},
+    //获取当前空闲且有买断设置的包厢信息
+    //返回有买断设置的包厢信息
+    get_rooms_free_and_has_buyout_config : function(){
+      var self = this;
+      var b_room_fee_infos = new Backbone.Collection();
+      var filtered_rooms = new Backbone.Collection();
+      filtered_rooms.ready = $.Deferred();
+      self.get_rooms_by_state('free').pipe(function(rooms){
+        var b_all_free_rooms = new Backbone.Collection(rooms,{model : model.Room});
+        return b_all_free_rooms;
+      }).pipe(function(b_rooms){
+        //获取所有包厢的费用信息
+        b_rooms.each(function(r){
+          var room_fee_info = r.get_room_fee_info();
+          b_room_fee_infos.push(room_fee_info);
+        });
+        return b_room_fee_infos;
+      }).pipe(function(b_rf_infos){
+        var readys = b_rf_infos.map(function(rf) {return rf.ready;})
+        var all_ready = $.when.apply(null,readys).then(function(){
+          //过滤掉无买断设置的包厢
+          var filtered_rfs = b_room_fee_infos.filter(function(rf){
+            var active_buyout_configs = rf.get_active_buyout_config_lines();
+            return active_buyout_configs.length > 0
+          });
+          filtered_rooms.add(filtered_rfs.map(function(rfs) {return rfs.get('room').toJSON();}));
+          filtered_rooms.ready.resolve();
+        });
+      });
+      return filtered_rooms;
+    },
 		//根据room_id得到单个room
-        //返回$.Deferred
-        //可使用pipe进行后续操作
+    //返回$.Deferred
+    //可使用pipe进行后续操作
 		get_room: function(r_id) {
       search = [['id','=',r_id]];
       return this.pull_rooms_with_fee_info(search).pipe(function(result){
         return new model.Room(result[0]);
       });
 		},
-        //从服务器端更新单个room信息
+    //从服务器端更新单个room信息
     fetch_room : function(r_id) {
       var self = this;
       return this.get_room(r_id).pipe(function(b_room){
@@ -837,7 +868,8 @@ openerp.ktv_sale.model = function(erp_instance) {
 
 			if (credit_card && credit_card.get("card_no")) json.credit_card_no = credit_card.get("card_no");
 			var sales_voucher_collection = this.get('sales_voucher_collection');
-			if (sales_voucher_collection.length > 0) json.sales_vouchers = sales_voucher_collection.toJSON();
+			if (sales_voucher_collection && sales_voucher_collection.length > 0) 
+        json.sales_vouchers = sales_voucher_collection.toJSON();
 			//删除不需要的属性
 			return json;
 		}

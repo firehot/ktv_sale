@@ -42,7 +42,7 @@ class room_change(osv.osv):
         cur_rp_id = self.pool.get('ktv.room').find_or_create_room_operate(cr,uid,room_id)
 
         #获取最近一次的换房(room_change)或开房(room_opens)信息
-        (room_opens,room_change) = self.pool.get('ktv.room_operate').previous_room_opens_and_change(cr,uid,cur_rp_id)
+        (room_opens,room_change) = self.pool.get('ktv.room_operate').last_room_opens_and_change(cr,uid,cur_rp_id)
 
         #修改room_opens或上次room_change的close_time
         close_time = ktv_helper.utc_now_str()

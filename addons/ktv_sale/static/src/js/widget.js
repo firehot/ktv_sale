@@ -1141,7 +1141,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		renderElement: function() {
 			var self = this;
 				self.$el.html(self.template_fct({
-					"model": self.model.toJSON(),
+					"model": self.model.export_as_json(),
 					"room": self.room.export_as_json(),
 					"room_fee_info": self.room_fee_info.export_as_json()
 				}));
@@ -1215,15 +1215,16 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		template_fct: qweb_template("room-change-checkout-buyout-template"),
 		model: new model.RoomChangeCheckoutBuyout(),
 		init: function(parent, options) {
-            this._super(parent,options);
-            var self = this;
-            this.ready_init = $.Deferred();
-			self.ready.then(function(){
-                erp_instance.ktv_sale.ktv_room_point.get_rooms_by_state('free').pipe(function(result) {
-                    self.free_rooms = result;
-                    self.ready_init.resolve();
-                });
-            });
+      this._super(parent,options);
+      var self = this;
+      this.ready_init = $.Deferred();
+      self.ready.then(function(){
+        var free_rooms = erp_instance.ktv_sale.ktv_room_point.get_rooms_free_and_has_buyout_config();
+        free_rooms.ready.then(function() {
+          self.free_rooms = free_rooms.toJSON();
+          self.ready_init.resolve();
+        });
+      });
 
 			//获取当前包厢最后一次结账信息
 			//重新计算云覅时,刷新界面上的相关显示
@@ -1231,11 +1232,11 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		},
 		renderElement: function() {
 			var self = this;
-            self.$el.html(self.template_fct({
-                "model": self.model.toJSON(),
-                "origin_room": self.room.export_as_json(),
-                "free_rooms": self.free_rooms
-            }));
+      self.$el.html(self.template_fct({
+        "model": self.model.toJSON(),
+        "origin_room": self.room.export_as_json(),
+        "free_rooms": self.free_rooms
+      }));
 			return this;
 		},
 		//显示买断列表
@@ -1255,8 +1256,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			var self = this;
 			erp_instance.ktv_sale.ktv_room_point.get_room(this.$('#changed_room_id').val()).pipe(function(b_room) {
 				var changed_room = b_room;
-				self.room = changed_room;
-                self.changed_room = changed_room;
+        self.changed_room = changed_room;
 				self.changed_room_fee_info = b_room.get_room_fee_info();
 				self.changed_room_fee_info.ready.then(function() {
 					info = self.changed_room_fee_info.export_as_json();
@@ -1292,6 +1292,7 @@ openerp.ktv_sale.widget = function(erp_instance) {
 			this._super();
 			//买断变化事件
 			this.$('#changed_room_id').change(_.bind(this._onchange_room_id, this));
+      this.on('save_success',this,this.print);
 			//如果当前无可用买断,则确定按钮不可用
 			if (this.room_fee_info.get_active_buyout_config_lines().length == 0) {
 				erp_instance.ktv_sale.ktv_room_point.app.alert({
@@ -1301,7 +1302,59 @@ openerp.ktv_sale.widget = function(erp_instance) {
 				this.close();
 			}
 			else this._onchange_room_id();
-		}
+		},
+    //打印买断换房条
+    print : function(){
+      //需要提取以下数据
+      //room_change_checkout_buyout 买钟换房信息
+      //origin_room 原包厢
+      //changed_room 新包厢信息
+      //p_checkout  上条最近结账信息
+      //l_checkout  最近一条结账信息
+
+      var self = this;
+      var origin_room = self.room;
+
+      //新包厢信息 上次预售结账信息 本次结账信息
+      var changed_room,p_checkout,l_checkout;
+      var get_last_two_checkout = function(){
+        return new erp_instance.web.Model('ktv.room_operate').get_func('last_two_presale_checkout')(self.model.get('room_operate_id')[0])
+        .pipe(function(ret){
+          p_checkout =  ret[0];
+          l_checkout = ret[1]
+          p_checkout.context_open_time = erp_instance.web.str_to_datetime(p_checkout.open_time).toString('yyyy-MM-dd HH:mm');
+          p_checkout.context_close_time = erp_instance.web.str_to_datetime(p_checkout.close_time).toString('yyyy-MM-dd HH:mm');
+          p_checkout.context_open_only_time = erp_instance.web.str_to_datetime(p_checkout.open_time).toString('HH:mm');
+          p_checkout.context_close_only_time = erp_instance.web.str_to_datetime(p_checkout.close_time).toString('HH:mm');
+ 
+          l_checkout.context_open_time = erp_instance.web.str_to_datetime(l_checkout.open_time).toString('yyyy-MM-dd HH:mm');
+          l_checkout.context_close_time = erp_instance.web.str_to_datetime(l_checkout.close_time).toString('yyyy-MM-dd HH:mm');
+          l_checkout.context_open_only_time = erp_instance.web.str_to_datetime(l_checkout.open_time).toString('HH:mm');
+          l_checkout.context_close_only_time = erp_instance.web.str_to_datetime(l_checkout.close_time).toString('HH:mm');
+ 
+          return ret;
+        });
+      };
+      var get_changed_room = function(){
+        //self.get('changed_room_id')在正确保存后,changed_room_id变为[id,name]
+        return erp_instance.ktv_sale.ktv_room_point.get_room(self.model.get('changed_room_id')[0]).pipe(function(b_room) {
+          changed_room = b_room;
+          return b_room;
+        });
+      };
+      $.when(get_last_two_checkout(),get_changed_room()).then(function(){
+        var template_var = {
+					"origin_room": origin_room.export_as_json(),
+          'changed_room' : changed_room.export_as_json(),
+					'room_change_checkout_buyout': self.model.export_as_json(),
+          'p_checkout' : p_checkout,
+          'l_checkout' : l_checkout
+				};
+				var print_doc = $(qweb_template("room-change-checkout-buyout-print-template")(template_var));
+				//处理可见元素
+				var print_doc = print_doc.jqprint();
+      }).then(function(){self.close();});
+    }
 	});
 
 	//预售-买钟界面

@@ -505,5 +505,90 @@
       </table>
     </div>
   </t>
-
+  <!--买断换房-->
+  <t t-name="room-change-checkout-buyout-print-template">
+    <div class='room-opens-bill' style='text-align : center;'>
+      <h4><t t-esc="company.name"/>换房条[买断]</h4>
+      <table style='width : 100%;'>
+        <tr>
+          <td>账 单 号:</td>
+          <td colspan="3"><t t-esc="room_change_checkout_buyout.room_operate_id[1]"/></td>
+        </tr>
+        <tr>
+          <td>开房时间:</td>
+          <td colspan="3"><t t-esc="p_checkout.context_open_time"/></td>
+        </tr>
+        <tr>
+          <td>原包厢:</td>
+          <td colspan="3"><t t-esc="origin_room.name"/></td>
+        </tr>
+        <tr>
+          <td>原包厢类型:</td>
+          <td colspan="3"><t t-esc="origin_room.room_type_id[1]"/></td>
+        </tr>
+        <tr>
+          <td>消费时长:</td>
+          <td colspan="3"><t t-esc="p_checkout.changed_room_minutes + p_checkout.consume_minutes"/></td>
+        </tr>
+         <tr>
+          <td>新包厢:</td>
+          <td colspan="3"><t t-esc="changed_room.name"/></td>
+        </tr>
+        <tr>
+          <td>新包厢类型:</td>
+          <td colspan="3"><t t-esc="changed_room.room_type_id[1]"/></td>
+        </tr>
+         <tr>
+          <td>换房时间:</td>
+          <td colspan="3"><t t-esc="room_change_checkout_buyout.context_open_time"/></td>
+        </tr>
+        <tr>
+          <td colspan='4' style='border-bottom : 1px solid #000;'>原包厢计费方案</td>
+        </tr>
+        <tr>
+          <td>包厢名</td>
+          <td>计费时段</td>
+          <td>计费类型</td>
+          <td>费用</td>
+        </tr>
+        <tr>
+          <td><t t-esc="origin_room.name" /></td>
+          <td><t t-esc="p_checkout.context_open_only_time" />~<t t-esc="p_checkout.context_close_only_time" /></td>
+          <td><t t-esc="p_checkout.fee_type_id[1]" /></td>
+          <td><t t-esc="p_checkout.hourly_fee + p_checkout.changed_room_hourly_fee" /></td>
+        </tr>
+        <tr>
+          <td colspan='4' style='border-bottom : 1px solid #000;'>新包厢计费方案</td>
+        </tr>
+        <tr>
+          <td>包厢名</td>
+          <td>计费时段</td>
+          <td>计费类型</td>
+          <td>费用</td>
+        </tr>
+        <tr>
+          <td><t t-esc="changed_room.name" /></td>
+          <td><t t-esc="l_checkout.context_open_only_time" />~<t t-esc="l_checkout.context_close_only_time" /></td>
+          <td><t t-esc="l_checkout.fee_type_id[1]" /></td>
+          <td><t t-esc="l_checkout.hourly_fee + l_checkout.changed_room_hourly_fee" /></td>
+        </tr>
+        <tr><td colspan='4' style='border-bottom : 1px solid  #000'></td></tr>
+        <tr>
+          <td>打单人:</td>
+          <td colspan="3"><t t-esc="username"/></td>
+        </tr>
+        <tr>
+          <td>打单时间:</td>
+          <td colspan="3"><t t-esc="room_change_checkout_buyout.context_open_time"/></td>
+        </tr>
+        <tr>
+          <td>客人签名:</td>
+          <td colspan='3' style='border-bottom : 1px solid #000;'>&#160;</td>
+        </tr>
+        <tr>
+          <td colspan="4">请确认房号及所有设备完整,谢谢!</td>
+        </tr>
+      </table>
+    </div>
+  </t>
 </templates>

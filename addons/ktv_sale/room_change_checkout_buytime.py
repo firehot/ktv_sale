@@ -122,18 +122,9 @@ class room_change_checkout_buytime(osv.osv):
         buytime_vals.update({"room_operate_id" : cur_rp_id})
 
         room_change_buytime_id = self.create(cr,uid,buytime_vals)
-        #修改关联的最后一次结账信息中的关闭时间和消费时长
-        p_checkout,l_checkout = self.pool.get('ktv.room_operate').last_two_presale_checkout(cr,uid,cur_rp_id)
-        close_time = ktv_helper.utc_now_str()
-        consume_minutes = ktv_helper.str_timedelta_minutes(p_checkout['open_time'],close_time)
-        osv_name = p_checkout['osv_name']
-        update_attrs = {"close_time" : close_time}
-        if 'room_change' in osv_name:
-          update_attrs['changed_room_minutes'] = consume_minutes
-        else:
-          update_attrs['consume_minutes'] = consume_minutes
 
-        self.pool.get(osv_name).write(cr,uid,p_checkout['id'],update_attrs)
+        #修改关联的最后一次结账信息中的关闭时间和消费时长
+        self.pool.get('ktv.room_operate').update_previous_checkout_for_presale_room_change(cr,uid,cur_rp_id)
 
         fields = self.fields_get(cr,uid).keys()
         room_change_buytime = self.read(cr,uid,room_change_buytime_id,fields)

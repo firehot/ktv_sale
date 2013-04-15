@@ -320,7 +320,7 @@ class room_operate(osv.osv):
         """
         return self.pool.get('ir.cron').create(cr,uid,cron_vals)
 
-    def previous_room_opens_and_change(self,cr,uid,op_id):
+    def last_room_opens_and_change(self,cr,uid,op_id):
         """
         获取最近一次包厢开房信息和换房信息,只适用于正常开房
         :param op_id integer room_operate id
@@ -358,5 +358,27 @@ class room_operate(osv.osv):
       ret_l['osv_name'] = getattr(l,'_name')
       ret = (ret_p,ret_l)
       return ret
+
+    def update_previous_checkout_for_presale_room_change(self,cr,uid,op_id):
+      """
+      修改上次结账信息的关房时间和消费时间,在预售换房时使用
+      :param op_id integer 
+      :rtype dict 更新的checkout
+      """
+      #修改关联的最后一次结账信息中的关闭时间和消费时长
+      pool = self.pool
+      p_checkout,l_checkout = self.last_two_presale_checkout(cr,uid,op_id)
+      close_time = ktv_helper.utc_now_str()
+      consume_minutes = ktv_helper.str_timedelta_minutes(p_checkout['open_time'],close_time)
+      osv_name = p_checkout['osv_name']
+      update_attrs = {"close_time" : close_time}
+      if 'room_change' in osv_name:
+        update_attrs['changed_room_minutes'] = consume_minutes
+      else:
+        update_attrs['consume_minutes'] = consume_minutes
+      self.write(cr,uid,p_checkout['id'],update_attrs)
+      return pool.get(osv_name).read(cr,uid,p_checkout['id'])
+
+
 
 # vim:et:ts=4:sw=4:
