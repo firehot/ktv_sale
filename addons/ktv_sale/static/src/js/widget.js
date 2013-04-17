@@ -1686,8 +1686,31 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		start: function() {
 			this._super();
 			this.$('#consume_minutes').on('change', _.bind(this._onchange_consume_minutes, this));
+			this.on('save_success',this,this.print);
 			this._re_calculate_fee();
-		}
+		},
+    print : function(){
+      //打印续钟单,需要获取以下数据
+      //room 当前包厢
+      //room_continue 续钟操作对象
+      var self = this;
+      var sum_paid_info;
+      new erp_instance.web.Model('ktv.room_operate').get_func('calculate_sum_paid_info')(self.model.get('room_operate_id')[0])
+      .pipe(function(s_info){
+        sum_paid_info = s_info;
+        sum_paid_info.context_open_time = erp_instance.web.str_to_datetime(s_info.open_time).toString('yyyy-MM-dd HH:mm');
+      }).then(function(){
+        var template_var = {
+          "room": self.room.export_as_json(),
+          "sum_paid_info" : sum_paid_info,
+          'room_continue': self.model.export_as_json()
+        };
+        var print_doc = $(qweb_template("room-checkout-buytime-continue-print-template")(template_var));
+        //处理可见元素
+        var print_doc = print_doc.jqprint();
+      }).then(function(){self.close();});
+
+    }
 	});
 
 	//退钟界面

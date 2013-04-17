@@ -654,4 +654,84 @@
       </table>
     </div>
   </t>
+  <!--买钟结账条-->
+  <t t-name="room-checkout-buytime-continue-print-template">
+    <div class='room-opens-bill' style='text-align : center;'>
+      <h4><t t-esc="company.name"/>消费账单[续钟]</h4>
+      <table style='width : 100%;'>
+        <tr>
+          <td>房间名称:</td>
+          <td><t t-esc="room.name"/></td>
+          <td>房间类型:</td>
+          <td><t t-esc="room.room_type_id[1]"/></td>
+        </tr>
+        <tr>
+          <td>开房时间:</td>
+          <td><t t-esc="sum_paid_info.context_open_time"/></td>
+          <td>计费方式:</td>
+          <td><t t-esc="sum_paid_info.fee_type_id[1]"/></td>
+        </tr>
+
+        <tr>
+          <td>账 单 号:</td>
+          <td colspan="3"><t t-esc="sum_paid_info.bill_no"/></td>
+        </tr>
+
+        <tr>
+          <td>续钟时长:</td>
+          <td><t t-esc="room_continue.total_minutes"/></td>
+          <t t-if="sum_paid_info.last_member_id">
+            <td>会员姓名:</td>
+            <td><t t-esc="sum_paid_info.last_member_id[2]"/></td>
+          </t>
+        </tr>
+        <tr>
+          <t t-if="sum_paid_info.last_member_id">
+            <td>会员卡号:</td>
+            <td><t t-esc="sum_paid_info.last_member_id[1]"/></td>
+            <td>卡余额:</td>
+            <td><t t-esc="sum_paid_info.last_member_id[3]"/></td>
+          </t>
+        </tr>
+
+        <tr><td colspan='4' style='border-bottom : 2px solid #000;'></td></tr>
+
+        <tr class="hourly_fee_lines">
+          <td>时段</td>
+          <td>钟点费/小时</td>
+          <td>金额</td>
+          <td>时长</td>
+        </tr>
+        <tr>
+          <td><t t-esc="room_continue.context_open_only_time"/>~<t t-esc="room_continue.context_close_only_time" /></td> 
+          <td><t t-esc="room_continue.hourly_fee"/></td> 
+          <td><t t-esc="room_continue.hourly_fee"/></td> 
+          <td><t t-esc="room_continue.consume_minutes"/></td>
+        </tr>
+        <tr><td colspan='4' style='border-bottom : 2px solid #000;'></td></tr>
+        <tr>
+          <td>应收金额:</td>
+          <td><t t-esc="room_continue.total_fee" /></td>
+          <td>实收金额:</td>
+          <td><t t-esc="room_continue.total_after_discount_fee" /></td>
+        </tr>
+        <tr>
+          <td>支付方式:</td>
+          <td colspan="3"><t t-esc="room_continue.pay_type_describe" /></td>
+        </tr>
+        <tr>
+          <td>找零金额:</td>
+          <td colspan="3"><t t-esc="room_continue.cash_change" /></td>
+        </tr>
+        <tr>
+          <td>收银员:</td>
+          <td colspan="3"><t t-esc="username"/></td>
+        </tr>
+        <tr>
+          <td colspan="4">谢谢光临!</td>
+        </tr>
+      </table>
+    </div>
+  </t>
+
 </templates>
