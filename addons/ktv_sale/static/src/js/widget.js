@@ -1720,8 +1720,60 @@ openerp.ktv_sale.widget = function(erp_instance) {
 		},
 		start: function() {
 			this._super();
+      this.on('save_success',this,this.print);
 			this._re_calculate_fee();
-		}
+		},
+    //打印退钟单
+    print : function(){
+      //需要获取以下数据 
+      //room 当前包厢信息
+      //room_refund 当前退钟信息
+      //p_checkout 最近一次结账信息(不包括本次退钟信息)
+      var self = this;
+           
+      //上次预售结账信息 本次结账信息
+      var sum_paid_info,p_checkout,l_checkout;
+      //合计付款信息
+      var get_sum_paid = function(){
+        return new erp_instance.web.Model('ktv.room_operate').get_func('calculate_sum_paid_info')(self.model.get('room_operate_id')[0])
+        .pipe(function(s_info){
+          sum_paid_info = s_info;
+          sum_paid_info.context_open_time = erp_instance.web.str_to_datetime(s_info.open_time).toString('yyyy-MM-dd HH:mm');
+          return sum_paid_info;
+        });
+      };
+
+      var get_last_two_checkout = function(){
+        return new erp_instance.web.Model('ktv.room_operate').get_func('last_two_presale_checkout')(self.model.get('room_operate_id')[0])
+        .pipe(function(ret){
+          p_checkout =  ret[0];
+          l_checkout = ret[1]
+          p_checkout.context_open_time = erp_instance.web.str_to_datetime(p_checkout.open_time).toString('yyyy-MM-dd HH:mm');
+          p_checkout.context_close_time = erp_instance.web.str_to_datetime(p_checkout.close_time).toString('yyyy-MM-dd HH:mm');
+          p_checkout.context_open_only_time = erp_instance.web.str_to_datetime(p_checkout.open_time).toString('HH:mm');
+          p_checkout.context_close_only_time = erp_instance.web.str_to_datetime(p_checkout.close_time).toString('HH:mm');
+ 
+          l_checkout.context_open_time = erp_instance.web.str_to_datetime(l_checkout.open_time).toString('yyyy-MM-dd HH:mm');
+          l_checkout.context_close_time = erp_instance.web.str_to_datetime(l_checkout.close_time).toString('yyyy-MM-dd HH:mm');
+          l_checkout.context_open_only_time = erp_instance.web.str_to_datetime(l_checkout.open_time).toString('HH:mm');
+          l_checkout.context_close_only_time = erp_instance.web.str_to_datetime(l_checkout.close_time).toString('HH:mm');
+          return ret;
+        });
+      };
+      $.when(get_last_two_checkout(),get_sum_paid()).then(function(){
+        var template_var = {
+					"room": self.room.export_as_json(),
+					'room_refund': self.model.export_as_json(),
+          'sum_paid_info' : sum_paid_info,
+          'p_checkout' : p_checkout,
+          'l_checkout' : l_checkout
+				};
+				var print_doc = $(qweb_template("room-checkout-buytime-refund-print-template")(template_var));
+				//处理可见元素
+				var print_doc = print_doc.jqprint();
+      }).then(function(){self.close();});
+  
+    }
 	});
 
 	//换房-正常开房界面

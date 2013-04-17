@@ -37,7 +37,7 @@ class room_operate(osv.osv):
         """
         ret = {}
         for record in self.browse(cr,uid,ids):
-          #依次判断所有开房相关操作:room_opens > room_checkout_buyout > room_checkout_buytime
+            #依次判断所有开房相关操作:room_opens > room_checkout_buyout > room_checkout_buytime
             which_room_open_ops = record.room_opens_ids or record.room_checkout_buyout_ids or record.room_checkout_buytime_ids
 
             fee_type_id = which_room_open_ops[0].fee_type_id.id
@@ -336,27 +336,47 @@ class room_operate(osv.osv):
       :rtype tuple  前一次结账信息,最后一次结账信息
       """
       operate = self.browse(cr,uid,op_id)
-      #预售换房结账信息
-      room_change_checkout_ids = operate.room_change_checkout_buyout_ids or operate.room_change_checkout_buytime_ids#
-      #预售结账信息
-      room_presale_checkout_ids = operate.room_checkout_buyout_ids or operate.room_checkout_buytime_ids
+      #获取所有相关信息,并按照bill_date进行排列
+      all_checkout_list = list()
+      for c_list in (operate.room_checkout_buyout_ids,operate.room_checkout_buytime_ids, \
+          operate.room_change_checkout_buyout_ids,operate.room_change_checkout_buytime_ids, \
+          operate.room_checkout_buytime_continue_ids,operate.room_checkout_buytime_refund_ids):
+        all_checkout_list.extend(c_list)
+
+      #排序操作
+      def cmp_checkout(c1,c2):
+        """
+        比较两个结算信息的创建时间
+        :param c1 c2 要比较的结算信息
+        :rtype integer -1:c1 < c2 0:c1 = c2 1: c1 > c2  
+        """
+        if c1.bill_datetime < c2.bill_datetime:
+          return -1
+
+        if c1.bill_datetime == c2.bill_datetime:
+          return 0
+
+        if c1.bill_datetime > c2.bill_datetime:
+          return 1
+
+      all_checkout_list.sort(cmp = cmp_checkout,reverse = True)
 
       pool = self.pool
-
       p = l = None
-      #所有的包厢结账ids是按照 bill_date 的 DESC顺序排列的
-      if len(room_change_checkout_ids) >= 2:
-        p = room_change_checkout_ids[1];l = room_change_checkout_ids[0]
+
+      if len(all_checkout_list) >= 2:
+        p = all_checkout_list[1];l = all_checkout_list[0]
       elif room_change_checkout_ids:
-        p = room_presale_checkout_ids[0];l = room_change_checkout_ids[0]
+        p = l = all_checkout_list[0]
       else:
-        p = l = room_presale_checkout_ids[0]
+        raise osv.except_osv(_("错误"), _('包厢结账信息不存在.'))
       
       ret_p = pool.get(getattr(p,'_name')).read(cr,uid,p.id)
       ret_p['osv_name'] = getattr(p,'_name')
       ret_l = pool.get(getattr(l,'_name')).read(cr,uid,l.id)
       ret_l['osv_name'] = getattr(l,'_name')
       ret = (ret_p,ret_l)
+      _logger.debug("last two checkout = %s" % repr(ret))
       return ret
 
     def update_previous_checkout_for_presale_room_change(self,cr,uid,op_id):
@@ -376,8 +396,10 @@ class room_operate(osv.osv):
         update_attrs['changed_room_minutes'] = consume_minutes
       else:
         update_attrs['consume_minutes'] = consume_minutes
-      self.write(cr,uid,p_checkout['id'],update_attrs)
-      return pool.get(osv_name).read(cr,uid,p_checkout['id'])
+      if p_checkout:
+        pool.get(osv_name).write(cr,uid,p_checkout['id'],update_attrs)
+
+      return p_checkout and pool.get(osv_name).read(cr,uid,p_checkout['id'])
 
 
 

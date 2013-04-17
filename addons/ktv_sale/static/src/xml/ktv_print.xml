@@ -591,4 +591,67 @@
       </table>
     </div>
   </t>
+  <!--退钟条-->
+  <t t-name="room-checkout-buytime-refund-print-template">
+    <div class='room-opens-bill' style='text-align : center;'>
+      <h4><t t-esc="company.name"/>退钟条</h4>
+      <table style='width : 100%;'>
+        <tr>
+          <td>账 单 号:</td>
+          <td colspan="3"><t t-esc="room_refund.room_operate_id[1]"/></td>
+        </tr>
+        <tr>
+          <td>开房时间:</td>
+          <td colspan="3"><t t-esc="p_checkout.context_open_time"/></td>
+        </tr>
+        <tr>
+          <td>包厢名称:</td>
+          <td colspan="3"><t t-esc="room.name"/></td>
+        </tr>
+        <tr>
+          <td>包厢类型:</td>
+          <td colspan="3"><t t-esc="room.room_type_id[1]"/></td>
+        </tr>
+         <tr>
+          <td>开房时间:</td>
+          <td colspan="3"><t t-esc="sum_paid_info.context_open_time"/></td>
+        </tr>
+        <tr>
+          <td>原关房时间:</td>
+          <td colspan="3"><t t-esc="l_checkout.context_close_time"/></td>
+        </tr>
+        <tr>
+          <td>现关房时间:</td>
+          <td colspan="3"><t t-esc="l_checkout.context_open_time"/></td>
+        </tr>
+        <tr>
+          <td>钟点费:</td>
+          <td colspan="3"><t t-esc="sum_paid_info.hourly_fee + sum_paid_info.changed_room_hourly_fee"/></td>
+        </tr>
+        <tr>
+          <td>原收金额:</td>
+          <td colspan="3"><t t-esc="sum_paid_info.total_fee"/></td>
+        </tr>
+        <tr>
+          <td>实收金额:</td>
+          <td colspan="3"><t t-esc="sum_paid_info.total_after_discount_fee"/></td>
+        </tr>
+        <tr>
+          <td>应退金额:</td>
+          <td colspan="3"><t t-esc="l_checkout.hourly_fee"/></td>
+        </tr>
+        <tr>
+          <td>打单时间:</td>
+          <td colspan="3"><t t-esc="room_refund.context_open_time"/></td>
+        </tr>
+        <tr>
+          <td>客人签名:</td>
+          <td colspan='3' style='border-bottom : 1px solid #000;'>&#160;</td>
+        </tr>
+        <tr>
+          <td colspan="4">欢迎下次光临!</td>
+        </tr>
+      </table>
+    </div>
+  </t>
 </templates>

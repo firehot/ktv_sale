@@ -45,7 +45,7 @@ class room_checkout_buytime_refund(osv.osv):
         tmp_dict['consume_minutes'] = refund_minutes
         sum_refund_info = self.calculate_sum_pay_info(cr,uid,tmp_dict)
 
-        #退钟时,close_time = now open_time = close_time - refund_minutes
+        #退钟时,open_time = now close_time = close_time - refund_minutes
         sum_refund_info['open_time'] = ktv_helper.utc_now_str()
         sum_refund_info['close_time'] = ktv_helper.strftime(datetime.now() + timedelta(minutes = refund_minutes))
 
@@ -67,8 +67,13 @@ class room_checkout_buytime_refund(osv.osv):
         cur_rp_id = self.pool.get('ktv.room').find_or_create_room_operate(cr,uid,room_id)
         refund_vals.update({"room_operate_id" : cur_rp_id})
         refund_id = self.create(cr,uid,refund_vals)
+        #修改关联的最后一次结账信息中的关闭时间和消费时长
+        self.pool.get('ktv.room_operate').update_previous_checkout_for_presale_room_change(cr,uid,cur_rp_id)
+
         fields = self.fields_get(cr,uid).keys()
         room_refund = self.read(cr,uid,refund_id,fields)
-        return (room_refund,room.STATE_FREE,None)
+        #修改包厢状态
+        self.pool.get('ktv.room').write(cr,uid,room_id,{'state' : room.STATE_FREE,'current_room_operate_id' : None,})
+        return (room_refund,None,None)
 
 

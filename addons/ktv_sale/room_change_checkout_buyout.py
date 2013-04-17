@@ -116,6 +116,9 @@ class room_change_checkout_buyout(osv.osv):
 
 
         room_buyout_id = self.create(cr,uid,buyout_vals)
+        #修改关联的最后一次结账信息中的关闭时间和消费时长
+        self.pool.get('ktv.room_operate').update_previous_checkout_for_presale_room_change(cr,uid,cur_rp_id)
+
         fields = self.fields_get(cr,uid).keys()
         room_buyout = self.read(cr,uid,room_buyout_id,fields)
         #TODO 需要取消原包厢的cron任务
